@@ -1,0 +1,75 @@
+# ==============================================================================
+# TalentaKu Project Git Ignore Configuration
+# ==============================================================================
+
+# Core OS files
+.DS_Store
+Thumbs.db
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==============================================================================
+# Frontend (React + Vite + TS)
+# ==============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/.env.local
+frontend/.eslintcache
+
+# Vite/TypeScript logs and cache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/.vite-inspect
+frontend/.tsbuildinfo
+
+# ==============================================================================
+# Backend (Golang)
+# ==============================================================================
+# Executables
+backend/bin/
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/test_build
+
+# Test binaries
+backend/*.test
+backend/debug
+
+# Output / logs
+backend/*.log
+
+# Database files (local development SQLite)
+backend/*.db
+backend/*.db-journal
+backend/*.db-shm
+backend/*.db-wal
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# ==============================================================================
+# Miscellaneous & Temp Files
+# ==============================================================================
+.tmp/
+temp/
+tmp/
+
+.env
