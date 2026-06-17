@@ -1,358 +1,251 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Brain, FileText, Users, Award, Shield, CheckCircle, Database, Settings, LogOut, ArrowRight, Activity, Sliders, Save, Loader2 } from "lucide-react";
-import { fetchAdminStats, fetchSettings, updateSettings, fetchVariables, fetchHistory, type AdminStats, type Variable, type HistoryItem } from "../api";
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import AdminSidebar from '../components/layout/AdminSidebar'
+
+const stats = [
+  { icon: 'assignment', label: 'Total Assessments', value: '1,284', color: 'text-[#3525cd]', bg: 'bg-[#3525cd]/10', trend: '+12%', trendUp: true },
+  { icon: 'groups', label: 'Active Students', value: '842', color: 'text-[#00687a]', bg: 'bg-[#00687a]/10', trend: '+5%', trendUp: true },
+  { icon: 'verified', label: 'Identified Talents', value: '3,120', color: 'text-[#684000]', bg: 'bg-[#ffddb8]/20', trend: 'Stable', trendUp: null },
+  { icon: 'history', label: 'Pending Reviews', value: '14', color: 'text-[#ba1a1a]', bg: 'bg-[#ba1a1a]/10', trend: '-2%', trendUp: false },
+]
+
+const chartBars = [
+  { label: 'Linguistic', pct: 65 },
+  { label: 'Logical', pct: 40 },
+  { label: 'Spatial', pct: 85 },
+  { label: 'Musical', pct: 55 },
+  { label: 'Kinesthetic', pct: 30 },
+]
+
+const systemHealth = [
+  { icon: 'sync', label: 'Rules Synced', desc: '33 active logic branches verified.', color: 'bg-[#10B981]/20 text-[#10B981]' },
+  { icon: 'database', label: 'Variables Backup', desc: 'Incremental save completed.', color: 'bg-[#3525cd]/20 text-[#3525cd]' },
+  { icon: 'security', label: 'Access Logs', desc: 'No unusual activity detected.', color: 'bg-[#00687a]/20 text-[#00687a]' },
+]
+
+const variableCategories = [
+  { title: 'Cognitive Capacity (C1–C25)', count: 25, color: 'bg-[#3525cd]/10', badge: 'bg-[#3525cd] text-white', accent: 'text-[#3525cd]', vars: ['C1: Abstract Reasoning', 'C2: Numerical Processing', 'C3: Visual-Spatial Memory'] },
+  { title: 'Emotional Intelligence (C26–C50)', count: 25, color: 'bg-[#00687a]/10', badge: 'bg-[#00687a] text-white', accent: 'text-[#00687a]', vars: ['C26: Empathy Quotient', 'C27: Self-Regulation', 'C28: Social Resilience'] },
+  { title: 'Psychomotor Skills (C51–C83)', count: 33, color: 'bg-[#ffddb8]/20', badge: 'bg-[#684000] text-white', accent: 'text-[#684000]', vars: ['C51: Fine Motor Precision', 'C52: Reaction Response', 'C53: Bilateral Coordination'] },
+]
+
+const consultations = [
+  { id: '#AS-9921', initials: 'JS', name: 'Jonathan Smith', talent: 'Musical-Rhythmic', confidence: 92, status: 'Completed', date: 'Oct 24, 2024', statusColor: 'bg-[#10B981]/10 text-[#10B981]', barColor: 'bg-[#10B981]' },
+  { id: '#AS-9920', initials: 'AM', name: 'Alicia Mendez', talent: 'Logical-Math', confidence: 78, status: 'Pending', date: 'Oct 23, 2024', statusColor: 'bg-[#acedff] text-[#006172]', barColor: 'bg-[#3525cd]' },
+  { id: '#AS-9919', initials: 'RK', name: 'Ryan Koji', talent: 'Kinesthetic', confidence: 88, status: 'Completed', date: 'Oct 22, 2024', statusColor: 'bg-[#10B981]/10 text-[#10B981]', barColor: 'bg-[#10B981]' },
+]
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [variables, setVariables] = useState<Variable[]>([]);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [settings, setSettings] = useState<Record<string, string>>({});
-  const [thresholdInput, setThresholdInput] = useState("4");
-  const [loading, setLoading] = useState(true);
-  const [savingSettings, setSavingSettings] = useState(false);
-  const [settingsMessage, setSettingsMessage] = useState("");
-  const [error, setError] = useState("");
+  const [chartLoaded, setChartLoaded] = useState(false)
 
-  const [activeCategory, setActiveCategory] = useState<"C1-C25" | "C26-C50" | "C51-C83">("C1-C25");
-
-  // Load all stats and variables
   useEffect(() => {
-    async function loadData() {
-      try {
-        const [statsData, settingsData, varsData, historyData] = await Promise.all([
-          fetchAdminStats(),
-          fetchSettings(),
-          fetchVariables(),
-          fetchHistory(),
-        ]);
-        setStats(statsData);
-        setSettings(settingsData);
-        setThresholdInput(settingsData.likert_threshold || "4");
-        setVariables(varsData);
-        setHistory(historyData.slice(0, 5)); // show top 5 recent
-      } catch (err: any) {
-        setError(err.message || "Gagal memuat data admin");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
-
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingSettings(true);
-    setSettingsMessage("");
-    try {
-      await updateSettings({
-        likert_threshold: thresholdInput,
-        app_name: settings.app_name || "TalentaKu",
-      });
-      setSettingsMessage("Pengaturan threshold berhasil disimpan!");
-      // Reload stats
-      const statsData = await fetchAdminStats();
-      setStats(statsData);
-    } catch (err: any) {
-      setSettingsMessage("Gagal menyimpan pengaturan: " + err.message);
-    } finally {
-      setSavingSettings(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="mt-4 text-on-surface-variant text-sm">Menyiapkan Dashboard Admin...</p>
-      </div>
-    );
-  }
-
-  // Filter variables based on selected category
-  const filteredVars = variables.filter((v) => {
-    const num = parseInt(v.code.replace("C", ""));
-    if (activeCategory === "C1-C25") return num >= 1 && num <= 25;
-    if (activeCategory === "C26-C50") return num >= 26 && num <= 50;
-    return num >= 51 && num <= 83;
-  });
+    document.title = 'System Overview | Talentku Admin'
+    // Small delay to allow layout before animating
+    const t = setTimeout(() => setChartLoaded(true), 300)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
-    <div className="min-h-screen flex bg-background overflow-hidden">
-      {/* Sidebar Navigation */}
-      <aside className="h-screen w-64 hidden md:flex flex-col bg-surface-container-low py-8 px-4 gap-4 border-r border-outline-variant select-none">
-        <div className="flex items-center gap-3 px-2 mb-6">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-on-primary">
-            <Brain className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary leading-tight font-sans">TalentaKu</h1>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Expert System</p>
-          </div>
-        </div>
+    <div className="flex h-screen overflow-hidden font-sans text-[#191c1e]">
+      <AdminSidebar />
 
-        <nav className="flex flex-col gap-1 flex-1">
-          <Link to="/admin" className="bg-primary text-on-primary rounded-xl font-bold flex items-center gap-3 px-4 py-3 transition-all duration-200">
-            <Activity className="w-5 h-5" />
-            <span className="text-sm">Overview</span>
-          </Link>
-          <Link to="/admin/rules" className="text-on-surface-variant hover:bg-slate-200/50 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold text-sm">
-            <Sliders className="w-5 h-5" />
-            <span>Rule Builder</span>
-          </Link>
-          <Link to="/" className="text-on-surface-variant hover:bg-slate-200/50 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold text-sm">
-            <ArrowRight className="w-5 h-5" />
-            <span>Ke Landing Page</span>
-          </Link>
-        </nav>
-
-        <div className="mt-auto border-t border-slate-200 pt-4 space-y-1">
-          <button onClick={() => navigate("/")} className="w-full text-error flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-all font-bold text-sm">
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-y-auto">
         {/* Top App Bar */}
-        <header className="glass-header sticky top-0 flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 z-30 shadow-sm border-b border-slate-100 bg-white/80">
+        <header className="glass-header sticky top-0 flex justify-between items-center w-full px-4 md:px-10 py-4 z-30 shadow-sm">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-primary font-sans">System Overview</h2>
+            <button className="md:hidden text-[#3525cd]">
+              <span className="material-symbols-outlined">menu</span>
+            </button>
+            <h2 className="text-2xl font-bold text-[#3525cd]">System Overview</h2>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 bg-indigo-100 flex items-center justify-center font-bold text-primary uppercase text-sm">
-              AD
+            <div className="hidden md:flex bg-[#eceef0] rounded-full px-4 py-2 items-center gap-2 border border-[#c7c4d8]">
+              <span className="material-symbols-outlined text-[#777587]">search</span>
+              <input className="bg-transparent border-none focus:ring-0 text-sm outline-none w-64" placeholder="Search assessments..." type="text" />
             </div>
-            <div className="hidden lg:block text-left">
-              <p className="text-xs font-bold leading-none text-on-surface">Admin User</p>
-              <p className="text-[10px] text-on-surface-variant mt-0.5">System Manager</p>
+            <button className="w-10 h-10 flex items-center justify-center rounded-full text-[#464555] hover:bg-[#e0e3e5] transition-colors">
+              <span className="material-symbols-outlined">notifications</span>
+            </button>
+            <div className="flex items-center gap-2 border-l border-[#c7c4d8] pl-4 ml-2">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#e2dfff]">
+                <img
+                  className="w-full h-full object-cover"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6zjHzNWEXRK4RhbTQyavGRBlr64Enw_853XlHjcEHnblCInhl3F4vawRegI5F_KBQ5wTwuNYxaG3xGjfUAy_oq-EmghRevG4T6bVv6ubJ171ztldRseVRqq9YdfYLuLKv9R15A8Qc2_JPE5gS8p4M6q2FLEW-AVms5Qh-MkiTI7NIoCCo3vbMypG_bDjToLq4JC8nLt-VBi-h9a195EnpGeyFP-0gUDRpm0pPBxFhIJrvmXUVb-bX59m4EZ8udV1XuLMuy0v-Huc"
+                  alt="Admin"
+                />
+              </div>
+              <div className="hidden lg:block text-left">
+                <p className="text-sm font-semibold leading-none">Admin User</p>
+                <p className="text-xs text-[#464555]">System Manager</p>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Dashboard Page Wrapper */}
-        <div className="p-margin-mobile md:p-margin-desktop space-y-8 max-w-6xl w-full">
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Stats Overview Grid */}
+        <div className="p-4 md:p-10 space-y-6">
+          {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-all">
-              <div className="flex justify-between items-start">
-                <span className="p-2 bg-primary/10 text-primary rounded-xl"><FileText className="w-5 h-5" /></span>
-                <span className="text-success text-xs font-bold flex items-center">+12%</span>
+            {stats.map((stat) => (
+              <div key={stat.label} className="card-level-1 p-6 flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <span className={`p-2 ${stat.bg} ${stat.color} rounded-lg material-symbols-outlined`}>{stat.icon}</span>
+                  <span className={`text-xs font-semibold flex items-center gap-0.5 ${stat.trendUp === true ? 'text-[#10B981]' : stat.trendUp === false ? 'text-[#ba1a1a]' : 'text-[#464555]'}`}>
+                    {stat.trend}
+                    {stat.trendUp !== null && (
+                      <span className="material-symbols-outlined text-base">{stat.trendUp ? 'trending_up' : 'trending_down'}</span>
+                    )}
+                  </span>
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-[#464555]">{stat.label}</p>
+                  <h3 className={`text-[32px] font-bold ${stat.color}`}>{stat.value}</h3>
+                </div>
               </div>
-              <div className="mt-4">
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Total Konsultasi</p>
-                <h3 className="text-3xl font-extrabold text-primary font-sans mt-1">{stats?.total_assessments || 0}</h3>
+            ))}
+          </div>
+
+          {/* Chart + Health */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Bar Chart */}
+            <div className="xl:col-span-2 card-level-1 p-8">
+              <div className="flex justify-between items-center mb-8">
+                <h4 className="text-2xl font-bold">Talent Distribution Analysis</h4>
+                <select className="bg-[#eceef0] border-none rounded-lg text-sm font-semibold px-4 py-2 focus:ring-[#3525cd] outline-none">
+                  <option>Last 30 Days</option>
+                  <option>Last Quarter</option>
+                </select>
+              </div>
+              <div className="relative h-64 w-full bg-[#f2f4f6] rounded-xl overflow-hidden flex items-end justify-around px-8 pb-4">
+                {chartBars.map((bar, i) => (
+                  <div key={bar.label} className="relative group flex flex-col items-center">
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#191c1e] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      {bar.pct}%
+                    </div>
+                    <div
+                      className="w-12 bg-[#3525cd] rounded-t-lg transition-all duration-700 hover:opacity-80"
+                      style={{ height: chartLoaded ? `${bar.pct}%` : '0%', opacity: `${1 - i * 0.15}` }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-around mt-4">
+                {chartBars.map((bar) => (
+                  <span key={bar.label} className="text-xs text-[#464555]">{bar.label}</span>
+                ))}
               </div>
             </div>
 
-            <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-all">
-              <div className="flex justify-between items-start">
-                <span className="p-2 bg-indigo-50 text-indigo-700 rounded-xl"><Users className="w-5 h-5" /></span>
-                <span className="text-success text-xs font-bold flex items-center">+5%</span>
+            {/* System Health */}
+            <div className="card-level-1 p-6 space-y-4">
+              <h4 className="text-2xl font-bold">System Health</h4>
+              <div className="space-y-4">
+                {systemHealth.map((item) => (
+                  <div key={item.label} className="flex items-center gap-4 p-3 hover:bg-[#eceef0] rounded-lg transition-colors cursor-pointer">
+                    <div className={`w-10 h-10 rounded-full ${item.color} flex items-center justify-center`}>
+                      <span className="material-symbols-outlined">{item.icon}</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold">{item.label}</p>
+                      <p className="text-xs text-[#464555]">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="mt-4">
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Siswa Terdaftar</p>
-                <h3 className="text-3xl font-extrabold text-indigo-700 font-sans mt-1">{stats?.active_students || 0}</h3>
-              </div>
-            </div>
-
-            <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-all">
-              <div className="flex justify-between items-start">
-                <span className="p-2 bg-emerald-50 text-success rounded-xl"><Award className="w-5 h-5" /></span>
-                <span className="text-on-surface-variant text-xs font-bold flex items-center">Stabil</span>
-              </div>
-              <div className="mt-4">
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Aturan Terpenuhi</p>
-                <h3 className="text-3xl font-extrabold text-success font-sans mt-1">{stats?.identified_talents || 0}</h3>
-              </div>
-            </div>
-
-            <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-all">
-              <div className="flex justify-between items-start">
-                <span className="p-2 bg-red-50 text-error rounded-xl"><Shield className="w-5 h-5" /></span>
-                <span className="text-error text-xs font-bold flex items-center">Ok</span>
-              </div>
-              <div className="mt-4">
-                <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Logic Health</p>
-                <h3 className="text-3xl font-extrabold text-error font-sans mt-1">100%</h3>
-              </div>
+              <button className="w-full py-3 mt-4 border border-[#c7c4d8] text-[#3525cd] text-sm font-semibold rounded-lg hover:bg-[#3525cd]/5 transition-colors">
+                View System Status
+              </button>
             </div>
           </div>
 
-          {/* Distribution Chart & System Settings */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Talent Distribution Chart */}
-            <div className="lg:col-span-2 bg-white border border-outline-variant p-8 rounded-2xl shadow-sm space-y-6">
-              <div className="flex justify-between items-center">
-                <h4 className="text-lg font-bold text-on-surface">Distribusi Bakat Teridentifikasi</h4>
+          {/* Variable Ecosystem */}
+          <section className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-2xl font-bold">Variable Ecosystem (C1–C83)</h4>
+                <p className="text-base text-[#464555]">Manage psychometric variables and their weight distribution.</p>
               </div>
-              <div className="h-64 w-full bg-slate-50 border border-slate-100 rounded-xl flex items-end justify-around px-6 pb-4 pt-8 relative">
-                {stats?.talent_distribution.map((dist) => {
-                  // Find max count to normalize height
-                  const maxCount = Math.max(...stats.talent_distribution.map((d) => d.count), 1);
-                  const barHeight = (dist.count / maxCount) * 100;
-                  return (
-                    <div key={dist.code} className="w-12 bg-primary/80 hover:bg-primary rounded-t-lg relative group transition-all duration-300 flex flex-col items-center justify-end" style={{ height: `${Math.max(barHeight, 5)}%` }}>
-                      <span className="absolute -top-7 bg-on-surface text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        {dist.count} Anak
-                      </span>
-                      <span className="text-[10px] text-white font-bold mb-1.5">{dist.count > 0 ? dist.count : ""}</span>
-                    </div>
-                  );
-                })}
+              <div className="flex gap-2">
+                <button className="px-6 py-2 bg-[#3525cd] text-white rounded-full text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:scale-[1.02] active:scale-95 transition-transform flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">add</span> Add Variable
+                </button>
+                <button className="px-6 py-2 border border-[#c7c4d8] text-[#191c1e] text-sm font-semibold rounded-full hover:bg-[#eceef0] transition-colors flex items-center gap-2">
+                  <span className="material-symbols-outlined text-base">file_download</span> Export
+                </button>
               </div>
-              <div className="flex justify-around text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
-                {stats?.talent_distribution.map((dist) => (
-                  <span key={dist.code} title={dist.label}>{dist.code}</span>
-                ))}
-              </div>
-              <p className="text-[10px] text-on-surface-variant italic text-center font-light">
-                Keterangan: K1 (Intelektual), K2 (Akademik), K3 (Kreatif), K4 (Kepemimpinan), K5 (Seni), K6 (Psikomotorik)
-              </p>
             </div>
-
-            {/* Threshold Settings Panel */}
-            <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm space-y-6">
-              <h4 className="text-lg font-bold text-on-surface flex items-center gap-1.5">
-                <Settings className="w-5 h-5 text-primary" />
-                Konfigurasi Engine
-              </h4>
-              <form onSubmit={handleSaveSettings} className="space-y-6">
-                {settingsMessage && (
-                  <p className="p-3 bg-indigo-50 text-indigo-700 text-xs rounded-xl border border-indigo-200">
-                    {settingsMessage}
-                  </p>
-                )}
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-on-surface-variant uppercase block">
-                    Threshold Likert (Biner)
-                  </label>
-                  <p className="text-xs text-on-surface-variant font-light">
-                    Batas skor minimal (1-5) agar variabel dianggap terpenuhi (TRUE). Default: 4.
-                  </p>
-                  <div className="flex items-center gap-3 pt-2">
-                    <input
-                      type="range"
-                      min="2"
-                      max="5"
-                      step="1"
-                      value={thresholdInput}
-                      onChange={(e) => setThresholdInput(e.target.value)}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                    />
-                    <span className="font-bold text-lg text-primary bg-indigo-50 border border-primary/20 px-3 py-1 rounded-lg">
-                      {thresholdInput}
-                    </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {variableCategories.map((cat) => (
+                <div key={cat.title} className="card-level-1 overflow-hidden">
+                  <div className={`${cat.color} px-6 py-4 border-b border-[#c7c4d8] flex justify-between items-center`}>
+                    <h5 className={`text-xs font-bold ${cat.accent} uppercase tracking-wider`}>{cat.title}</h5>
+                    <span className={`text-xs font-bold ${cat.badge} px-2 py-0.5 rounded`}>{cat.count} Vars</span>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {cat.vars.map((v, i) => (
+                      <div key={v} className="flex items-center justify-between pb-2 border-b border-[#c7c4d8]/30">
+                        <span className="text-sm font-semibold">{v}</span>
+                        <span className={`px-2 py-1 text-[10px] rounded uppercase font-bold ${i === 1 && cat.title.includes('Psychomotor') ? 'bg-[#ba1a1a]/10 text-[#ba1a1a]' : 'bg-[#10B981]/10 text-[#10B981]'}`}>
+                          {i === 1 && cat.title.includes('Psychomotor') ? 'Archived' : 'Active'}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="text-center">
+                      <button className="text-[#3525cd] text-xs font-semibold hover:underline">Show more variables</button>
+                    </div>
                   </div>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={savingSettings}
-                  className="w-full bg-primary text-on-primary py-3 rounded-xl text-sm font-semibold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center gap-2"
-                >
-                  {savingSettings ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Simpan Perubahan
-                </button>
-              </form>
-
-              <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
-                <h5 className="text-xs font-bold text-on-surface uppercase tracking-wider flex items-center gap-1">
-                  <Database className="w-4 h-4 text-emerald-500" />
-                  Status Modul Pakar
-                </h5>
-                <ul className="text-xs text-on-surface-variant space-y-1.5 font-light">
-                  <li className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-success" /> 83 Variabel Terdaftar</li>
-                  <li className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-success" /> 27 Indikator Terdaftar</li>
-                  <li className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-success" /> 33 Aturan Inferensi Aktif</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Variable List Management */}
-          <section className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h4 className="text-lg font-bold text-on-surface">Ekosistem Variabel Observasi (C1-C83)</h4>
-                <p className="text-xs text-on-surface-variant font-light">Daftar variabel penilai tumbuh kembang anak.</p>
-              </div>
-              <div className="flex bg-slate-100 p-1 rounded-xl">
-                {(["C1-C25", "C26-C50", "C51-C83"] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                      activeCategory === cat ? "bg-white shadow-sm text-primary" : "text-on-surface-variant hover:text-primary"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="border border-slate-100 rounded-xl overflow-hidden">
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                {filteredVars.map((v) => (
-                  <div key={v.code} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
-                    <div className="space-y-1">
-                      <span className="inline-block bg-indigo-50 border border-primary/10 text-primary font-bold text-xs px-2 py-0.5 rounded">
-                        {v.code}
-                      </span>
-                      <p className="text-sm text-on-surface leading-normal pr-4">{v.label}</p>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-slate-100 px-2.5 py-1 rounded">
-                      {v.category}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </section>
 
           {/* Recent Consultations */}
-          <section className="bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h4 className="text-lg font-bold text-on-surface">Riwayat Konsultasi Terbaru</h4>
-              <Link to="/history" className="text-primary text-xs font-bold hover:underline">Lihat Semua</Link>
+          <section className="card-level-1 overflow-hidden">
+            <div className="p-6 border-b border-[#c7c4d8] flex justify-between items-center">
+              <h4 className="text-2xl font-bold">Recent Consultations</h4>
+              <button className="text-[#3525cd] text-sm font-semibold flex items-center gap-1 hover:underline">
+                View All <span className="material-symbols-outlined text-base">chevron_right</span>
+              </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-50 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+              <table className="w-full text-left">
+                <thead className="bg-[#f2f4f6] text-xs font-bold text-[#464555] uppercase tracking-wider">
                   <tr>
-                    <th className="px-6 py-4">Nama Anak</th>
-                    <th className="px-6 py-4">Bakat Teridentifikasi</th>
+                    <th className="px-6 py-4">ID</th>
+                    <th className="px-6 py-4">Client Name</th>
+                    <th className="px-6 py-4">Primary Talent</th>
                     <th className="px-6 py-4">Confidence</th>
-                    <th className="px-6 py-4">Tanggal</th>
-                    <th className="px-6 py-4 text-center">Aksi</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Date</th>
+                    <th className="px-6 py-4">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {history.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-on-surface">{item.child_name}</td>
+                <tbody className="divide-y divide-[#c7c4d8]/30">
+                  {consultations.map((c) => (
+                    <tr key={c.id} className="hover:bg-[#f2f4f6] transition-colors group">
+                      <td className="px-6 py-4 text-sm font-semibold">{c.id}</td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex px-2.5 py-0.5 bg-indigo-50 text-primary rounded-full text-xs font-semibold">
-                          {item.top_talent}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-[#e2dfff] text-[#3525cd] flex items-center justify-center text-[10px] font-bold">{c.initials}</div>
+                          <span className="text-base">{c.name}</span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 font-bold text-on-surface-variant">{item.confidence_score}%</td>
-                      <td className="px-6 py-4 text-xs text-on-surface-variant font-light">
-                        {new Date(item.completed_at || item.created_at).toLocaleDateString("id-ID")}
+                      <td className="px-6 py-4">
+                        <span className="px-3 py-1 bg-[#3525cd]/10 text-[#3525cd] rounded-full text-xs">{c.talent}</span>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <Link to={`/results/${item.id}`} className="text-primary hover:underline text-xs font-bold">Detail</Link>
+                      <td className="px-6 py-4">
+                        <div className="w-full bg-[#eceef0] rounded-full h-1.5 max-w-[80px]">
+                          <div className={`${c.barColor} h-1.5 rounded-full`} style={{ width: `${c.confidence}%` }} />
+                        </div>
+                        <span className="text-[10px] text-[#464555]">{c.confidence}%</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 ${c.statusColor} text-[10px] rounded uppercase font-bold`}>{c.status}</span>
+                      </td>
+                      <td className="px-6 py-4 text-[#464555] text-xs">{c.date}</td>
+                      <td className="px-6 py-4">
+                        <button className="p-2 text-[#777587] hover:text-[#3525cd] rounded-lg">
+                          <span className="material-symbols-outlined">visibility</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -361,7 +254,16 @@ export default function AdminDashboard() {
             </div>
           </section>
         </div>
+
+        {/* Footer */}
+        <footer className="w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 bg-[#e0e3e5] mt-auto">
+          <p className="text-xs text-[#464555]">© 2024 TalentPulse Expert Systems. Professional Warmth in Assessment.</p>
+          <div className="flex gap-6">
+            <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Privacy Policy</Link>
+            <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Terms of Service</Link>
+          </div>
+        </footer>
       </main>
     </div>
-  );
+  )
 }

@@ -1,29 +1,24 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Welcome from "./pages/Welcome";
-import ChildIntake from "./pages/ChildIntake";
-import AssessmentWizard from "./pages/AssessmentWizard";
-import Results from "./pages/Results";
-import History from "./pages/History";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminRules from "./pages/AdminRules";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import ChildIntakePage from './pages/ChildIntakePage'
+import AssessmentPage from './pages/AssessmentPage'
+import ResultsPage from './pages/ResultsPage'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminRulesPage from './pages/AdminRulesPage'
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Welcome />} />
-        <Route path="/intake" element={<ChildIntake />} />
-        <Route path="/assessment/:id" element={<AssessmentWizard />} />
-        <Route path="/results/:id" element={<Results />} />
-        <Route path="/history" element={<History />} />
-
-        {/* Admin Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/assessment/start" element={<ChildIntakePage />} />
+        <Route path="/assessment/:questionId" element={<AssessmentPage />} />
+        <Route path="/results/:assessmentId" element={<ResultsPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/rules" element={<AdminRules />} />
+        <Route path="/admin/rules" element={<AdminRulesPage />} />
       </Routes>
-    </Router>
-  );
+    </BrowserRouter>
+  )
 }
 
-export default App;
+export default App
