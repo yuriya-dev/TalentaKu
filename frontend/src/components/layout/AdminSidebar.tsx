@@ -19,7 +19,7 @@ export default function AdminSidebar() {
           <span className="material-symbols-outlined text-white">psychology</span>
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#3525cd] leading-tight">Talentku</h1>
+          <h1 className="text-xl font-bold text-[#3525cd] leading-tight">TalentaKu</h1>
           <p className="text-xs text-[#464555]">Expert System</p>
         </div>
       </div>

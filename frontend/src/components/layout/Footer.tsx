@@ -11,10 +11,10 @@ export default function Footer() {
           >
             pulse_alert
           </span>
-          <span className="text-sm font-bold text-[#191c1e]">Talentku</span>
+          <span className="text-sm font-bold text-[#191c1e]">TalentaKu</span>
         </div>
         <p className="text-xs text-[#464555] text-center md:text-left">
-          © 2024 Talentku Expert Systems. Professional Warmth in Assessment.
+          © 2024 TalentaKu Expert Systems. Professional Warmth in Assessment.
         </p>
       </div>
       <div className="flex gap-8">

@@ -7,7 +7,7 @@ export default function Navbar() {
     <header className="bg-[#f7f9fb]/80 glass-header sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-sm">
       <Link to="/" className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[#3525cd] text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>pulse_alert</span>
-        <span className="text-2xl font-bold text-[#3525cd]">Talentku</span>
+        <span className="text-2xl font-bold text-[#3525cd]">TalentaKu</span>
       </Link>
 
       <nav className="hidden md:flex gap-8">

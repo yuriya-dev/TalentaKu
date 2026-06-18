@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
-import MobileNav from '../components/layout/MobileNav'
 import Footer from '../components/layout/Footer'
 
 function launchConfetti() {
@@ -59,7 +57,7 @@ const developmentPaths = [
 
 export default function ResultsPage() {
   useEffect(() => {
-    document.title = 'Assessment Results | Talentku'
+    document.title = 'Assessment Results | TalentaKu'
     launchConfetti()
   }, [])
 
@@ -208,7 +206,7 @@ export default function ResultsPage() {
           <div className="md:w-2/3">
             <h4 className="text-2xl font-semibold mb-2">About Our Inference Engine</h4>
             <p className="text-[#464555] text-base mb-4">
-              Talentku uses a 2-level Forward Chaining engine based on American USOE standards. Our 33-rule system evaluates 83 variables to provide a reliable indicator of potential.
+              TalentaKu uses a 2-level Forward Chaining engine based on American USOE standards. Our 33-rule system evaluates 83 variables to provide a reliable indicator of potential.
             </p>
             <div className="flex gap-4">
               <button className="text-[#3525cd] text-sm font-semibold hover:underline flex items-center gap-1">

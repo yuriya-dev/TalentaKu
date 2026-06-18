@@ -39,7 +39,7 @@ export default function AdminDashboard() {
   const [chartLoaded, setChartLoaded] = useState(false)
 
   useEffect(() => {
-    document.title = 'System Overview | Talentku Admin'
+    document.title = 'System Overview | TalentaKu Admin'
     // Small delay to allow layout before animating
     const t = setTimeout(() => setChartLoaded(true), 300)
     return () => clearTimeout(t)

@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
+const ageRanges = [
+  { label: 'Toddler', range: '3 Years Old', value: 3 },
+  { label: 'Preschool / Kindergarten', range: '4 - 6 Years Old', value: 5 },
+  { label: 'Early Elementary', range: '7 - 9 Years Old', value: 8 },
+  { label: 'Late Elementary', range: '10 - 12 Years Old', value: 11 },
+]
+
 export default function ChildIntakePage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    document.title = 'Child Data Intake | Talentku'
+    document.title = 'Child Data Intake | TalentaKu'
   }, [])
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -23,7 +30,7 @@ export default function ChildIntakePage() {
       <header className="bg-[#f7f9fb]/80 backdrop-blur-md shadow-sm sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[#3525cd] text-3xl">psychology</span>
-          <span className="text-2xl font-bold text-[#3525cd]">Talentku</span>
+          <span className="text-2xl font-bold text-[#3525cd]">TalentaKu</span>
         </div>
         <div className="flex items-center gap-4">
           <button className="text-[#464555] hover:text-[#3525cd] transition-colors p-2 rounded-full hover:bg-[#e6e8ea] active:scale-95">
@@ -79,14 +86,14 @@ export default function ChildIntakePage() {
 
               {/* Age */}
               <div className="space-y-4">
-                <label className="text-sm font-semibold text-[#191c1e] block px-1">Current Age</label>
-                <div className="grid grid-cols-3 gap-4">
-                  {[4, 5, 6].map((age) => (
-                    <label key={age} className="relative group cursor-pointer">
-                      <input className="peer sr-only" name="age" required type="radio" value={age} />
-                      <div className="p-4 text-center border-2 border-[#c7c4d8] rounded-xl group-hover:border-[#3525cd]/50 peer-checked:border-[#3525cd] peer-checked:bg-[#4f46e5]/5 transition-all">
-                        <span className="block text-2xl font-semibold text-[#191c1e] mb-1">{age}</span>
-                        <span className="block text-xs text-[#464555]">Years Old</span>
+                <label className="text-sm font-semibold text-[#191c1e] block px-1">Current Age Group</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {ageRanges.map((item) => (
+                    <label key={item.value} className="relative group cursor-pointer">
+                      <input className="peer sr-only" name="age" required type="radio" value={item.value} />
+                      <div className="p-4 text-center border-2 border-[#c7c4d8] rounded-xl group-hover:border-[#3525cd]/50 peer-checked:border-[#3525cd] peer-checked:bg-[#4f46e5]/5 transition-all h-full flex flex-col justify-center min-h-[92px]">
+                        <span className="block text-xs font-semibold text-[#464555] mb-1">{item.label}</span>
+                        <span className="block text-base font-bold text-[#191c1e]">{item.range}</span>
                       </div>
                       <span
                         className="material-symbols-outlined absolute -top-2 -right-2 bg-[#3525cd] text-white rounded-full p-0.5 text-sm opacity-0 peer-checked:opacity-100 transition-opacity"
@@ -167,8 +174,8 @@ export default function ChildIntakePage() {
       {/* Footer */}
       <footer className="bg-[#e0e3e5] w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 mt-auto">
         <div className="flex flex-col items-center md:items-start gap-1">
-          <span className="text-sm font-bold text-[#464555]">Talentku</span>
-          <p className="text-xs text-[#464555]">© 2024 Talentku Expert Systems. Professional Warmth in Assessment.</p>
+          <span className="text-sm font-bold text-[#464555]">TalentaKu</span>
+          <p className="text-xs text-[#464555]">© 2024 TalentaKu Expert Systems. Professional Warmth in Assessment.</p>
         </div>
         <div className="flex gap-6">
           <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Help</a>

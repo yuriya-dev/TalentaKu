@@ -1,7 +1,7 @@
-# Project PRD: Talentku - Sistem Pakar Penentuan Bakat Anak
+# Project PRD: TalentaKu - Sistem Pakar Penentuan Bakat Anak
 
 ## 1. Product Overview
-**Talentku** is an AI-native expert system platform designed to identify childhood talents in children aged 4-6 (Kindergarten level). Based on the US Office of Education (USOE) standards and research by Salisah, Lidya, and Defit (2015), the system utilizes a **Forward Chaining** inference engine to translate 83 behavioral variables into 6 primary talent categories.
+**TalentaKu** is an AI-native expert system platform designed to identify childhood talents in children aged 4-6 (Kindergarten level). Based on the US Office of Education (USOE) standards and research by Salisah, Lidya, and Defit (2015), the system utilizes a **Forward Chaining** inference engine to translate 83 behavioral variables into 6 primary talent categories.
 
 ### Vision
 To provide parents and teachers with a scientifically grounded yet accessible tool to discover and nurture a child's natural potential through professional-grade psychometric observation.

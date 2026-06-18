@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
 
 const rules = [
@@ -16,7 +15,7 @@ export default function AdminRulesPage() {
   const [patternScore, setPatternScore] = useState(92)
 
   useEffect(() => {
-    document.title = 'Rule Builder | Talentku Admin'
+    document.title = 'Rule Builder | TalentaKu Admin'
   }, [])
 
   function openPanel(ruleId: string) {

@@ -1,14 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import MobileNav from '../components/layout/MobileNav'
 import Footer from '../components/layout/Footer'
 
 export default function LandingPage() {
-  const blobsRef = useRef<NodeListOf<HTMLElement> | null>(null)
 
   useEffect(() => {
-    document.title = 'Talentku | Expert System for Child Potential'
+    document.title = 'TalentaKu | Expert System for Child Potential'
     const handler = (e: MouseEvent) => {
       const blobs = document.querySelectorAll<HTMLElement>('.parallax-blob')
       const x = e.clientX / window.innerWidth
@@ -67,7 +66,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-xs text-[#464555]">
-                  <span className="font-bold text-[#191c1e]">500+ Parents</span> trust Talentku
+                  <span className="font-bold text-[#191c1e]">500+ Parents</span> trust TalentaKu
                 </p>
               </div>
             </div>
@@ -89,7 +88,7 @@ export default function LandingPage() {
                       <span className="material-symbols-outlined text-[#10B981]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     </div>
                     <div>
-                      <p className="text-xs text-[#464555]"><span className="font-bold text-[#191c1e]">500+ Parents</span> trust Talentku</p>
+                      <p className="text-xs text-[#464555]"><span className="font-bold text-[#191c1e]">500+ Parents</span> trust TalentaKu</p>
                       <p className="text-sm font-bold text-[#191c1e]">Creative Genius 94%</p>
                     </div>
                   </div>

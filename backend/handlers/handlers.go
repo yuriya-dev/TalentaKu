@@ -96,8 +96,8 @@ func StartIntake(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	if req.Name == "" || req.Age < 4 || req.Age > 6 || req.Gender == "" || req.School == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "All fields are required. Age must be 4, 5, or 6."})
+	if req.Name == "" || req.Age < 3 || req.Age > 12 || req.Gender == "" || req.School == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "All fields are required. Age must be between 3 and 12."})
 	}
 
 	// Save Child Profile
