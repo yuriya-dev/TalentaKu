@@ -132,8 +132,13 @@ export default function AssessmentPage() {
   const { pageId } = useParams()
   const navigate = useNavigate()
   const currentPage = parseInt(pageId || '1', 10)
-  const [answers, setAnswers] = useState<Record<number, number>>({})
+  const [answers, setAnswers] = useState<Record<number, number>>(() => {
+    const cached = sessionStorage.getItem('assessment_answers')
+    return cached ? JSON.parse(cached) : {}
+  })
   const [animating, setAnimating] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE
   const endIndex = Math.min(startIndex + QUESTIONS_PER_PAGE, TOTAL_QUESTIONS)
@@ -152,15 +157,56 @@ export default function AssessmentPage() {
     return () => clearTimeout(t)
   }, [currentPage])
 
-  function handleNext() {
+  // Persist answers to sessionStorage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem('assessment_answers', JSON.stringify(answers))
+  }, [answers])
+
+  async function handleNext() {
     if (!allAnswered) {
       alert('Silakan jawab semua pertanyaan di halaman ini sebelum melanjutkan.')
       return
     }
     if (currentPage >= TOTAL_PAGES) {
-      navigate('/results/1')
+      setSubmitting(true)
+      setSubmitError(null)
+      const consId = sessionStorage.getItem('consultation_id')
+      if (!consId) {
+        setSubmitError('Sesi penilaian tidak ditemukan. Silakan mulai ulang dari halaman awal.')
+        setSubmitting(false)
+        return
+      }
+
+      // Format answers from Record<number, number> to array of { variable_code: string, score: number }
+      const payloadAnswers = questions.map((q) => ({
+        variable_code: q.code,
+        score: answers[q.id] || 3, // Default fallback to 3
+      }))
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/consultation/${consId}/submit`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ answers: payloadAnswers }),
+        })
+
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || 'Gagal menyimpan hasil penilaian.')
+        }
+
+        // Navigate to the results page for this assessment
+        navigate(`/results/${consId}`)
+      } catch (err: any) {
+        setSubmitError(err.message || 'Gagal mengirimkan jawaban. Silakan coba lagi.')
+      } finally {
+        setSubmitting(false)
+      }
       return
     }
+
     setAnimating(true)
     setTimeout(() => navigate(`/assessment/${currentPage + 1}`), 200)
   }
@@ -172,6 +218,7 @@ export default function AssessmentPage() {
 
   function confirmExit() {
     if (confirm('Apakah Anda yakin ingin menghentikan sesi penilaian ini? Kemajuan Anda tidak akan disimpan.')) {
+      sessionStorage.removeItem('assessment_answers')
       navigate('/')
     }
   }
@@ -324,11 +371,18 @@ export default function AssessmentPage() {
             })}
           </div>
 
+          {submitError && (
+            <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-800 text-sm flex items-start gap-2 shadow-sm">
+              <span className="material-symbols-outlined text-red-600 text-lg">error</span>
+              <span>{submitError}</span>
+            </div>
+          )}
+
           {/* Wizard Controls */}
           <div className="flex items-center justify-between gap-4">
             <button
               onClick={handleBack}
-              disabled={currentPage <= 1}
+              disabled={currentPage <= 1 || submitting}
               className="flex items-center gap-2 px-6 py-3 rounded-xl border border-[#e0e3e5] text-sm font-semibold text-[#464555] hover:bg-[#eceef0] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined">arrow_back</span>
@@ -336,12 +390,24 @@ export default function AssessmentPage() {
             </button>
             <button
               onClick={handleNext}
-              className="flex items-center gap-2 px-10 py-3 rounded-xl bg-[#3525cd] text-white text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:scale-[1.02] active:scale-95 transition-all"
+              disabled={submitting}
+              className="flex items-center gap-2 px-10 py-3 rounded-xl bg-[#3525cd] text-white text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {currentPage >= TOTAL_PAGES ? 'Lihat Hasil' : 'Berikutnya'}
-              <span className="material-symbols-outlined">
-                {currentPage >= TOTAL_PAGES ? 'emoji_events' : 'arrow_forward'}
-              </span>
+              {submitting ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin">sync</span>
+                  Memproses...
+                </>
+              ) : currentPage >= TOTAL_PAGES ? (
+                'Lihat Hasil'
+              ) : (
+                'Berikutnya'
+              )}
+              {!submitting && (
+                <span className="material-symbols-outlined">
+                  {currentPage >= TOTAL_PAGES ? 'emoji_events' : 'arrow_forward'}
+                </span>
+              )}
             </button>
           </div>
         </section>

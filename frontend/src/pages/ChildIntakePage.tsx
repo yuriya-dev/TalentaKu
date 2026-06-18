@@ -11,17 +11,55 @@ const ageRanges = [
 export default function ChildIntakePage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
     document.title = 'Child Data Intake | TalentaKu'
   }, [])
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
+    setErrorMsg(null)
+
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get('name') as string
+    const ageVal = formData.get('age') as string
+    const genderVal = formData.get('gender') as string
+    const school = formData.get('school') as string
+
+    const payload = {
+      name,
+      age: parseInt(ageVal, 10),
+      gender: genderVal === 'boy' ? 'male' : 'female',
+      school,
+    }
+
+    try {
+      const res = await fetch('http://localhost:8080/api/intake', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Terjadi kesalahan saat memulai penilaian.')
+      }
+
+      const data = await res.json()
+      sessionStorage.setItem('consultation_id', data.consultation_id.toString())
+      sessionStorage.setItem('child_name', data.child.name)
+      sessionStorage.removeItem('assessment_answers') // Reset answers
+      
       navigate('/assessment/1')
-    }, 900)
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Gagal terhubung ke server. Pastikan server backend Anda berjalan.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -66,6 +104,12 @@ export default function ChildIntakePage() {
 
           {/* Form Card */}
           <div className="glass-card rounded-xl p-8 shadow-sm">
+            {errorMsg && (
+              <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-800 text-sm flex items-start gap-2 shadow-sm">
+                <span className="material-symbols-outlined text-red-600 text-lg">error</span>
+                <span>{errorMsg}</span>
+              </div>
+            )}
             <form className="space-y-8" id="intake-form" onSubmit={handleSubmit}>
               {/* Full Name */}
               <div className="space-y-2 group">
@@ -77,6 +121,7 @@ export default function ChildIntakePage() {
                   <input
                     className="w-full pl-12 pr-4 py-3.5 bg-white border border-[#c7c4d8] rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] transition-all outline-none text-base"
                     id="child-name"
+                    name="name"
                     placeholder="Enter full name"
                     required
                     type="text"
@@ -126,6 +171,7 @@ export default function ChildIntakePage() {
                   <input
                     className="w-full px-4 py-2.5 bg-white border border-[#c7c4d8] rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] transition-all outline-none text-base"
                     id="child-school"
+                    name="school"
                     placeholder="School Name"
                     required
                     type="text"

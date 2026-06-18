@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 
@@ -33,33 +34,125 @@ function launchConfetti() {
   }
 }
 
-const strengths = [
-  { title: 'High-level Vocabulary', desc: 'Uses complex descriptors and abstract nouns (I1, I3).' },
-  { title: 'Exceptional Sequential Memory', desc: 'Capable of repeating 5+ sequences of information (I2).' },
-  { title: 'Functional Classification', desc: 'Organizes objects by purpose and hidden relationships (I2).' },
-  { title: 'Storytelling & Narrative', desc: 'Creates detailed simple accounts of events (C13).' },
-]
-
-const developmentPaths = [
-  {
-    title: 'Advanced Linguistic Exposure',
-    desc: 'Introduce multi-layered storybooks and encourage verbal summaries or alternative ending scenarios.',
-  },
-  {
-    title: 'Classification Challenges',
-    desc: 'Engage in sorting activities that use increasingly abstract categories (e.g., sort objects by material, historical use, or emotion).',
-  },
-  {
-    title: 'Abstract Pattern Recognition',
-    desc: 'Puzzles and board games that require planning 2–3 steps ahead to stimulate the abstract reasoning centers.',
-  },
-]
-
 export default function ResultsPage() {
+  const { assessmentId } = useParams<{ assessmentId: string }>()
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedTraceCode, setSelectedTraceCode] = useState<string>('')
+
   useEffect(() => {
     document.title = 'Assessment Results | TalentaKu'
-    launchConfetti()
   }, [])
+
+  useEffect(() => {
+    if (data) {
+      launchConfetti()
+    }
+  }, [data])
+
+  useEffect(() => {
+    async function fetchResults() {
+      if (!assessmentId) return
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(`http://localhost:8080/api/consultation/${assessmentId}/results`)
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          throw new Error(errData.error || 'Gagal memuat hasil evaluasi.')
+        }
+        const json = await res.json()
+        setData(json)
+        if (json.results && json.results.length > 0) {
+          setSelectedTraceCode(json.results[0].criterion_code)
+        }
+      } catch (err: any) {
+        setError(err.message || 'Terjadi kesalahan jaringan atau server tidak merespons.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchResults()
+  }, [assessmentId])
+
+  if (loading) {
+    return (
+      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-32">
+          <div className="flex flex-col items-center gap-4 text-center px-4">
+            <span className="material-symbols-outlined text-5xl text-[#3525cd] animate-spin">
+              sync
+            </span>
+            <h3 className="text-xl font-bold text-[#191c1e]">Menganalisis Jawaban...</h3>
+            <p className="text-sm text-[#464555] max-w-sm">
+              Sistem pakar sedang mengevaluasi aturan Forward Chaining secara real-time.
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error || !data || !data.results || data.results.length === 0) {
+    return (
+      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-32 px-4">
+          <div className="max-w-md w-full bg-white border border-[#c7c4d8] rounded-2xl p-8 text-center shadow-md">
+            <span className="material-symbols-outlined text-5xl text-red-500 mb-4">
+              error
+            </span>
+            <h3 className="text-xl font-bold text-red-800 mb-2">Evaluasi Gagal</h3>
+            <p className="text-sm text-[#464555] mb-6">
+              {error || 'Data konsultasi tidak ditemukan atau belum selesai dievaluasi.'}
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link
+                to="/assessment/start"
+                className="bg-[#3525cd] text-white text-sm font-semibold px-6 py-3 rounded-full hover:bg-[#4f46e5] transition-all"
+              >
+                Mulai Baru
+              </Link>
+              <button
+                onClick={() => window.location.reload()}
+                className="border border-[#c7c4d8] text-[#464555] text-sm font-semibold px-6 py-3 rounded-full hover:bg-[#eceef0] transition-all"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  const child = data.child
+  const results = data.results
+  const primaryResult = results[0]
+  const silverResult = results[1]
+  const bronzeResult = results[2]
+  const isSatisfied = primaryResult.is_rule_satisfied
+
+  function getAgeGroupLabel(age: number) {
+    if (age <= 3) return 'Toddler (3 Tahun)'
+    if (age <= 6) return 'Preschool / Kindergarten (4 - 6 Tahun)'
+    if (age <= 9) return 'Early Elementary (7 - 9 Tahun)'
+    return 'Late Elementary (10 - 12 Tahun)'
+  }
+
+  const suggestions = primaryResult.suggestions || ''
+  const developmentPaths = suggestions
+    ? suggestions.split(', ').map((s: string) => {
+        if (!s) return ''
+        return s.charAt(0).toUpperCase() + s.slice(1)
+      }).filter(Boolean)
+    : []
+
+  const selectedResult = results.find((r: any) => r.criterion_code === selectedTraceCode) || primaryResult
 
   return (
     <div className="bg-[#f7f9fb] text-[#191c1e] font-sans overflow-x-hidden">
@@ -70,11 +163,13 @@ export default function ResultsPage() {
         <header className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-[#4f46e5]/10 px-4 py-2 rounded-full text-[#3525cd] mb-6">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-            <span className="text-sm font-semibold">Assessment Completed Successfully</span>
+            <span className="text-sm font-semibold">Penilaian Selesai Real-time</span>
           </div>
-          <h1 className="text-[48px] font-bold leading-[56px] tracking-tight mb-4">Discovery: Intelektual Umum</h1>
+          <h1 className="text-[40px] md:text-[48px] font-bold leading-[48px] md:leading-[56px] tracking-tight mb-4">
+            Hasil Analisis Bakat: {child.name}
+          </h1>
           <p className="text-[#464555] max-w-2xl mx-auto text-lg">
-            We've analyzed the assessment data for your child. The results reveal a strong leaning towards intellectual and abstract reasoning capabilities.
+            Sesi evaluasi untuk <strong>{child.name}</strong> ({getAgeGroupLabel(child.age)}), sekolah di <strong>{child.school}</strong> telah dianalisis secara real-time oleh mesin inferensi sistem pakar.
           </p>
         </header>
 
@@ -84,7 +179,9 @@ export default function ResultsPage() {
           <section className="md:col-span-8 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-8">
               <div className="text-right">
-                <span className="block text-[#3525cd] text-[48px] font-bold leading-none">92%</span>
+                <span className="block text-[#3525cd] text-[48px] font-bold leading-none">
+                  {Math.round(primaryResult.score_percentage)}%
+                </span>
                 <span className="text-xs text-[#464555] uppercase tracking-wider">Confidence Score</span>
               </div>
             </div>
@@ -94,24 +191,40 @@ export default function ResultsPage() {
                   <span className="material-symbols-outlined text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
                 </div>
                 <div>
-                  <h2 className="text-[32px] font-bold leading-10">Intelektual Umum</h2>
-                  <p className="text-[#464555] text-sm font-semibold">Primary Talent Category</p>
+                  <h2 className="text-[32px] font-bold leading-10">{primaryResult.criterion_label}</h2>
+                  <p className="text-[#464555] text-sm font-semibold mt-1">
+                    {isSatisfied ? (
+                      <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm">
+                        <span className="material-symbols-outlined text-xs">verified</span>
+                        Bakat Teridentifikasi (Utama)
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm">
+                        <span className="material-symbols-outlined text-xs">info</span>
+                        Kecenderungan Bakat (Dominan)
+                      </span>
+                    )}
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
-                <h3 className="text-2xl font-semibold text-[#3525cd]">Narrative Description</h3>
+                <h3 className="text-2xl font-semibold text-[#3525cd]">Deskripsi Hasil</h3>
                 <p className="text-[#464555] text-lg leading-relaxed">
-                  Your child demonstrates exceptional capabilities in general intellectual functions. This includes high-level vocabulary processing, a strong memory for sequences and complex information, and the ability to grasp abstract concepts far beyond their age group.
+                  {primaryResult.description}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-4">
                 <div className="p-4 rounded-lg bg-[#f2f4f6]">
-                  <span className="block text-2xl font-semibold text-[#3525cd]">I1–I3</span>
-                  <span className="text-xs text-[#464555]">Core Indicators Identified</span>
+                  <span className="block text-2xl font-semibold text-[#3525cd]">
+                    {primaryResult.indicators?.length || 0} Indikator
+                  </span>
+                  <span className="text-xs text-[#464555]">Indikator Pendukung</span>
                 </div>
                 <div className="p-4 rounded-lg bg-[#f2f4f6]">
-                  <span className="block text-2xl font-semibold text-[#3525cd]">High</span>
-                  <span className="text-xs text-[#464555]">Abstract Reasoning</span>
+                  <span className="block text-2xl font-semibold text-[#3525cd]">
+                    {primaryResult.indicators?.filter((i: any) => i.is_satisfied).length || 0} Terpenuhi
+                  </span>
+                  <span className="text-xs text-[#464555]">Evaluasi Aturan</span>
                 </div>
               </div>
             </div>
@@ -121,37 +234,43 @@ export default function ResultsPage() {
           {/* Silver + Bronze + Insight */}
           <aside className="md:col-span-4 flex flex-col gap-6">
             {/* Silver */}
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-6 flex items-center justify-between group hover:shadow-lg transition-all">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#94A3B8]/20 flex items-center justify-center text-[#94A3B8]">
-                  <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
+            {silverResult && (
+              <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-6 flex items-center justify-between group hover:shadow-lg transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#94A3B8]/20 flex items-center justify-center text-[#94A3B8]">
+                    <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold">{silverResult.criterion_label}</h4>
+                    <p className="text-xs text-[#464555]">{Math.round(silverResult.score_percentage)}% Matching</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold">Akademik Khusus</h4>
-                  <p className="text-xs text-[#464555]">81% Matching</p>
-                </div>
+                <span className="text-xs font-mono text-[#777587] font-semibold">{silverResult.criterion_code}</span>
               </div>
-              <span className="material-symbols-outlined text-[#464555] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
-            </div>
+            )}
 
             {/* Bronze */}
-            <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-6 flex items-center justify-between group hover:shadow-lg transition-all">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#D97706]/20 flex items-center justify-center text-[#D97706]">
-                  <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
+            {bronzeResult && (
+              <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-6 flex items-center justify-between group hover:shadow-lg transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#D97706]/20 flex items-center justify-center text-[#D97706]">
+                    <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold">{bronzeResult.criterion_label}</h4>
+                    <p className="text-xs text-[#464555]">{Math.round(bronzeResult.score_percentage)}% Matching</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold">Kepemimpinan</h4>
-                  <p className="text-xs text-[#464555]">74% Matching</p>
-                </div>
+                <span className="text-xs font-mono text-[#777587] font-semibold">{bronzeResult.criterion_code}</span>
               </div>
-              <span className="material-symbols-outlined text-[#464555] opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
-            </div>
+            )}
 
             {/* Expert Tip */}
-            <div className="flex-grow bg-[#4f46e5]/10 text-[#0f0069] rounded-xl p-6 relative overflow-hidden">
-              <h4 className="text-2xl font-semibold mb-2">Expert Tip</h4>
-              <p className="text-base opacity-90">Children with high general intelligence benefit significantly from project-based learning and open-ended questions.</p>
+            <div className="flex-grow bg-[#4f46e5]/10 text-[#0f0069] rounded-xl p-6 relative overflow-hidden flex flex-col justify-center">
+              <h4 className="text-2xl font-semibold mb-2">Saran Ahli</h4>
+              <p className="text-base opacity-90 leading-relaxed">
+                Stimulasi dini pada potensi yang dominan membantu membentuk fondasi sinapsis otak anak secara optimal. Fokuslah pada interaksi yang hangat.
+              </p>
               <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-[80px] opacity-10" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
             </div>
           </aside>
@@ -160,15 +279,24 @@ export default function ResultsPage() {
           <section className="md:col-span-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8">
             <div className="flex items-center gap-3 mb-8">
               <span className="material-symbols-outlined text-[#10B981]" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
-              <h3 className="text-2xl font-semibold">Identified Strengths</h3>
+              <h3 className="text-2xl font-semibold">Identifikasi Indikator Perilaku</h3>
             </div>
             <ul className="space-y-4">
-              {strengths.map((s) => (
-                <li key={s.title} className="flex gap-4 items-start p-4 bg-[#f2f4f6] rounded-lg transition-transform hover:translate-x-1">
-                  <span className="material-symbols-outlined text-[#10B981] mt-1">check_circle</span>
-                  <div>
-                    <p className="text-sm font-semibold">{s.title}</p>
-                    <p className="text-xs text-[#464555]">{s.desc}</p>
+              {primaryResult.indicators?.map((ind: any) => (
+                <li key={ind.code} className="flex gap-4 items-start p-4 bg-[#f2f4f6] rounded-lg transition-transform hover:translate-x-1">
+                  <span className={`material-symbols-outlined mt-1 ${ind.is_satisfied ? 'text-[#10B981]' : 'text-[#777587]'}`}>
+                    {ind.is_satisfied ? 'check_circle' : 'pending'}
+                  </span>
+                  <div className="flex-grow">
+                    <div className="flex justify-between items-start gap-2">
+                      <p className="text-sm font-semibold">{ind.label}</p>
+                      <span className="text-xs font-mono text-slate-500 bg-slate-200/50 px-1.5 py-0.5 rounded select-none shrink-0">{ind.code}</span>
+                    </div>
+                    <p className="text-xs text-[#464555] mt-1.5 flex gap-2">
+                      <span>Kesesuaian: <strong>{Math.round(ind.score_percentage)}%</strong></span>
+                      <span>•</span>
+                      <span>Evaluasi: <strong>{ind.is_satisfied ? 'Terpenuhi' : 'Belum Terpenuhi'}</strong></span>
+                    </p>
                   </div>
                 </li>
               ))}
@@ -176,64 +304,123 @@ export default function ResultsPage() {
           </section>
 
           {/* Development Path */}
-          <section className="md:col-span-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8">
+          <section className="md:col-span-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8 flex flex-col">
             <div className="flex items-center gap-3 mb-8">
               <span className="material-symbols-outlined text-[#00687a]" style={{ fontVariationSettings: "'FILL' 1" }}>rocket_launch</span>
-              <h3 className="text-2xl font-semibold">Development Path</h3>
+              <h3 className="text-2xl font-semibold">Panduan Stimulasi Tumbuh Kembang</h3>
             </div>
-            <div className="space-y-6">
-              {developmentPaths.map((path) => (
+            <div className="space-y-6 flex-grow">
+              {developmentPaths.map((path: string, idx: number) => (
                 <div
-                  key={path.title}
+                  key={idx}
                   className="relative pl-8 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-1 before:bg-[#57dffe] rounded-r-lg p-2 hover:bg-[#f2f4f6] transition-colors"
                 >
-                  <h4 className="text-sm font-semibold text-[#00687a]">{path.title}</h4>
-                  <p className="text-[#464555] text-base mt-1">{path.desc}</p>
+                  <h4 className="text-sm font-semibold text-[#00687a]">Rekomendasi Tindakan {idx + 1}</h4>
+                  <p className="text-[#464555] text-base mt-1 leading-relaxed">{path}</p>
                 </div>
               ))}
             </div>
             <div className="mt-8">
-              <button className="w-full bg-[#3525cd] text-white text-sm font-semibold py-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#4f46e5] transition-all active:scale-95 shadow-md">
-                <span className="material-symbols-outlined">download</span>
-                Download Detailed Report
+              <button 
+                onClick={() => window.print()}
+                className="w-full bg-[#3525cd] text-white text-sm font-semibold py-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#4f46e5] transition-all active:scale-95 shadow-md"
+              >
+                <span className="material-symbols-outlined">print</span>
+                Cetak Laporan Penilaian (PDF)
               </button>
             </div>
           </section>
         </div>
 
-        {/* Inference Engine Section */}
-        <section className="mt-16 bg-[#eceef0]/50 border border-[#c7c4d8] rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8">
-          <div className="md:w-2/3">
-            <h4 className="text-2xl font-semibold mb-2">About Our Inference Engine</h4>
-            <p className="text-[#464555] text-base mb-4">
-              TalentaKu uses a 2-level Forward Chaining engine based on American USOE standards. Our 33-rule system evaluates 83 variables to provide a reliable indicator of potential.
+        {/* Inference Chaining Trace Log Section */}
+        <section className="mt-16 bg-white border border-[#c7c4d8] rounded-[2rem] p-8 shadow-sm">
+          <div className="mb-6">
+            <div className="inline-flex items-center gap-2 bg-[#3525cd]/10 px-3 py-1 rounded-full text-[#3525cd] mb-3">
+              <span className="material-symbols-outlined text-sm">terminal</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">Expert System Console</span>
+            </div>
+            <h3 className="text-2xl font-bold mb-2">Pelacakan Inferensi Real-time (Forward Chaining)</h3>
+            <p className="text-[#464555] text-base">
+              Pilih kriteria untuk menelusuri bagaimana aturan sistem pakar dievaluasi langkah demi langkah dari variabel hingga kriteria akhir.
             </p>
-            <div className="flex gap-4">
-              <button className="text-[#3525cd] text-sm font-semibold hover:underline flex items-center gap-1">
-                View Inference Trace
-                <span className="material-symbols-outlined text-sm">open_in_new</span>
+          </div>
+
+          {/* Tab Selector */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {results.map((res: any) => (
+              <button
+                key={res.criterion_code}
+                onClick={() => setSelectedTraceCode(res.criterion_code)}
+                className={`px-4 py-2.5 rounded-lg text-xs font-semibold font-mono transition-all border ${
+                  selectedTraceCode === res.criterion_code
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                    : 'bg-[#f2f4f6] text-[#464555] border-transparent hover:bg-[#eceef0]'
+                }`}
+              >
+                {res.criterion_code} ({res.criterion_label})
               </button>
-              <span className="text-[#c7c4d8]">|</span>
-              <button className="text-[#464555] text-sm font-semibold hover:text-[#3525cd] transition-colors">Methodology Documentation</button>
+            ))}
+          </div>
+
+          {/* Terminal Panel */}
+          <div className="bg-slate-950 text-slate-100 font-mono text-sm rounded-xl p-6 shadow-inner border border-slate-800 relative overflow-hidden">
+            {/* Terminal Header */}
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4 text-xs text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500" />
+                <span className="w-3 h-3 rounded-full bg-amber-500" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                <span className="ml-2 font-semibold font-mono select-none">forward_chaining_engine.log</span>
+              </div>
+              <div>
+                <span>STATUS: {selectedResult.is_rule_satisfied ? 'RULE SATISFIED' : 'RULE UNSATISFIED'}</span>
+              </div>
+            </div>
+
+            {/* Terminal Contents */}
+            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="text-slate-500 select-none">[SYSTEM] Initializing Forward Chaining evaluation logic...</div>
+              <div className="text-slate-500 select-none">[SYSTEM] Loading behavior answers for session #{assessmentId}</div>
+              <div className="text-slate-500 select-none">[SYSTEM] Verification threshold set to score &gt;= 4</div>
+              
+              {selectedResult.trace && selectedResult.trace.map((line: string, idx: number) => {
+                const isCheck = line.startsWith('✓')
+                const isCross = line.startsWith('✗')
+                const isSatisfiedRule = line.includes('RULE TRUE')
+                const isFailedRule = line.includes('RULE FALSE')
+
+                let textColor = 'text-slate-300'
+                if (isCheck) textColor = 'text-emerald-400 font-medium'
+                if (isCross) textColor = 'text-rose-400'
+                if (isSatisfiedRule) textColor = 'text-emerald-300 font-bold bg-emerald-950/40 py-0.5 px-1 rounded border border-emerald-900/50'
+                if (isFailedRule) textColor = 'text-rose-400 font-bold bg-rose-950/40 py-0.5 px-1 rounded border border-rose-900/50'
+
+                return (
+                  <div key={idx} className={`flex items-start gap-3 leading-relaxed ${textColor}`}>
+                    <span className="text-slate-600 select-none font-mono w-14 text-right">
+                      {String(idx + 1).padStart(2, '0')}:
+                    </span>
+                    <span className="flex-1 whitespace-pre-wrap">{line}</span>
+                  </div>
+                )
+              })}
+              
+              <div className="text-slate-500 select-none">[SYSTEM] Evaluation cycle completed for {selectedResult.criterion_code} ({selectedResult.criterion_label})</div>
             </div>
           </div>
         </section>
-      </main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-2 pt-3 bg-[#f7f9fb] md:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-        {[
-          { icon: 'home', label: 'Home', to: '/' },
-          { icon: 'assignment', label: 'Assess', active: true },
-          { icon: 'leaderboard', label: 'Stats' },
-          { icon: 'person', label: 'Profile' },
-        ].map((item) => (
-          <div key={item.label} className={`flex flex-col items-center justify-center px-4 py-2 rounded-2xl ${item.active ? 'bg-[#4f46e5]/10 text-[#4f46e5]' : 'text-[#464555]'}`}>
-            <span className="material-symbols-outlined" style={item.active ? { fontVariationSettings: "'FILL' 1" } : {}}>{item.icon}</span>
-            <span className="text-xs font-medium mt-1">{item.label}</span>
-          </div>
-        ))}
-      </nav>
+        {/* Back Link */}
+        <div className="mt-12 text-center">
+          <Link
+            to="/assessment/start"
+            className="inline-flex items-center gap-2 text-[#3525cd] hover:text-[#4f46e5] font-semibold text-base transition-colors"
+          >
+            <span className="material-symbols-outlined">restart_alt</span>
+            Mulai Penilaian Baru
+          </Link>
+        </div>
+      </main>
 
       <Footer />
     </div>
