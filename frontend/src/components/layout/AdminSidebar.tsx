@@ -14,14 +14,9 @@ export default function AdminSidebar() {
 
   return (
     <aside className="h-full w-64 hidden md:flex flex-col bg-[#f2f4f6] py-8 px-4 gap-4 z-40 border-r border-[#c7c4d8]">
-      <div className="flex items-center gap-3 px-2 mb-6">
-        <div className="w-10 h-10 bg-[#3525cd] rounded-xl flex items-center justify-center">
-          <span className="material-symbols-outlined text-white">psychology</span>
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-[#3525cd] leading-tight">TalentaKu</h1>
-          <p className="text-xs text-[#464555]">Expert System</p>
-        </div>
+      <div className="flex flex-col gap-1 px-2 mb-6">
+        <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-8 w-auto object-contain shrink-0 self-start" />
+        <p className="text-[10px] text-[#464555] font-semibold uppercase tracking-wider pl-1">Expert System</p>
       </div>
 
       <nav className="flex flex-col gap-1 flex-1">

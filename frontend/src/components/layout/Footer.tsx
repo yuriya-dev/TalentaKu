@@ -4,14 +4,8 @@ export default function Footer() {
   return (
     <footer className="w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 bg-[#e0e3e5]">
       <div className="flex flex-col items-center md:items-start">
-        <div className="flex items-center gap-2 mb-2">
-          <span
-            className="material-symbols-outlined text-[#3525cd] text-xl"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            pulse_alert
-          </span>
-          <span className="text-sm font-bold text-[#191c1e]">TalentaKu</span>
+        <div className="flex items-center mb-2">
+          <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-5 w-auto shrink-0" />
         </div>
         <p className="text-xs text-[#464555] text-center md:text-left">
           © 2024 TalentaKu Expert Systems. Professional Warmth in Assessment.

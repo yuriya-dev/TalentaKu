@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 const TOTAL_QUESTIONS = 83
 
@@ -227,10 +227,9 @@ export default function AssessmentPage() {
     <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col">
       {/* Header */}
       <header className="bg-[#f7f9fb]/80 glass-header sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-[#3525cd] text-3xl">psychology</span>
-          <span className="text-2xl font-bold text-[#3525cd]">TalentaKu</span>
-        </div>
+        <Link to="/" className="flex items-center">
+          <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-7 w-auto shrink-0" />
+        </Link>
         <button
           onClick={confirmExit}
           className="flex items-center gap-2 text-[#464555] text-sm font-semibold hover:text-[#3525cd] transition-colors px-4 py-2 rounded-lg"
