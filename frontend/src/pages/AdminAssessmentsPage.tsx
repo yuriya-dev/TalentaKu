@@ -97,9 +97,30 @@ export default function AdminAssessmentsPage() {
         </header>
 
         {loading ? (
-          <div className="flex-grow flex flex-col items-center justify-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-[#3525cd] animate-spin">sync</span>
-            <p className="text-sm text-[#464555]">Memuat daftar asesmen...</p>
+          <div className="flex-grow flex flex-col p-4 md:p-10 space-y-6">
+            <div className="flex justify-between items-center gap-4">
+              <div className="h-4 w-64 bg-slate-100 rounded"></div>
+              <div className="h-8 w-48 bg-slate-100 rounded-xl"></div>
+            </div>
+            <phantom-ui loading="true" className="flex-1 block">
+              <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] overflow-hidden shadow-sm flex flex-col p-8 space-y-6">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center justify-between py-4 border-b border-[#c7c4d8]/10 last:border-none">
+                    <div className="flex items-center gap-6 flex-grow">
+                      <div className="h-6 w-12 bg-slate-100 rounded"></div>
+                      <div className="space-y-2 flex-grow max-w-md">
+                        <div className="h-5 w-40 bg-slate-100 rounded"></div>
+                        <div className="h-4 w-60 bg-slate-100 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-8 shrink-0">
+                      <div className="h-6 w-28 bg-slate-100 rounded-full"></div>
+                      <div className="h-10 w-24 bg-slate-100 rounded-xl"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </phantom-ui>
           </div>
         ) : error ? (
           <div className="flex-grow p-10 flex items-center justify-center">

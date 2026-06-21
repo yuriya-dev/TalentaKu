@@ -187,9 +187,38 @@ export default function AdminDashboard() {
         </header>
 
         {loading ? (
-          <div className="flex-grow flex flex-col items-center justify-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-[#3525cd] animate-spin">sync</span>
-            <p className="text-sm text-[#464555]">Memuat data dasbor...</p>
+          <div className="p-4 md:p-10 space-y-6">
+            {/* Stats Grid Skeleton */}
+            <phantom-ui loading="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 block">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="p-6 flex flex-col justify-between bg-white border border-[#c7c4d8]/40 rounded-3xl shadow-sm min-h-[140px]">
+                  <div className="flex justify-between items-start">
+                    <div className="w-10 h-10 bg-slate-100 rounded-lg"></div>
+                    <div className="w-12 h-4 bg-slate-100 rounded"></div>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <div className="h-4 w-24 bg-slate-100 rounded"></div>
+                    <div className="h-8 w-16 bg-slate-100 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </phantom-ui>
+
+            {/* Grid Charts Skeleton */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <phantom-ui loading="true" className="xl:col-span-2 p-8 bg-white border border-[#c7c4d8]/40 rounded-3xl shadow-sm block">
+                <div className="h-6 w-48 bg-slate-100 rounded mb-8"></div>
+                <div className="h-64 w-full bg-slate-100 rounded-2xl"></div>
+              </phantom-ui>
+              <phantom-ui loading="true" className="p-8 bg-white border border-[#c7c4d8]/40 rounded-3xl shadow-sm block">
+                <div className="h-6 w-32 bg-slate-100 rounded mb-8"></div>
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-16 w-full bg-slate-100 rounded-2xl"></div>
+                  ))}
+                </div>
+              </phantom-ui>
+            </div>
           </div>
         ) : error ? (
           <div className="flex-grow p-10 flex items-center justify-center">

@@ -135,10 +135,25 @@ export default function HistoryPage() {
 
         {/* Loading and Error States */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <span className="material-symbols-outlined text-4xl text-[#3525cd] animate-spin">sync</span>
-            <p className="text-sm text-[#464555]">Memuat riwayat asesmen...</p>
-          </div>
+          <phantom-ui loading="true" className="w-full block">
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white border border-[#c7c4d8]/40 rounded-3xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
+                  <div className="flex gap-4 items-center w-full md:w-auto">
+                    <div className="w-12 h-12 bg-slate-100 rounded-2xl shrink-0"></div>
+                    <div className="space-y-2 flex-grow">
+                      <div className="h-5 w-32 bg-slate-100 rounded"></div>
+                      <div className="h-4 w-48 bg-slate-100 rounded"></div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 shrink-0">
+                    <div className="h-10 w-24 bg-slate-100 rounded-xl"></div>
+                    <div className="h-10 w-24 bg-slate-100 rounded-xl"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </phantom-ui>
         )}
 
         {error && (
