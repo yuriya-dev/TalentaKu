@@ -1,0 +1,67 @@
+# TalentaKu — Feature TODO List & Gap Analysis
+
+Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mock*), atau belum terintegrasi sepenuhnya antara frontend dan backend.
+
+---
+
+## 1. Halaman Pengguna Publik (Public User Flow)
+
+### ❌ Halaman Riwayat Asesmen (*My Assessments*)
+*   **Status**: Belum Dibuat di Frontend.
+*   **Detail**: Backend telah menyediakan endpoint `/api/consultations` (mengambil seluruh riwayat asesmen anak), namun di frontend belum ada halaman `/history` atau `/consultations` untuk menampilkan daftar ini. Navigasi "Asesmen Saya" di header saat ini dialihkan langsung ke `/assessment/start` (mulai baru).
+
+### ⚠️ Halaman Hasil Asesmen (*Results Page*)
+*   **Status**: Terintegrasi Sebagian.
+*   **Detail**: Halaman [ResultsPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/ResultsPage.tsx) sudah terhubung ke backend untuk mengambil hasil evaluasi Forward Chaining secara real-time. Namun beberapa hal berikut belum selesai:
+    *   **Fitur Cetak PDF**: Tombol "Cetak Laporan Penilaian (PDF)" saat ini hanya memicu fungsi cetak bawaan browser `window.print()`. Belum ada layout khusus cetak (@media print CSS) atau ekspor dokumen PDF terstruktur yang rapi.
+
+### ⚠️ Navigasi Mobile (*Mobile Navigation*)
+*   **Status**: Terintegrasi Sebagian.
+*   **Detail**: Menu "Statistik" di [MobileNav.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/components/layout/MobileNav.tsx) secara statis mengarah ke `/results/1` (menggunakan ID keras). Menu "Profil" masih berupa tautan kosong (`#`).
+
+---
+
+## 2. Panel Admin (Admin Dashboard & Management)
+
+### ❌ Autentikasi Admin & Manajemen Sesi (*Admin Login*)
+*   **Status**: Belum Dibuat di Frontend.
+*   **Detail**: Backend sudah mendukung sistem login berbasis JWT lewat endpoint `/api/admin/login` dan middleware keamanan. Namun di frontend, halaman `/admin` dapat diakses langsung tanpa login. Tidak ada layar login (*Login Screen*), dan tombol *Logout* di sidebar belum difungsikan.
+
+### ⚠️ Dasbor Utama Admin (*Admin Dashboard*)
+*   **Status**: Masih Menggunakan Data Tiruan (*Mock Data*).
+*   **Detail**: Komponen [AdminDashboard.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminDashboard.tsx) masih menggunakan data statis di dalam kode:
+    *   Statistik jumlah asesmen, siswa aktif, dan bakat teridentifikasi di-hardcode.
+    *   Grafik distribusi bakat menggunakan konstanta statis, belum mengambil data dari `/api/admin/stats`.
+    *   Tabel "Recent Consultations" menampilkan baris statis.
+    *   Kotak pencarian asesmen belum berfungsi untuk menyaring data riil.
+
+### ⚠️ Pembuat Aturan Admin (*Admin Rules Page*)
+*   **Status**: Masih Menggunakan Data Tiruan (*Mock Data*).
+*   **Detail**: Komponen [AdminRulesPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminRulesPage.tsx):
+    *   Tabel aturan di-hardcode (hanya menampilkan 3 contoh aturan statis), belum mengambil basis pengetahuan lengkap (33 aturan) dari `/api/admin/rules`.
+    *   Fungsi pencarian aturan belum terhubung.
+    *   Panel edit aturan (*Edit Rule Side Panel*) bersifat visual saja dan tombol "Simpan Perubahan Aturan" belum mengirimkan data apa pun ke server.
+    *   Modul simulasi (*Simulation Modal*) menghitung logika kecocokan secara lokal di frontend, belum memicu evaluasi simulasi di backend via `/api/admin/rules/simulate`.
+
+### ❌ Halaman Manajemen Variabel & Indikator
+*   **Status**: Belum Dibuat di Frontend.
+*   **Detail**: Menu "Variabel" (`/admin/variables`) dan "Indikator" (`/admin/indicators`) pada sidebar belum memiliki rute halaman di router React (`App.tsx`). Saat diklik, halaman akan kosong atau tetap di halaman dasbor.
+
+### ❌ Halaman Pengaturan Sistem (*Admin Settings*)
+*   **Status**: Belum Dibuat di Frontend.
+*   **Detail**: Menu "Pengaturan" (`/admin/settings`) di sidebar belum diimplementasikan. Halaman untuk mengubah parameter sistem seperti ambang batas skala Likert (*Likert threshold*)—yang didukung backend lewat `/api/admin/settings`—belum tersedia.
+
+---
+
+## 3. Evaluasi Basis Pengetahuan (Knowledge Base)
+
+### ⚠️ Validasi Variabel Psikomotorik (C70–C83)
+*   **Status**: Data Sementara (*Temporary Placeholder*).
+*   **Detail**: Karena tabel 8 pada dokumen jurnal asli terpotong sebagian di salinan PDF penelitian, teks label pertanyaan untuk C70–C83 masih memerlukan validasi lebih lanjut bersama pakar pendidikan anak usia dini atau verifikasi dari pustaka fisik asli guna memastikan keselarasan istilah observasi motorik kasar/halus.
+
+---
+
+## 4. Keamanan & Infrastruktur
+
+*   **Penyimpanan Kredensial**: Password admin di database saat ini disimpan dalam bentuk teks biasa (*plain-text*) pada seeder database. Perlu dienkripsi menggunakan hashing seperti **bcrypt** sebelum sistem diluncurkan di server produksi.
+*   **Penyimpanan State & Token**: Belum ada sistem penyimpanan token JWT admin di local/session storage dengan manajemen refresh token yang aman.

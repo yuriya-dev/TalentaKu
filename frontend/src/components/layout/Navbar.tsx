@@ -17,8 +17,8 @@ export default function Navbar() {
           Beranda
         </Link>
         <Link
-          to="/assessment/start"
-          className={`text-sm font-semibold transition-colors ${location.pathname.startsWith('/assessment') ? 'text-[#3525cd] border-b-2 border-[#3525cd]' : 'text-[#464555] hover:text-[#3525cd]'}`}
+          to="/assessments"
+          className={`text-sm font-semibold transition-colors ${location.pathname === '/assessments' ? 'text-[#3525cd] border-b-2 border-[#3525cd]' : 'text-[#464555] hover:text-[#3525cd]'}`}
         >
           Asesmen Saya
         </Link>

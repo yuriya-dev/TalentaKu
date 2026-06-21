@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
   { icon: 'home', label: 'Beranda', to: '/' },
-  { icon: 'assignment', label: 'Asesmen', to: '/assessment/start' },
+  { icon: 'assignment', label: 'Asesmen', to: '/assessments' },
   { icon: 'leaderboard', label: 'Statistik', to: '/results/1' },
   { icon: 'person', label: 'Profil', to: '#' },
 ]
