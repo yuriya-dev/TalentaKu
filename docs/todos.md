@@ -43,13 +43,19 @@ Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mo
     *   Panel edit aturan mendukung modifikasi kondisi premis secara interaktif di frontend (disimpan secara lokal untuk simulasi).
     *   Modul simulasi Forward Chaining terintegrasi dengan `/api/admin/rules/simulate` di mana pengguna dapat menyesuaikan nilai dari seluruh variabel masukan dan menguji hasil inferensi bakat secara real-time.
 
-### ❌ Halaman Manajemen Variabel & Indikator
-*   **Status**: Belum Dibuat di Frontend.
-*   **Detail**: Menu "Variabel" (`/admin/variables`) dan "Indikator" (`/admin/indicators`) pada sidebar belum memiliki rute halaman di router React (`App.tsx`). Saat diklik, halaman akan kosong atau tetap di halaman dasbor.
+### ✅ Halaman Manajemen Variabel & Indikator
+*   **Status**: Selesai.
+*   **Detail**: Halaman [AdminVariablesPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminVariablesPage.tsx) dan [AdminIndicatorsPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminIndicatorsPage.tsx) telah diimplementasikan:
+    *   Variabel masukan (C1-C83) dimuat secara dinamis, mendukung pencarian dan pengelompokan berdasarkan kriteria bakat (Intelektual Umum, Akademik Khusus, Berpikir Kreatif, Kepemimpinan, Seni Rupa, Psikomotorik).
+    *   Indikator bakat (I1-I27) dimuat secara dinamis dari API aturan dengan pencarian.
+    *   Halaman [AdminAssessmentsPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminAssessmentsPage.tsx) ditambahkan untuk mendukung navigasi menu "Asesmen" di sidebar admin dengan layout admin terpadu.
 
-### ❌ Halaman Pengaturan Sistem (*Admin Settings*)
-*   **Status**: Belum Dibuat di Frontend.
-*   **Detail**: Menu "Pengaturan" (`/admin/settings`) di sidebar belum diimplementasikan. Halaman untuk mengubah parameter sistem seperti ambang batas skala Likert (*Likert threshold*)—yang didukung backend lewat `/api/admin/settings`—belum tersedia.
+### ✅ Halaman Pengaturan Sistem (*Admin Settings*)
+*   **Status**: Selesai.
+*   **Detail**: Halaman [AdminSettingsPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminSettingsPage.tsx) telah diimplementasikan dan terhubung ke `/api/admin/settings`:
+    *   Mendukung pengubahan ambang batas skala Likert (Likert Threshold) antara 3, 4, dan 5 secara permanen di database.
+    *   Mendukung pengubahan nama aplikasi sistem pakar.
+    *   Menampilkan notifikasi/toast sukses saat penyimpanan data berhasil dilakukan ke backend.
 
 ---
 

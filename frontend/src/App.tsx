@@ -9,6 +9,10 @@ import ResourcesPage from './pages/ResourcesPage'
 import HistoryPage from './pages/HistoryPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminRoute from './components/layout/AdminRoute'
+import AdminVariablesPage from './pages/AdminVariablesPage'
+import AdminIndicatorsPage from './pages/AdminIndicatorsPage'
+import AdminSettingsPage from './pages/AdminSettingsPage'
+import AdminAssessmentsPage from './pages/AdminAssessmentsPage'
 
 function App() {
   return (
@@ -23,7 +27,11 @@ function App() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/assessments" element={<AdminAssessmentsPage />} />
           <Route path="/admin/rules" element={<AdminRulesPage />} />
+          <Route path="/admin/variables" element={<AdminVariablesPage />} />
+          <Route path="/admin/indicators" element={<AdminIndicatorsPage />} />
+          <Route path="/admin/settings" element={<AdminSettingsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
