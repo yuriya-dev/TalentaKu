@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"os"
+	"strings"
 
 	"backend/db"
 	"backend/handlers"
@@ -11,7 +13,37 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
+func loadEnv() {
+	file, err := os.Open(".env")
+	if err != nil {
+		return // Ignore if file does not exist
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			val := strings.TrimSpace(parts[1])
+			// Strip quotes if present
+			if (strings.HasPrefix(val, "\"") && strings.HasSuffix(val, "\"")) ||
+				(strings.HasPrefix(val, "'") && strings.HasSuffix(val, "'")) {
+				val = val[1 : len(val)-1]
+			}
+			os.Setenv(key, val)
+		}
+	}
+}
+
 func main() {
+	// 0. Load environment variables from .env
+	loadEnv()
+
 	// 1. Initialize Database
 	db.InitDB()
 

@@ -86,7 +86,7 @@ export default function UserRegisterPage() {
     const google = (window as any).google
     if (google) {
       google.accounts.id.initialize({
-        client_id: "123456789012-abc123def456.apps.googleusercontent.com", // Dummy client ID for fallback/custom configuration
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "123456789012-abc123def456.apps.googleusercontent.com", // Dynamic Google Client ID
         callback: (response: any) => {
           handleGoogleCredentialResponse(response)
         }
