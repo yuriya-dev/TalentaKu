@@ -35,13 +35,13 @@ Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mo
     *   Tabel "Recent Consultations" menampilkan 5 data riwayat asesmen terbaru dengan tautan navigasi dinamis ke detail atau proses asesmen.
     *   Menampilkan data email dan peranan pengguna admin yang sedang aktif dari session JWT token.
 
-### ⚠️ Pembuat Aturan Admin (*Admin Rules Page*)
-*   **Status**: Masih Menggunakan Data Tiruan (*Mock Data*).
-*   **Detail**: Komponen [AdminRulesPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminRulesPage.tsx):
-    *   Tabel aturan di-hardcode (hanya menampilkan 3 contoh aturan statis), belum mengambil basis pengetahuan lengkap (33 aturan) dari `/api/admin/rules`.
-    *   Fungsi pencarian aturan belum terhubung.
-    *   Panel edit aturan (*Edit Rule Side Panel*) bersifat visual saja dan tombol "Simpan Perubahan Aturan" belum mengirimkan data apa pun ke server.
-    *   Modul simulasi (*Simulation Modal*) menghitung logika kecocokan secara lokal di frontend, belum memicu evaluasi simulasi di backend via `/api/admin/rules/simulate`.
+### ✅ Pembuat Aturan Aturan Admin (*Admin Rules Page*)
+*   **Status**: Selesai.
+*   **Detail**: Komponen [AdminRulesPage.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminRulesPage.tsx) telah dihubungkan dengan backend API:
+    *   Tabel aturan memuat data relasi `IndicatorVariable` (Level 1) dan `CriterionIndicator` (Level 2) secara dinamis dari `/api/admin/rules` menghasilkan total 33 aturan aktif.
+    *   Mendukung pencarian aturan berbasis filter teks dan pemisahan level aturan (Semua, L1, L2) dengan paginasi halaman (10 data per halaman).
+    *   Panel edit aturan mendukung modifikasi kondisi premis secara interaktif di frontend (disimpan secara lokal untuk simulasi).
+    *   Modul simulasi Forward Chaining terintegrasi dengan `/api/admin/rules/simulate` di mana pengguna dapat menyesuaikan nilai dari seluruh variabel masukan dan menguji hasil inferensi bakat secara real-time.
 
 ### ❌ Halaman Manajemen Variabel & Indikator
 *   **Status**: Belum Dibuat di Frontend.
