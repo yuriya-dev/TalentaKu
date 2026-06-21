@@ -1,7 +1,28 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 export default function Navbar() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [userData, setUserData] = useState<{ name: string; email: string } | null>(null)
+
+  useEffect(() => {
+    const user = localStorage.getItem('user_data')
+    if (user) {
+      try {
+        setUserData(JSON.parse(user))
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('user_token')
+    localStorage.removeItem('user_data')
+    setUserData(null)
+    navigate('/')
+  }
 
   return (
     <header className="bg-[#f7f9fb]/80 glass-header sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-sm">
@@ -32,13 +53,26 @@ export default function Navbar() {
 
       <div className="flex items-center gap-4">
         <button className="material-symbols-outlined text-[#464555] hover:text-[#3525cd] transition-colors">notifications</button>
-        <div className="w-10 h-10 rounded-full bg-[#4f46e5] flex items-center justify-center text-[#dad7ff] overflow-hidden">
-          <img
-            alt="Profile"
-            className="w-full h-full object-cover"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuATw79CwUkG__X2ZONCbdE0M0ab1QIduZfZ6h_R_Fi2N2v1D7tywywhWmmyNvnMRMHcN4RkWnAhaGGlolmxtlHNKDjLNz-LWHyoEVrh5BLceNTVNt8_QT4SOVhPJQZf-sMQtbJVkCt3SULR5Xw-xeekIHEZ-yoxV4-X4JqaWaV6gaR2B7i_kRsbJAW1mK0prkwSOJSrx-OEBL0SGkH6QXWRIQtOb3ugp8w16Nlym7J48DwH2SYgklAgMhNzyPOCevxRo24-r2xUG5w"
-          />
-        </div>
+        {userData ? (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#3525cd] text-white flex items-center justify-center font-bold text-sm shadow-sm">
+              {userData.name.slice(0, 2).toUpperCase()}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors"
+            >
+              Keluar
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="bg-[#3525cd] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#4f46e5] active:scale-95 transition-all shadow-sm"
+          >
+            Masuk
+          </Link>
+        )}
       </div>
     </header>
   )

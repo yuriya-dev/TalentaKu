@@ -153,7 +153,9 @@ func StartIntake(c *fiber.Ctx) error {
 	}
 
 	// Create Consultation
+	userID := GetOptionalUserID(c)
 	consultation := models.Consultation{
+		UserID:    userID,
 		ChildID:   child.ID,
 		Status:    "IN_PROGRESS",
 		CreatedAt: time.Now(),
@@ -385,6 +387,7 @@ func GetResults(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"consultation_id": cons.ID,
+		"user_id":         cons.UserID,
 		"child":           cons.Child,
 		"created_at":      cons.CreatedAt,
 		"completed_at":    cons.CompletedAt,
@@ -395,8 +398,43 @@ func GetResults(c *fiber.Ctx) error {
 
 // Get Consultations History (List of all kids)
 func GetHistory(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
 	var consultations []models.Consultation
-	err := db.DB.Preload("Child").Order("created_at DESC").Find(&consultations).Error
+	var err error
+
+	var userID *uint
+	var isAdmin = false
+
+	if authHeader != "" && len(authHeader) >= 8 && authHeader[:7] == "Bearer " {
+		tokenString := authHeader[7:]
+		token, errParse := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+			return JwtSecret, nil
+		})
+
+		if errParse == nil && token.Valid {
+			claims := token.Claims.(jwt.MapClaims)
+			if role, ok := claims["role"].(string); ok {
+				if role == "superadmin" || role == "admin" {
+					isAdmin = true
+				} else if role == "user" {
+					if sub, ok := claims["sub"].(float64); ok {
+						uID := uint(sub)
+						userID = &uID
+					}
+				}
+			}
+		}
+	}
+
+	query := db.DB.Preload("Child").Order("created_at DESC")
+	if isAdmin {
+		err = query.Find(&consultations).Error
+	} else if userID != nil {
+		err = query.Where("user_id = ?", *userID).Find(&consultations).Error
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Silakan masuk untuk melihat riwayat asesmen."})
+	}
+
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch history"})
 	}
@@ -620,4 +658,195 @@ func UpdateSettings(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Settings updated successfully"})
+}
+
+// Helper to optionally get logged-in user ID from token
+func GetOptionalUserID(c *fiber.Ctx) *uint {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" || len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return nil
+	}
+
+	tokenString := authHeader[7:]
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return JwtSecret, nil
+	})
+
+	if err != nil || !token.Valid {
+		return nil
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+	role := claims["role"]
+	if role == "user" {
+		if sub, ok := claims["sub"].(float64); ok {
+			userID := uint(sub)
+			return &userID
+		}
+	}
+	return nil
+}
+
+// User Registration
+func UserRegister(c *fiber.Ctx) error {
+	type RegisterInput struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		Name     string `json:"name"`
+	}
+
+	var input RegisterInput
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if input.Email == "" || input.Password == "" || input.Name == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email, password, dan nama wajib diisi."})
+	}
+
+	// Check if user already exists
+	var count int64
+	db.DB.Model(&models.User{}).Where("email = ?", input.Email).Count(&count)
+	if count > 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email sudah terdaftar."})
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to hash password"})
+	}
+
+	// Create user
+	user := models.User{
+		Email:        input.Email,
+		PasswordHash: string(hashedPassword),
+		Name:         input.Name,
+		CreatedAt:    time.Now(),
+	}
+
+	if err := db.DB.Create(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to register user"})
+	}
+
+	// Generate JWT Token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":   user.ID,
+		"email": user.Email,
+		"role":  "user",
+		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
+	})
+
+	tokenString, err := token.SignedString(JwtSecret)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
+	}
+
+	return c.JSON(fiber.Map{
+		"token": tokenString,
+		"user": fiber.Map{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.Name,
+		},
+	})
+}
+
+// User Login
+func UserLogin(c *fiber.Ctx) error {
+	type LoginInput struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	var input LoginInput
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	var user models.User
+	err := db.DB.Where("email = ?", input.Email).First(&user).Error
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "User tidak ditemukan."})
+	}
+
+	// Compare password
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Kata sandi salah."})
+	}
+
+	// Generate JWT Token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":   user.ID,
+		"email": user.Email,
+		"role":  "user",
+		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
+	})
+
+	tokenString, err := token.SignedString(JwtSecret)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
+	}
+
+	return c.JSON(fiber.Map{
+		"token": tokenString,
+		"user": fiber.Map{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.Name,
+		},
+	})
+}
+
+// Claim consultation to logged-in user
+func ClaimConsultation(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" || len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing or invalid authorization token"})
+	}
+
+	tokenString := authHeader[7:]
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return JwtSecret, nil
+	})
+
+	if err != nil || !token.Valid {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
+	}
+
+	claims := token.Claims.(jwt.MapClaims)
+	role := claims["role"]
+	if role != "user" {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Only regular users can claim consultations"})
+	}
+
+	sub, ok := claims["sub"].(float64)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user claims"})
+	}
+	userID := uint(sub)
+
+	type ClaimInput struct {
+		ConsultationID uint `json:"consultation_id"`
+	}
+
+	var input ClaimInput
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	var consultation models.Consultation
+	err = db.DB.Where("id = ?", input.ConsultationID).First(&consultation).Error
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Consultation session not found"})
+	}
+
+	// Update UserID
+	consultation.UserID = &userID
+	if err := db.DB.Save(&consultation).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to claim consultation"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Sesi asesmen berhasil disimpan ke akun Anda."})
 }

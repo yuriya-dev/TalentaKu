@@ -29,8 +29,26 @@ export default function HistoryPage() {
     window.scrollTo(0, 0)
 
     async function fetchHistory() {
+      const token = localStorage.getItem('user_token')
+      if (!token) {
+        navigate('/login')
+        return
+      }
+
       try {
-        const res = await fetch('http://localhost:8080/api/consultations')
+        const res = await fetch('http://localhost:8080/api/consultations', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (res.status === 401) {
+          localStorage.removeItem('user_token')
+          localStorage.removeItem('user_data')
+          navigate('/login')
+          return
+        }
+
         if (!res.ok) {
           throw new Error('Gagal memuat riwayat asesmen.')
         }

@@ -13,6 +13,8 @@ import AdminVariablesPage from './pages/AdminVariablesPage'
 import AdminIndicatorsPage from './pages/AdminIndicatorsPage'
 import AdminSettingsPage from './pages/AdminSettingsPage'
 import AdminAssessmentsPage from './pages/AdminAssessmentsPage'
+import UserLoginPage from './pages/UserLoginPage'
+import UserRegisterPage from './pages/UserRegisterPage'
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/assessment/start" element={<ChildIntakePage />} />
         <Route path="/assessment/:pageId" element={<AssessmentPage />} />
         <Route path="/results/:assessmentId" element={<ResultsPage />} />
+        <Route path="/login" element={<UserLoginPage />} />
+        <Route path="/register" element={<UserRegisterPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />
@@ -39,3 +43,4 @@ function App() {
 }
 
 export default App
+

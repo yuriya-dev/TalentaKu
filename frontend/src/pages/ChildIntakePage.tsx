@@ -35,12 +35,18 @@ export default function ChildIntakePage() {
       school,
     }
 
+    const token = localStorage.getItem('user_token')
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
     try {
       const res = await fetch('http://localhost:8080/api/intake', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(payload),
       })
 

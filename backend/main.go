@@ -33,6 +33,9 @@ func main() {
 
 	// Public Routes
 	api.Post("/admin/login", handlers.AdminLogin)
+	api.Post("/register", handlers.UserRegister)
+	api.Post("/login", handlers.UserLogin)
+	api.Post("/consultations/claim", handlers.ClaimConsultation)
 	api.Get("/variables", handlers.GetVariables)
 	api.Post("/intake", handlers.StartIntake)
 	api.Get("/consultations", handlers.GetHistory)

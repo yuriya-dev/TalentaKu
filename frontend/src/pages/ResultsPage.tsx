@@ -41,6 +41,15 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedTraceCode, setSelectedTraceCode] = useState<string>('')
 
+  const [claiming, setClaiming] = useState(false)
+  const [claimSuccess, setClaimSuccess] = useState<string | null>(null)
+  const [claimError, setClaimError] = useState<string | null>(null)
+  const [localUserId, setLocalUserId] = useState<number | null>(null)
+
+  const userToken = localStorage.getItem('user_token')
+  const userDataStr = localStorage.getItem('user_data')
+  const userData = userDataStr ? JSON.parse(userDataStr) : null
+
   useEffect(() => {
     document.title = 'Hasil Penilaian | TalentaKu'
   }, [])
@@ -64,6 +73,9 @@ export default function ResultsPage() {
         }
         const json = await res.json()
         setData(json)
+        if (json.user_id) {
+          setLocalUserId(json.user_id)
+        }
         if (json.results && json.results.length > 0) {
           setSelectedTraceCode(json.results[0].criterion_code)
         }
@@ -75,6 +87,33 @@ export default function ResultsPage() {
     }
     fetchResults()
   }, [assessmentId])
+
+  const handleClaim = async () => {
+    if (!assessmentId || !userToken) return
+    setClaiming(true)
+    setClaimError(null)
+    setClaimSuccess(null)
+    try {
+      const res = await fetch('http://localhost:8080/api/consultations/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`
+        },
+        body: JSON.stringify({ consultation_id: parseInt(assessmentId) })
+      })
+      const claimData = await res.json()
+      if (!res.ok) {
+        throw new Error(claimData.error || 'Gagal menyimpan hasil asesmen.')
+      }
+      setClaimSuccess('Hasil asesmen berhasil disimpan ke akun Anda!')
+      setLocalUserId(userData?.id || 1)
+    } catch (err: any) {
+      setClaimError(err.message || 'Terjadi kesalahan sistem.')
+    } finally {
+      setClaiming(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -172,6 +211,76 @@ export default function ResultsPage() {
             Sesi evaluasi untuk <strong>{child.name}</strong> ({getAgeGroupLabel(child.age)}), sekolah di <strong>{child.school}</strong> telah dianalisis secara real-time oleh mesin inferensi sistem pakar.
           </p>
         </header>
+
+        {/* Claim Banner (if not owned/associated with a user yet) */}
+        {!localUserId && (
+          <div className="mb-12 max-w-4xl mx-auto bg-gradient-to-r from-[#3525cd]/10 to-[#57dffe]/10 border border-[#c7c4d8]/60 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm no-print">
+            <div className="flex gap-4 items-start">
+              <span className="material-symbols-outlined text-4xl text-[#3525cd] bg-white p-3 rounded-2xl shadow-sm">
+                cloud_upload
+              </span>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-[#191c1e] mb-1">Simpan Hasil Asesmen Ini</h3>
+                <p className="text-sm text-[#464555] max-w-xl">
+                  {userToken 
+                    ? `Hasil asesmen ${child.name} belum disimpan ke akun Anda. Simpan sekarang untuk mengaksesnya di halaman riwayat kapan saja.`
+                    : `Simpan hasil asesmen ${child.name} ke akun Anda untuk dipantau secara berkelanjutan di halaman riwayat kapan saja.`}
+                </p>
+                {claimSuccess && (
+                  <p className="text-emerald-600 font-bold text-sm mt-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-base">check_circle</span>
+                    {claimSuccess}
+                  </p>
+                )}
+                {claimError && (
+                  <p className="text-red-600 font-bold text-sm mt-2 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-base">error</span>
+                    {claimError}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-3 shrink-0">
+              {userToken ? (
+                <button
+                  onClick={handleClaim}
+                  disabled={claiming}
+                  className="bg-[#3525cd] hover:bg-[#4f46e5] text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm transition-all flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {claiming ? (
+                    <>
+                      <span className="material-symbols-outlined text-base animate-spin">sync</span>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-base">save</span>
+                      Simpan ke Akun Saya
+                    </>
+                  )}
+                </button>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => sessionStorage.setItem('claim_consultation_id', assessmentId || '')}
+                    className="bg-[#3525cd] hover:bg-[#4f46e5] text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] text-center flex items-center justify-center"
+                  >
+                    Masuk & Simpan
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => sessionStorage.setItem('claim_consultation_id', assessmentId || '')}
+                    className="bg-white border border-[#c7c4d8] hover:bg-[#eceef0] text-[#191c1e] font-bold px-6 py-3 rounded-xl text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] text-center flex items-center justify-center"
+                  >
+                    Daftar Akun
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Results Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

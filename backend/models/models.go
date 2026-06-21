@@ -51,6 +51,7 @@ type Child struct {
 
 type Consultation struct {
 	ID          uint                 `gorm:"primaryKey" json:"id"`
+	UserID      *uint                `json:"user_id,omitempty"`
 	ChildID     uint                 `json:"child_id"`
 	Child       Child                `gorm:"foreignKey:ChildID" json:"child"`
 	Status      string               `json:"status"` // IN_PROGRESS, COMPLETED
@@ -75,6 +76,14 @@ type ConsultationResult struct {
 	ScorePercentage float64   `json:"score_percentage"`  // 0.0 - 100.0
 	IsRuleSatisfied bool      `json:"is_rule_satisfied"` // biner forward chaining satisfied
 	Ranking         int       `json:"ranking"`
+}
+
+type User struct {
+	ID           uint      `gorm:"primaryKey" json:"id"`
+	Email        string    `gorm:"uniqueIndex;size:100" json:"email"`
+	PasswordHash string    `json:"-"`
+	Name         string    `json:"name"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type AdminUser struct {
