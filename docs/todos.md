@@ -27,13 +27,13 @@ Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mo
 *   **Status**: Selesai.
 *   **Detail**: Layar login admin (`/admin/login`) telah diimplementasikan dengan validasi JWT. Rute admin (`/admin/*`) dilindungi oleh wrapper guard component `AdminRoute` yang memvalidasi masa berlaku token. Tombol "Keluar" (Logout) di sidebar admin sekarang menghapus sesi token JWT dan mengalihkan pengguna ke layar masuk. Endpoint backend `/api/admin/*` telah diamankan dengan middleware `AuthRequired`.
 
-### ⚠️ Dasbor Utama Admin (*Admin Dashboard*)
-*   **Status**: Masih Menggunakan Data Tiruan (*Mock Data*).
-*   **Detail**: Komponen [AdminDashboard.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminDashboard.tsx) masih menggunakan data statis di dalam kode:
-    *   Statistik jumlah asesmen, siswa aktif, dan bakat teridentifikasi di-hardcode.
-    *   Grafik distribusi bakat menggunakan konstanta statis, belum mengambil data dari `/api/admin/stats`.
-    *   Tabel "Recent Consultations" menampilkan baris statis.
-    *   Kotak pencarian asesmen belum berfungsi untuk menyaring data riil.
+### ✅ Dasbor Utama Admin (*Admin Dashboard*)
+*   **Status**: Selesai.
+*   **Detail**: Komponen [AdminDashboard.tsx](file:///Users/wahyutricahya/Web%20Development/TalentaKu/frontend/src/pages/AdminDashboard.tsx) telah sepenuhnya terintegrasi dengan backend API:
+    *   Statistik jumlah asesmen, siswa aktif, dan bakat teridentifikasi diambil secara langsung dari `/api/admin/stats`.
+    *   Grafik distribusi bakat memetakan data riil dari backend.
+    *   Tabel "Recent Consultations" menampilkan 5 data riwayat asesmen terbaru dengan tautan navigasi dinamis ke detail atau proses asesmen.
+    *   Menampilkan data email dan peranan pengguna admin yang sedang aktif dari session JWT token.
 
 ### ⚠️ Pembuat Aturan Admin (*Admin Rules Page*)
 *   **Status**: Masih Menggunakan Data Tiruan (*Mock Data*).
