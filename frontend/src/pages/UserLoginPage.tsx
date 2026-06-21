@@ -68,11 +68,6 @@ export default function UserLoginPage() {
     }
   }
 
-  const handleGoogleBypass = () => {
-    const mockEmail = `google-bypass-${Date.now()}@gmail.com`
-    handleGoogleCredentialResponse({ credential: `mock-google-token-${mockEmail}|Bypass Google User` })
-  }
-
   useEffect(() => {
     document.title = 'Masuk | TalentaKu'
     const token = localStorage.getItem('user_token')
@@ -258,16 +253,6 @@ export default function UserLoginPage() {
           <div className="w-full flex justify-center mb-3">
             <div id="google-signin-btn"></div>
           </div>
-
-          {/* Bypass Button for development */}
-          <button
-            type="button"
-            onClick={handleGoogleBypass}
-            className="w-full py-2.5 border border-[#c7c4d8]/60 hover:bg-[#f2f4f6] text-[#464555] font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-sm">construction</span>
-            Masuk dengan Mock Google (Bypass)
-          </button>
 
           {/* Register Link */}
           <div className="mt-6 text-xs text-[#464555] text-center">
