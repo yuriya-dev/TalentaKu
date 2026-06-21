@@ -72,9 +72,24 @@ export default function AdminIndicatorsPage() {
         </header>
 
         {loading ? (
-          <div className="flex-grow flex flex-col items-center justify-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-[#3525cd] animate-spin">sync</span>
-            <p className="text-sm text-[#464555]">Memuat data indikator...</p>
+          <div className="flex-grow flex flex-col p-4 md:p-10 space-y-6">
+            <div className="flex justify-between items-center gap-4">
+              <div className="h-4 w-64 bg-slate-100 rounded"></div>
+              <div className="h-8 w-48 bg-slate-100 rounded-xl"></div>
+            </div>
+            <phantom-ui loading="true" className="flex-grow block">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="bg-white border border-[#c7c4d8]/40 rounded-2xl p-6 space-y-3 shadow-sm flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-100 rounded-xl shrink-0"></div>
+                    <div className="space-y-2 flex-grow">
+                      <div className="h-4 w-16 bg-slate-100 rounded"></div>
+                      <div className="h-4 w-full bg-slate-100 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </phantom-ui>
           </div>
         ) : error ? (
           <div className="flex-grow p-10 flex items-center justify-center">

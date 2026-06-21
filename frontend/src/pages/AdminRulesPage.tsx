@@ -300,9 +300,28 @@ export default function AdminRulesPage() {
 
         {/* Content */}
         {loading ? (
-          <div className="flex-grow flex flex-col items-center justify-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-[#3525cd] animate-spin">sync</span>
-            <p className="text-sm text-[#464555]">Memuat basis aturan...</p>
+          <div className="flex-grow flex flex-col p-4 md:p-10 space-y-6">
+            <phantom-ui loading="true" className="block">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white border border-[#c7c4d8]/40 rounded-3xl p-6 shadow-sm space-y-3 min-h-[120px]">
+                    <div className="h-4 w-12 bg-slate-100 rounded"></div>
+                    <div className="h-6 w-32 bg-slate-100 rounded"></div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 shadow-sm space-y-6 mt-6">
+                <div className="h-6 w-48 bg-slate-100 rounded"></div>
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex justify-between items-center py-3 border-b border-[#c7c4d8]/10 last:border-none">
+                      <div className="h-5 w-72 bg-slate-100 rounded"></div>
+                      <div className="h-6 w-24 bg-slate-100 rounded-full"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </phantom-ui>
           </div>
         ) : error ? (
           <div className="flex-grow p-10 flex items-center justify-center">
@@ -749,10 +768,19 @@ export default function AdminRulesPage() {
                 <div className="flex-1 flex flex-col justify-between min-h-0">
                   <div className="flex-1 overflow-y-auto space-y-4 pr-1">
                     {simLoading ? (
-                      <div className="h-full flex flex-col items-center justify-center gap-2 py-12">
-                        <span className="material-symbols-outlined text-3xl text-[#3525cd] animate-spin">sync</span>
-                        <p className="text-xs text-[#464555]">Memproses logika Forward Chaining...</p>
-                      </div>
+                      <phantom-ui loading="true" className="w-full block py-2">
+                        <div className="space-y-4">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className="bg-white border border-[#c7c4d8]/20 rounded-2xl p-4 shadow-sm space-y-2">
+                              <div className="flex justify-between items-center">
+                                <div className="h-5 w-24 bg-slate-100 rounded"></div>
+                                <div className="h-5 w-12 bg-slate-100 rounded"></div>
+                              </div>
+                              <div className="h-4 w-full bg-slate-100 rounded"></div>
+                            </div>
+                          ))}
+                        </div>
+                      </phantom-ui>
                     ) : simResults.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center p-8">
                         <span className="material-symbols-outlined text-4xl text-[#777587] mb-2">science</span>

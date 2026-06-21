@@ -114,9 +114,21 @@ export default function AdminSettingsPage() {
         )}
 
         {loading ? (
-          <div className="flex-grow flex flex-col items-center justify-center gap-4">
-            <span className="material-symbols-outlined text-4xl text-[#3525cd] animate-spin">sync</span>
-            <p className="text-sm text-[#464555]">Memuat data pengaturan...</p>
+          <div className="flex-grow p-4 md:p-10 max-w-3xl">
+            <phantom-ui loading="true" className="block">
+              <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 shadow-sm space-y-8">
+                <div className="h-6 w-48 bg-slate-100 rounded"></div>
+                <div className="space-y-4">
+                  <div className="h-4 w-32 bg-slate-100 rounded"></div>
+                  <div className="h-10 w-full bg-slate-100 rounded-xl"></div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-4 w-32 bg-slate-100 rounded"></div>
+                  <div className="h-10 w-full bg-slate-100 rounded-xl"></div>
+                </div>
+                <div className="h-12 w-32 bg-slate-100 rounded-xl mt-6"></div>
+              </div>
+            </phantom-ui>
           </div>
         ) : error ? (
           <div className="flex-grow p-10 flex items-center justify-center">

@@ -117,18 +117,47 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col">
+      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col justify-between">
         <Navbar />
-        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-32">
-          <div className="flex flex-col items-center gap-4 text-center px-4">
-            <span className="material-symbols-outlined text-5xl text-[#3525cd] animate-spin">
-              sync
-            </span>
-            <h3 className="text-xl font-bold text-[#191c1e]">Menganalisis Jawaban...</h3>
-            <p className="text-sm text-[#464555] max-w-sm">
-              Sistem pakar sedang mengevaluasi aturan Forward Chaining secara real-time.
-            </p>
-          </div>
+        <main className="pt-24 pb-32 px-4 md:px-10 max-w-screen-xl mx-auto w-full">
+          <phantom-ui loading="true" className="block">
+            {/* Header Celebration Skeleton */}
+            <div className="flex flex-col items-center mb-16 text-center space-y-4">
+              <div className="h-8 w-48 bg-slate-100 rounded-full mx-auto"></div>
+              <div className="h-12 w-96 bg-slate-100 rounded mx-auto"></div>
+              <div className="h-4 w-[400px] bg-slate-100 rounded mx-auto"></div>
+            </div>
+
+            {/* Results Bento Grid Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Primary Result Card Skeleton */}
+              <div className="md:col-span-8 bg-white rounded-xl border border-[#c7c4d8]/40 p-8 min-h-[300px] flex flex-col justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-slate-100"></div>
+                  <div className="space-y-2 flex-grow">
+                    <div className="h-6 w-48 bg-slate-100 rounded"></div>
+                    <div className="h-4 w-32 bg-slate-100 rounded"></div>
+                  </div>
+                </div>
+                <div className="space-y-3 mt-6">
+                  <div className="h-4 w-full bg-slate-100 rounded"></div>
+                  <div className="h-4 w-full bg-slate-100 rounded"></div>
+                  <div className="h-4 w-2/3 bg-slate-100 rounded"></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div className="h-16 bg-slate-100 rounded-lg"></div>
+                  <div className="h-16 bg-slate-100 rounded-lg"></div>
+                </div>
+              </div>
+
+              {/* Sidebar Widgets Skeleton */}
+              <div className="md:col-span-4 flex flex-col gap-6">
+                <div className="h-24 bg-white border border-[#c7c4d8]/40 rounded-xl p-6"></div>
+                <div className="h-24 bg-white border border-[#c7c4d8]/40 rounded-xl p-6"></div>
+                <div className="h-32 bg-slate-100 rounded-xl"></div>
+              </div>
+            </div>
+          </phantom-ui>
         </main>
         <Footer />
       </div>

@@ -328,22 +328,46 @@ export default function AssessmentPage() {
 
   if (loadingQuestions) {
     return (
-      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col">
+      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col justify-between">
         <header className="bg-[#f7f9fb]/80 glass-header sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-sm">
           <Link to="/" className="flex items-center">
             <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-7 w-auto shrink-0" />
           </Link>
         </header>
-        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-32">
-          <div className="flex flex-col items-center gap-4 text-center px-4">
-            <span className="material-symbols-outlined text-5xl text-[#3525cd] animate-spin">
-              sync
-            </span>
-            <h3 className="text-xl font-bold text-[#191c1e]">Memuat Pertanyaan...</h3>
-            <p className="text-sm text-[#464555] max-w-sm">
-              Menyiapkan evaluasi yang disesuaikan dengan kelompok usia anak.
-            </p>
-          </div>
+        <main className="flex-grow pt-24 pb-32 px-4 max-w-2xl mx-auto w-full">
+          <phantom-ui loading="true" className="block">
+            {/* Progress bar skeleton */}
+            <div className="space-y-2 mb-8">
+              <div className="h-2 w-full bg-slate-100 rounded-full"></div>
+              <div className="flex justify-between">
+                <div className="h-4 w-24 bg-slate-100 rounded"></div>
+                <div className="h-4 w-12 bg-slate-100 rounded"></div>
+              </div>
+            </div>
+
+            {/* Question card skeleton */}
+            <div className="bg-white border border-[#c7c4d8]/40 rounded-[2.5rem] p-8 shadow-lg space-y-6">
+              <div className="h-4 w-32 bg-slate-100 rounded-full"></div>
+              <div className="space-y-2">
+                <div className="h-6 w-full bg-slate-100 rounded"></div>
+                <div className="h-6 w-3/4 bg-slate-100 rounded"></div>
+              </div>
+              <div className="grid grid-cols-5 gap-2 pt-6">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 bg-slate-100 rounded-full"></div>
+                    <div className="h-3 w-8 bg-slate-100 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation buttons skeleton */}
+            <div className="flex justify-between mt-8">
+              <div className="h-12 w-28 bg-slate-100 rounded-full"></div>
+              <div className="h-12 w-28 bg-slate-100 rounded-full"></div>
+            </div>
+          </phantom-ui>
         </main>
         <footer className="w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 border-t border-[#e0e3e5]/50">
           <p className="text-xs text-[#464555]">© 2026 TalentaKu Expert Systems. Profesional & Bersahabat.</p>
