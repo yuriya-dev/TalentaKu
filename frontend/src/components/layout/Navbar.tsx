@@ -14,15 +14,15 @@ export default function Navbar() {
           to="/"
           className={`text-sm font-semibold transition-colors ${location.pathname === '/' ? 'text-[#3525cd] border-b-2 border-[#3525cd]' : 'text-[#464555] hover:text-[#3525cd]'}`}
         >
-          Home
+          Beranda
         </Link>
         <Link
           to="/assessment/start"
           className={`text-sm font-semibold transition-colors ${location.pathname.startsWith('/assessment') ? 'text-[#3525cd] border-b-2 border-[#3525cd]' : 'text-[#464555] hover:text-[#3525cd]'}`}
         >
-          My Assessments
+          Asesmen Saya
         </Link>
-        <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors">Resources</a>
+        <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors">Sumber Daya</a>
       </nav>
 
       <div className="flex items-center gap-4">

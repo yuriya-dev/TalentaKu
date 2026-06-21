@@ -3,43 +3,43 @@ import { Link } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
 
 const stats = [
-  { icon: 'assignment', label: 'Total Assessments', value: '1,284', color: 'text-[#3525cd]', bg: 'bg-[#3525cd]/10', trend: '+12%', trendUp: true },
-  { icon: 'groups', label: 'Active Students', value: '842', color: 'text-[#00687a]', bg: 'bg-[#00687a]/10', trend: '+5%', trendUp: true },
-  { icon: 'verified', label: 'Identified Talents', value: '3,120', color: 'text-[#684000]', bg: 'bg-[#ffddb8]/20', trend: 'Stable', trendUp: null },
-  { icon: 'history', label: 'Pending Reviews', value: '14', color: 'text-[#ba1a1a]', bg: 'bg-[#ba1a1a]/10', trend: '-2%', trendUp: false },
+  { icon: 'assignment', label: 'Total Asesmen', value: '1.284', color: 'text-[#3525cd]', bg: 'bg-[#3525cd]/10', trend: '+12%', trendUp: true },
+  { icon: 'groups', label: 'Siswa Aktif', value: '842', color: 'text-[#00687a]', bg: 'bg-[#00687a]/10', trend: '+5%', trendUp: true },
+  { icon: 'verified', label: 'Bakat Teridentifikasi', value: '3.120', color: 'text-[#684000]', bg: 'bg-[#ffddb8]/20', trend: 'Stabil', trendUp: null },
+  { icon: 'history', label: 'Tinjauan Tertunda', value: '14', color: 'text-[#ba1a1a]', bg: 'bg-[#ba1a1a]/10', trend: '-2%', trendUp: false },
 ]
 
 const chartBars = [
-  { label: 'Linguistic', pct: 65 },
-  { label: 'Logical', pct: 40 },
-  { label: 'Spatial', pct: 85 },
-  { label: 'Musical', pct: 55 },
-  { label: 'Kinesthetic', pct: 30 },
+  { label: 'Linguistik', pct: 65 },
+  { label: 'Logis', pct: 40 },
+  { label: 'Spasial', pct: 85 },
+  { label: 'Musikal', pct: 55 },
+  { label: 'Kinestetik', pct: 30 },
 ]
 
 const systemHealth = [
-  { icon: 'sync', label: 'Rules Synced', desc: '33 active logic branches verified.', color: 'bg-[#10B981]/20 text-[#10B981]' },
-  { icon: 'database', label: 'Variables Backup', desc: 'Incremental save completed.', color: 'bg-[#3525cd]/20 text-[#3525cd]' },
-  { icon: 'security', label: 'Access Logs', desc: 'No unusual activity detected.', color: 'bg-[#00687a]/20 text-[#00687a]' },
+  { icon: 'sync', label: 'Aturan Sinkron', desc: '33 cabang logika aktif terverifikasi.', color: 'bg-[#10B981]/20 text-[#10B981]' },
+  { icon: 'database', label: 'Cadangan Variabel', desc: 'Penyimpanan inkremental selesai.', color: 'bg-[#3525cd]/20 text-[#3525cd]' },
+  { icon: 'security', label: 'Log Akses', desc: 'Tidak ada aktivitas mencurigakan.', color: 'bg-[#00687a]/20 text-[#00687a]' },
 ]
 
 const variableCategories = [
-  { title: 'Cognitive Capacity (C1–C25)', count: 25, color: 'bg-[#3525cd]/10', badge: 'bg-[#3525cd] text-white', accent: 'text-[#3525cd]', vars: ['C1: Abstract Reasoning', 'C2: Numerical Processing', 'C3: Visual-Spatial Memory'] },
-  { title: 'Emotional Intelligence (C26–C50)', count: 25, color: 'bg-[#00687a]/10', badge: 'bg-[#00687a] text-white', accent: 'text-[#00687a]', vars: ['C26: Empathy Quotient', 'C27: Self-Regulation', 'C28: Social Resilience'] },
-  { title: 'Psychomotor Skills (C51–C83)', count: 33, color: 'bg-[#ffddb8]/20', badge: 'bg-[#684000] text-white', accent: 'text-[#684000]', vars: ['C51: Fine Motor Precision', 'C52: Reaction Response', 'C53: Bilateral Coordination'] },
+  { title: 'Kapasitas Kognitif (C1–C25)', count: 25, color: 'bg-[#3525cd]/10', badge: 'bg-[#3525cd] text-white', accent: 'text-[#3525cd]', vars: ['C1: Penalaran Abstrak', 'C2: Pemrosesan Numerik', 'C3: Memori Visual-Spasial'] },
+  { title: 'Kecerdasan Emosional (C26–C50)', count: 25, color: 'bg-[#00687a]/10', badge: 'bg-[#00687a] text-white', accent: 'text-[#00687a]', vars: ['C26: Kecerdasan Empati', 'C27: Regulasi Diri', 'C28: Ketahanan Sosial'] },
+  { title: 'Keterampilan Psikomotorik (C51–C83)', count: 33, color: 'bg-[#ffddb8]/20', badge: 'bg-[#684000] text-white', accent: 'text-[#684000]', vars: ['C51: Fine Motor Precision', 'C52: Reaction Response', 'C53: Bilateral Coordination'] },
 ]
 
 const consultations = [
-  { id: '#AS-9921', initials: 'JS', name: 'Jonathan Smith', talent: 'Musical-Rhythmic', confidence: 92, status: 'Completed', date: 'Oct 24, 2024', statusColor: 'bg-[#10B981]/10 text-[#10B981]', barColor: 'bg-[#10B981]' },
-  { id: '#AS-9920', initials: 'AM', name: 'Alicia Mendez', talent: 'Logical-Math', confidence: 78, status: 'Pending', date: 'Oct 23, 2024', statusColor: 'bg-[#acedff] text-[#006172]', barColor: 'bg-[#3525cd]' },
-  { id: '#AS-9919', initials: 'RK', name: 'Ryan Koji', talent: 'Kinesthetic', confidence: 88, status: 'Completed', date: 'Oct 22, 2024', statusColor: 'bg-[#10B981]/10 text-[#10B981]', barColor: 'bg-[#10B981]' },
+  { id: '#AS-9921', initials: 'JS', name: 'Jonathan Smith', talent: 'Musikal-Ritmik', confidence: 92, status: 'Selesai', date: '24 Okt 2026', statusColor: 'bg-[#10B981]/10 text-[#10B981]', barColor: 'bg-[#10B981]' },
+  { id: '#AS-9920', initials: 'AM', name: 'Alicia Mendez', talent: 'Logis-Matematis', confidence: 78, status: 'Tertunda', date: '23 Okt 2026', statusColor: 'bg-[#acedff] text-[#006172]', barColor: 'bg-[#3525cd]' },
+  { id: '#AS-9919', initials: 'RK', name: 'Ryan Koji', talent: 'Kinestetik', confidence: 88, status: 'Selesai', date: '22 Okt 2026', statusColor: 'bg-[#10B981]/10 text-[#10B981]', barColor: 'bg-[#10B981]' },
 ]
 
 export default function AdminDashboard() {
   const [chartLoaded, setChartLoaded] = useState(false)
 
   useEffect(() => {
-    document.title = 'System Overview | TalentaKu Admin'
+    document.title = 'Ringkasan Sistem | TalentaKu Admin'
     // Small delay to allow layout before animating
     const t = setTimeout(() => setChartLoaded(true), 300)
     return () => clearTimeout(t)
@@ -56,12 +56,12 @@ export default function AdminDashboard() {
             <button className="md:hidden text-[#3525cd]">
               <span className="material-symbols-outlined">menu</span>
             </button>
-            <h2 className="text-2xl font-bold text-[#3525cd]">System Overview</h2>
+            <h2 className="text-2xl font-bold text-[#3525cd]">Ringkasan Sistem</h2>
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden md:flex bg-[#eceef0] rounded-full px-4 py-2 items-center gap-2 border border-[#c7c4d8]">
               <span className="material-symbols-outlined text-[#777587]">search</span>
-              <input className="bg-transparent border-none focus:ring-0 text-sm outline-none w-64" placeholder="Search assessments..." type="text" />
+              <input className="bg-transparent border-none focus:ring-0 text-sm outline-none w-64" placeholder="Cari asesmen..." type="text" />
             </div>
             <button className="w-10 h-10 flex items-center justify-center rounded-full text-[#464555] hover:bg-[#e0e3e5] transition-colors">
               <span className="material-symbols-outlined">notifications</span>
@@ -75,8 +75,8 @@ export default function AdminDashboard() {
                 />
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-sm font-semibold leading-none">Admin User</p>
-                <p className="text-xs text-[#464555]">System Manager</p>
+                <p className="text-sm font-semibold leading-none">Pengguna Admin</p>
+                <p className="text-xs text-[#464555]">Manajer Sistem</p>
               </div>
             </div>
           </div>
@@ -109,10 +109,10 @@ export default function AdminDashboard() {
             {/* Bar Chart */}
             <div className="xl:col-span-2 card-level-1 p-8">
               <div className="flex justify-between items-center mb-8">
-                <h4 className="text-2xl font-bold">Talent Distribution Analysis</h4>
+                <h4 className="text-2xl font-bold">Analisis Distribusi Bakat</h4>
                 <select className="bg-[#eceef0] border-none rounded-lg text-sm font-semibold px-4 py-2 focus:ring-[#3525cd] outline-none">
-                  <option>Last 30 Days</option>
-                  <option>Last Quarter</option>
+                  <option>30 Hari Terakhir</option>
+                  <option>Kuartal Terakhir</option>
                 </select>
               </div>
               <div className="relative h-64 w-full bg-[#f2f4f6] rounded-xl overflow-hidden flex items-end justify-around px-8 pb-4">
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
 
             {/* System Health */}
             <div className="card-level-1 p-6 space-y-4">
-              <h4 className="text-2xl font-bold">System Health</h4>
+              <h4 className="text-2xl font-bold">Status Sistem</h4>
               <div className="space-y-4">
                 {systemHealth.map((item) => (
                   <div key={item.label} className="flex items-center gap-4 p-3 hover:bg-[#eceef0] rounded-lg transition-colors cursor-pointer">
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
               <button className="w-full py-3 mt-4 border border-[#c7c4d8] text-[#3525cd] text-sm font-semibold rounded-lg hover:bg-[#3525cd]/5 transition-colors">
-                View System Status
+                Lihat Status Sistem
               </button>
             </div>
           </div>
@@ -161,15 +161,15 @@ export default function AdminDashboard() {
           <section className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h4 className="text-2xl font-bold">Variable Ecosystem (C1–C83)</h4>
-                <p className="text-base text-[#464555]">Manage psychometric variables and their weight distribution.</p>
+                <h4 className="text-2xl font-bold">Ekosistem Variabel (C1–C83)</h4>
+                <p className="text-base text-[#464555]">Kelola variabel psikometrik dan distribusi bobotnya.</p>
               </div>
               <div className="flex gap-2">
                 <button className="px-6 py-2 bg-[#3525cd] text-white rounded-full text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:scale-[1.02] active:scale-95 transition-transform flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">add</span> Add Variable
+                  <span className="material-symbols-outlined text-base">add</span> Tambah Variabel
                 </button>
                 <button className="px-6 py-2 border border-[#c7c4d8] text-[#191c1e] text-sm font-semibold rounded-full hover:bg-[#eceef0] transition-colors flex items-center gap-2">
-                  <span className="material-symbols-outlined text-base">file_download</span> Export
+                  <span className="material-symbols-outlined text-base">file_download</span> Ekspor
                 </button>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                       </div>
                     ))}
                     <div className="text-center">
-                      <button className="text-[#3525cd] text-xs font-semibold hover:underline">Show more variables</button>
+                      <button className="text-[#3525cd] text-xs font-semibold hover:underline">Tampilkan variabel lainnya</button>
                     </div>
                   </div>
                 </div>
@@ -201,9 +201,9 @@ export default function AdminDashboard() {
           {/* Recent Consultations */}
           <section className="card-level-1 overflow-hidden">
             <div className="p-6 border-b border-[#c7c4d8] flex justify-between items-center">
-              <h4 className="text-2xl font-bold">Recent Consultations</h4>
+              <h4 className="text-2xl font-bold">Konsultasi Terbaru</h4>
               <button className="text-[#3525cd] text-sm font-semibold flex items-center gap-1 hover:underline">
-                View All <span className="material-symbols-outlined text-base">chevron_right</span>
+                Lihat Semua <span className="material-symbols-outlined text-base">chevron_right</span>
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -211,12 +211,12 @@ export default function AdminDashboard() {
                 <thead className="bg-[#f2f4f6] text-xs font-bold text-[#464555] uppercase tracking-wider">
                   <tr>
                     <th className="px-6 py-4">ID</th>
-                    <th className="px-6 py-4">Client Name</th>
-                    <th className="px-6 py-4">Primary Talent</th>
-                    <th className="px-6 py-4">Confidence</th>
+                    <th className="px-6 py-4">Nama Klien</th>
+                    <th className="px-6 py-4">Bakat Utama</th>
+                    <th className="px-6 py-4">Keyakinan</th>
                     <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Action</th>
+                    <th className="px-6 py-4">Tanggal</th>
+                    <th className="px-6 py-4">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#c7c4d8]/30">
@@ -257,10 +257,10 @@ export default function AdminDashboard() {
 
         {/* Footer */}
         <footer className="w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 bg-[#e0e3e5] mt-auto">
-          <p className="text-xs text-[#464555]">© 2024 TalentPulse Expert Systems. Professional Warmth in Assessment.</p>
+          <p className="text-xs text-[#464555]">© 2026 TalentaKu Expert Systems. Kehangatan Profesional dalam Penilaian.</p>
           <div className="flex gap-6">
-            <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Privacy Policy</Link>
-            <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Terms of Service</Link>
+            <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Kebijakan Privasi</Link>
+            <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Ketentuan Layanan</Link>
           </div>
         </footer>
       </main>

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 const ageRanges = [
-  { label: 'Toddler', range: '3 Years Old', value: 3 },
-  { label: 'Preschool / Kindergarten', range: '4 - 6 Years Old', value: 5 },
-  { label: 'Early Elementary', range: '7 - 9 Years Old', value: 8 },
-  { label: 'Late Elementary', range: '10 - 12 Years Old', value: 11 },
+  { label: 'Batita', range: 'Usia 3 Tahun', value: 3 },
+  { label: 'Prasekolah / TK', range: 'Usia 4 - 6 Tahun', value: 5 },
+  { label: 'SD Awal', range: 'Usia 7 - 9 Tahun', value: 8 },
+  { label: 'SD Akhir', range: 'Usia 10 - 12 Tahun', value: 11 },
 ]
 
 export default function ChildIntakePage() {
@@ -14,7 +14,7 @@ export default function ChildIntakePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    document.title = 'Child Data Intake | TalentaKu'
+    document.title = 'Data Identitas Anak | TalentaKu'
   }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -95,10 +95,10 @@ export default function ChildIntakePage() {
           <div className="text-center space-y-2 mb-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3525cd]/10 text-[#3525cd] border border-[#3525cd]/20 mb-4">
               <span className="material-symbols-outlined text-[18px]">child_care</span>
-              <span className="text-xs font-semibold uppercase tracking-wider">Step 1: Identity</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">Langkah 1: Identitas</span>
             </div>
-            <h1 className="text-[32px] font-bold leading-10 text-[#191c1e]">Tell us about your child</h1>
-            <p className="text-lg text-[#464555]">We'll use this information to tailor the assessment results specifically for their developmental stage.</p>
+            <h1 className="text-[32px] font-bold leading-10 text-[#191c1e]">Ceritakan tentang anak Anda</h1>
+            <p className="text-lg text-[#464555]">Kami akan menggunakan informasi ini untuk menyesuaikan hasil penilaian khusus bagi tahap perkembangan mereka.</p>
           </div>
 
           {/* Form Card */}
@@ -113,7 +113,7 @@ export default function ChildIntakePage() {
               {/* Full Name */}
               <div className="space-y-2 group">
                 <label className="text-sm font-semibold text-[#191c1e] block px-1" htmlFor="child-name">
-                  Child's Full Name
+                  Nama Lengkap Anak
                 </label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#777587] group-focus-within:text-[#3525cd] transition-colors">person</span>
@@ -121,7 +121,7 @@ export default function ChildIntakePage() {
                     className="w-full pl-12 pr-4 py-3.5 bg-white border border-[#c7c4d8] rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] transition-all outline-none text-base"
                     id="child-name"
                     name="name"
-                    placeholder="Enter full name"
+                    placeholder="Masukkan nama lengkap"
                     required
                     type="text"
                   />
@@ -130,7 +130,7 @@ export default function ChildIntakePage() {
 
               {/* Age */}
               <div className="space-y-4">
-                <label className="text-sm font-semibold text-[#191c1e] block px-1">Current Age Group</label>
+                <label className="text-sm font-semibold text-[#191c1e] block px-1">Kelompok Usia Saat Ini</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {ageRanges.map((item) => (
                     <label key={item.value} className="relative group cursor-pointer">
@@ -153,25 +153,28 @@ export default function ChildIntakePage() {
               {/* Gender + School */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-[#191c1e] block px-1">Gender</label>
+                  <label className="text-sm font-semibold text-[#191c1e] block px-1">Jenis Kelamin</label>
                   <div className="flex gap-2 p-1 bg-[#f2f4f6] rounded-lg">
-                    {['Boy', 'Girl'].map((g) => (
-                      <label key={g} className="flex-1">
-                        <input className="peer sr-only" name="gender" required type="radio" value={g.toLowerCase()} />
+                    {[
+                      { label: 'Laki-laki', value: 'boy' },
+                      { label: 'Perempuan', value: 'girl' }
+                    ].map((g) => (
+                      <label key={g.value} className="flex-1">
+                        <input className="peer sr-only" name="gender" required type="radio" value={g.value} />
                         <div className="text-center py-2.5 rounded-md cursor-pointer transition-all peer-checked:bg-white peer-checked:shadow-sm text-sm font-semibold text-[#464555] peer-checked:text-[#3525cd]">
-                          {g}
+                          {g.label}
                         </div>
                       </label>
                     ))}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-[#191c1e] block px-1" htmlFor="child-school">School / Kindergarten</label>
+                  <label className="text-sm font-semibold text-[#191c1e] block px-1" htmlFor="child-school">Sekolah / TK</label>
                   <input
                     className="w-full px-4 py-2.5 bg-white border border-[#c7c4d8] rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] transition-all outline-none text-base"
                     id="child-school"
                     name="school"
-                    placeholder="School Name"
+                    placeholder="Nama Sekolah"
                     required
                     type="text"
                   />
@@ -185,7 +188,7 @@ export default function ChildIntakePage() {
                   className="text-[#464555] text-sm font-semibold flex items-center gap-2 px-6 py-3 hover:text-[#3525cd] transition-colors"
                 >
                   <span className="material-symbols-outlined">arrow_back</span>
-                  Back to Home
+                  Kembali ke Beranda
                 </Link>
                 <button
                   type="submit"
@@ -195,11 +198,11 @@ export default function ChildIntakePage() {
                   {loading ? (
                     <>
                       <span className="material-symbols-outlined animate-spin">sync</span>
-                      Initializing...
+                      Memulai...
                     </>
                   ) : (
                     <>
-                      Begin Assessment
+                      Mulai Penilaian
                       <span className="material-symbols-outlined">arrow_forward</span>
                     </>
                   )}
@@ -211,7 +214,7 @@ export default function ChildIntakePage() {
           {/* Trust badge */}
           <p className="text-center text-xs text-[#464555]/60 flex items-center justify-center gap-2">
             <span className="material-symbols-outlined text-base">lock</span>
-            Your data is encrypted and used only for talent identification purposes.
+            Data Anda dienkripsi dan hanya digunakan untuk tujuan identifikasi bakat.
           </p>
         </section>
       </main>
@@ -220,11 +223,11 @@ export default function ChildIntakePage() {
       <footer className="bg-[#e0e3e5] w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 mt-auto">
         <div className="flex flex-col items-center md:items-start gap-1">
           <span className="text-sm font-bold text-[#464555]">TalentaKu</span>
-          <p className="text-xs text-[#464555]">© 2024 TalentaKu Expert Systems. Professional Warmth in Assessment.</p>
+          <p className="text-xs text-[#464555]">© 2026 TalentaKu Expert Systems. Kehangatan Profesional dalam Penilaian.</p>
         </div>
         <div className="flex gap-6">
-          <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Help</a>
-          <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Privacy Policy</a>
+          <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Bantuan</a>
+          <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Kebijakan Privasi</a>
         </div>
       </footer>
     </div>

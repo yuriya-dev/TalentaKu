@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import AdminSidebar from '../components/layout/AdminSidebar'
 
 const rules = [
-  { id: 'R-102', logicParts: ['Logical_Score > 85', 'Pattern_Score > 90'], target: 'Analytical Depth', status: 'Validated', statusColor: 'bg-[#10B981]/10 text-[#10B981]' },
-  { id: 'R-103', logicParts: ['Verbal_Score > 80', 'Creative_Synthesis == High'], target: 'Advanced Developing', status: 'Draft', statusColor: 'bg-[#777587]/10 text-[#777587]' },
-  { id: 'R-104', logicParts: ['Abstract_Velocity > 95'], target: 'Cognitive Speed', status: 'Validated', statusColor: 'bg-[#10B981]/10 text-[#10B981]' },
+  { id: 'R-102', logicParts: ['Logical_Score > 85', 'Pattern_Score > 90'], target: 'Kedalaman Analisis', status: 'Tervalidasi', statusColor: 'bg-[#10B981]/10 text-[#10B981]' },
+  { id: 'R-103', logicParts: ['Verbal_Score > 80', 'Creative_Synthesis == High'], target: 'Berkembang Lanjut', status: 'Draf', statusColor: 'bg-[#777587]/10 text-[#777587]' },
+  { id: 'R-104', logicParts: ['Abstract_Velocity > 95'], target: 'Kecepatan Kognitif', status: 'Tervalidasi', statusColor: 'bg-[#10B981]/10 text-[#10B981]' },
 ]
 
 export default function AdminRulesPage() {
@@ -15,7 +15,7 @@ export default function AdminRulesPage() {
   const [patternScore, setPatternScore] = useState(92)
 
   useEffect(() => {
-    document.title = 'Rule Builder | TalentaKu Admin'
+    document.title = 'Pembuat Aturan | TalentaKu Admin'
   }, [])
 
   function openPanel(ruleId: string) {
@@ -31,11 +31,11 @@ export default function AdminRulesPage() {
         {/* Top App Bar */}
         <header className="bg-[#f7f9fb]/80 backdrop-blur-md sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-sm">
           <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold text-[#3525cd]">Rule Builder</h2>
+            <h2 className="text-2xl font-bold text-[#3525cd]">Pembuat Aturan</h2>
             <div className="hidden md:flex gap-6 ml-8">
               <a href="#" className="text-sm font-bold text-[#3525cd] border-b-2 border-[#3525cd] py-1">Forward Chaining</a>
-              <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors py-1">Inference History</a>
-              <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors py-1">Variables</a>
+              <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors py-1">Riwayat Inferensi</a>
+              <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors py-1">Variabel</a>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -44,7 +44,7 @@ export default function AdminRulesPage() {
               className="flex items-center gap-2 bg-[#00687a] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:brightness-110 shadow-sm transition-all"
             >
               <span className="material-symbols-outlined text-base">play_circle</span>
-              Run Simulation
+              Jalankan Simulasi
             </button>
           </div>
         </header>
@@ -58,19 +58,19 @@ export default function AdminRulesPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xs font-bold text-[#464555] flex items-center gap-2">
                   <span className="material-symbols-outlined text-base">data_object</span>
-                  L1: INPUT VARIABLES
+                  L1: VARIABEL MASUKAN
                 </h3>
-                <span className="bg-[#3525cd]/10 text-[#3525cd] px-2 py-0.5 rounded text-[10px] font-bold">12 TOTAL</span>
+                <span className="bg-[#3525cd]/10 text-[#3525cd] px-2 py-0.5 rounded text-[10px] font-bold">TOTAL 12</span>
               </div>
               <div className="space-y-4">
-                {['Logical Reasoning', 'Pattern Recognition', 'Verbal Fluency'].map((v) => (
+                {['Penalaran Logis', 'Pengenalan Pola', 'Kefasihan Verbal'].map((v) => (
                   <div key={v} className="p-3 bg-white border border-[#c7c4d8] rounded-xl shadow-sm flex justify-between items-center group hover:border-[#3525cd] transition-colors cursor-pointer">
                     <span className="text-sm font-semibold">{v}</span>
                     <span className="material-symbols-outlined text-[#3525cd] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
                   </div>
                 ))}
                 <div className="p-3 bg-white/50 border border-dashed border-[#c7c4d8] rounded-xl flex items-center justify-center text-[#777587] text-xs">
-                  + 9 more variables
+                  + 9 variabel lainnya
                 </div>
               </div>
             </div>
@@ -80,21 +80,21 @@ export default function AdminRulesPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xs font-bold text-[#3525cd] flex items-center gap-2">
                   <span className="material-symbols-outlined text-base">hub</span>
-                  L2: TALENT INDICATORS
+                  L2: INDIKATOR BAKAT
                 </h3>
-                <span className="bg-[#3525cd] text-white px-2 py-0.5 rounded text-[10px] font-bold">8 ACTIVE</span>
+                <span className="bg-[#3525cd] text-white px-2 py-0.5 rounded text-[10px] font-bold">8 AKTIF</span>
               </div>
               <div className="space-y-4">
                 <div className="p-3 bg-[#3525cd] text-white rounded-xl shadow-md flex justify-between items-center">
-                  <span className="text-sm font-semibold">Analytical Depth</span>
+                  <span className="text-sm font-semibold">Kedalaman Analisis</span>
                   <span className="material-symbols-outlined">settings_input_component</span>
                 </div>
                 <div className="p-3 bg-white border border-[#3525cd]/30 rounded-xl shadow-sm flex justify-between items-center">
-                  <span className="text-sm font-semibold text-[#3525cd]">Creative Synthesis</span>
+                  <span className="text-sm font-semibold text-[#3525cd]">Sintesis Kreatif</span>
                   <span className="material-symbols-outlined text-[#3525cd]/50">link</span>
                 </div>
                 <div className="p-3 bg-white border border-[#c7c4d8] rounded-xl shadow-sm flex justify-between items-center opacity-60">
-                  <span className="text-sm font-semibold">Abstract Velocity</span>
+                  <span className="text-sm font-semibold">Kecepatan Abstrak</span>
                   <span className="material-symbols-outlined text-[#777587]">link</span>
                 </div>
               </div>
@@ -105,29 +105,29 @@ export default function AdminRulesPage() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xs font-bold text-[#00687a] flex items-center gap-2">
                   <span className="material-symbols-outlined text-base">verified</span>
-                  L3: EVALUATION CRITERIA
+                  L3: KRITERIA EVALUASI
                 </h3>
-                <span className="bg-[#00687a] text-white px-2 py-0.5 rounded text-[10px] font-bold">3 OUTPUTS</span>
+                <span className="bg-[#00687a] text-white px-2 py-0.5 rounded text-[10px] font-bold">3 KELUARAN</span>
               </div>
               <div className="space-y-4">
                 <div className="p-4 bg-white border-2 border-[#00687a] rounded-2xl shadow-lg relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-[#00687a]" />
                   <div className="flex items-center gap-3 mb-2">
                     <span className="material-symbols-outlined text-[#FCD34D]" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
-                    <span className="text-sm font-bold">Exceptional Potential</span>
+                    <span className="text-sm font-bold">Potensi Luar Biasa</span>
                   </div>
-                  <p className="text-xs text-[#464555]">Requires high scores in 4+ indicators.</p>
+                  <p className="text-xs text-[#464555]">Memerlukan skor tinggi pada 4+ indikator.</p>
                 </div>
                 <div className="p-4 bg-white border border-[#c7c4d8] rounded-2xl shadow-sm opacity-80">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="material-symbols-outlined text-[#94A3B8]">workspace_premium</span>
-                    <span className="text-sm font-bold">Advanced Developing</span>
+                    <span className="text-sm font-bold">Berkembang Lanjut</span>
                   </div>
                 </div>
                 <div className="p-4 bg-white border border-[#c7c4d8] rounded-2xl shadow-sm opacity-80">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="material-symbols-outlined text-[#D97706]">military_tech</span>
-                    <span className="text-sm font-bold">Emerging Talent</span>
+                    <span className="text-sm font-bold">Bakat yang Muncul</span>
                   </div>
                 </div>
               </div>
@@ -138,15 +138,15 @@ export default function AdminRulesPage() {
           <section className="glass-card rounded-3xl overflow-hidden shadow-sm">
             <div className="px-8 py-6 border-b border-[#c7c4d8] flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h3 className="text-2xl font-bold">Inference Engine Rules</h3>
-                <p className="text-sm text-[#464555]">Currently managing 33 active forward chaining rules.</p>
+                <h3 className="text-2xl font-bold">Aturan Mesin Inferensi</h3>
+                <p className="text-sm text-[#464555]">Saat ini mengelola 33 aturan forward chaining aktif.</p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587]">search</span>
                   <input
                     className="pl-10 pr-4 py-2 border border-[#c7c4d8] rounded-full text-sm focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] outline-none bg-white/50"
-                    placeholder="Search rules..."
+                    placeholder="Cari aturan..."
                     type="text"
                   />
                 </div>
@@ -159,7 +159,7 @@ export default function AdminRulesPage() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-[#f2f4f6]">
                   <tr>
-                    {['ID', 'Rule Logic (Snippet)', 'Target Indicator', 'Status', 'Actions'].map((h) => (
+                    {['ID', 'Logika Aturan (Cuplikan)', 'Indikator Sasaran', 'Status', 'Aksi'].map((h) => (
                       <th key={h} className="px-8 py-4 text-xs font-bold text-[#464555] uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
@@ -206,7 +206,7 @@ export default function AdminRulesPage() {
               </table>
             </div>
             <div className="px-8 py-6 bg-white flex justify-between items-center border-t border-[#c7c4d8]">
-              <span className="text-sm text-[#464555]">Showing 3 of 33 rules</span>
+              <span className="text-sm text-[#464555]">Menampilkan 3 dari 33 aturan</span>
               <div className="flex items-center gap-2">
                 <button className="p-2 border border-[#c7c4d8] rounded hover:bg-[#eceef0] transition-all">
                   <span className="material-symbols-outlined">chevron_left</span>
@@ -230,7 +230,7 @@ export default function AdminRulesPage() {
       >
         <div className="p-8 border-b border-[#c7c4d8] flex justify-between items-center bg-[#f2f4f6]">
           <div>
-            <span className="text-[#3525cd] font-mono text-xs font-bold">Editing Rule</span>
+            <span className="text-[#3525cd] font-mono text-xs font-bold">Mengedit Aturan</span>
             <h3 className="text-2xl font-bold">{selectedRule}</h3>
           </div>
           <button
@@ -242,7 +242,7 @@ export default function AdminRulesPage() {
         </div>
         <div className="flex-1 overflow-y-auto p-8 space-y-8">
           <section className="space-y-4">
-            <h4 className="text-xs font-bold text-[#464555] uppercase tracking-widest">Logic Structure</h4>
+            <h4 className="text-xs font-bold text-[#464555] uppercase tracking-widest">Struktur Logika</h4>
             <div className="p-6 bg-[#f2f4f6] rounded-2xl border border-[#c7c4d8] space-y-6">
               <div className="flex items-start gap-4">
                 <div className="mt-1 px-3 py-1 bg-[#3525cd] text-white rounded text-xs font-bold">IF</div>
@@ -263,7 +263,7 @@ export default function AdminRulesPage() {
                   </div>
                   <button className="text-[#3525cd] text-xs flex items-center gap-1 font-bold">
                     <span className="material-symbols-outlined text-base">add</span>
-                    Add condition
+                    Tambah kondisi
                   </button>
                 </div>
               </div>
@@ -271,11 +271,11 @@ export default function AdminRulesPage() {
                 <div className="mt-1 px-3 py-1 bg-[#00687a] text-white rounded text-xs font-bold">THEN</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#464555]">Set Indicator:</span>
+                    <span className="text-sm text-[#464555]">Tetapkan Indikator:</span>
                     <select className="bg-white border border-[#c7c4d8] rounded-lg text-sm flex-1 p-2 font-bold text-[#00687a] outline-none focus:border-[#3525cd]">
-                      <option>Analytical Depth</option>
-                      <option>Creative Synthesis</option>
-                      <option>Abstract Velocity</option>
+                      <option>Kedalaman Analisis</option>
+                      <option>Sintesis Kreatif</option>
+                      <option>Kecepatan Abstrak</option>
                     </select>
                   </div>
                 </div>
@@ -288,13 +288,13 @@ export default function AdminRulesPage() {
               <div className="space-y-1">
                 <label className="text-xs text-[#777587]">Status</label>
                 <select className="w-full bg-white border border-[#c7c4d8] rounded-lg text-sm p-2 outline-none focus:border-[#3525cd]">
-                  <option>Validated</option>
-                  <option>Draft</option>
-                  <option>Deprecated</option>
+                  <option>Tervalidasi</option>
+                  <option>Draf</option>
+                  <option>Usang</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-[#777587]">Complexity Weight</label>
+                <label className="text-xs text-[#777587]">Bobot Kompleksitas</label>
                 <input className="w-full bg-white border border-[#c7c4d8] rounded-lg text-sm p-2 outline-none focus:border-[#3525cd]" step="0.1" type="number" defaultValue={1.5} />
               </div>
             </div>
@@ -302,10 +302,10 @@ export default function AdminRulesPage() {
         </div>
         <div className="p-8 border-t border-[#c7c4d8] bg-[#f2f4f6] flex gap-3">
           <button className="flex-1 bg-[#3525cd] text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:brightness-110 transition-all">
-            Save Rule Changes
+            Simpan Perubahan Aturan
           </button>
           <button onClick={() => setPanelOpen(false)} className="px-6 border border-[#c7c4d8] py-3 rounded-xl font-bold text-sm hover:bg-[#eceef0] transition-all">
-            Discard
+            Batalkan
           </button>
         </div>
       </div>
@@ -317,8 +317,8 @@ export default function AdminRulesPage() {
           <div className="relative bg-white w-full max-w-2xl rounded-[32px] overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-[#c7c4d8] flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-bold">Inference Simulation</h3>
-                <p className="text-sm text-[#464555]">Test the forward chaining engine with sample data.</p>
+                <h3 className="text-2xl font-bold">Simulasi Inferensi</h3>
+                <p className="text-sm text-[#464555]">Uji mesin forward chaining dengan data sampel.</p>
               </div>
               <button onClick={() => setSimOpen(false)} className="w-10 h-10 rounded-full hover:bg-[#eceef0] flex items-center justify-center transition-colors">
                 <span className="material-symbols-outlined">close</span>
@@ -327,14 +327,14 @@ export default function AdminRulesPage() {
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="text-sm font-bold">Logical Score Input</label>
+                  <label className="text-sm font-bold">Masukan Skor Logis</label>
                   <input className="w-full accent-[#3525cd]" max={100} min={0} type="range" value={logicalScore} onChange={(e) => setLogicalScore(+e.target.value)} />
                   <div className="flex justify-between text-xs text-[#777587]">
                     <span>0</span><span className="font-bold text-[#3525cd]">{logicalScore}</span><span>100</span>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-sm font-bold">Pattern Score Input</label>
+                  <label className="text-sm font-bold">Masukan Skor Pola</label>
                   <input className="w-full accent-[#3525cd]" max={100} min={0} type="range" value={patternScore} onChange={(e) => setPatternScore(+e.target.value)} />
                   <div className="flex justify-between text-xs text-[#777587]">
                     <span>0</span><span className="font-bold text-[#3525cd]">{patternScore}</span><span>100</span>
@@ -342,24 +342,24 @@ export default function AdminRulesPage() {
                 </div>
               </div>
               <div className="p-6 bg-[#e6e8ea] rounded-2xl border-2 border-[#3525cd]/20">
-                <h4 className="text-xs font-bold text-[#3525cd] uppercase mb-4 tracking-widest">Expected Inference Output</h4>
+                <h4 className="text-xs font-bold text-[#3525cd] uppercase mb-4 tracking-widest">Keluaran Inferensi yang Diharapkan</h4>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center border border-[#3525cd]/20">
                     <span className="material-symbols-outlined text-[#3525cd]" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
                   </div>
                   <div>
                     <p className="font-bold text-lg">
-                      {logicalScore > 85 && patternScore > 90 ? 'Analytical Depth Triggered' : 'No Rule Matched'}
+                      {logicalScore > 85 && patternScore > 90 ? 'Kedalaman Analisis Terpicu' : 'Tidak Ada Aturan yang Cocok'}
                     </p>
                     <p className="text-xs text-[#464555]">
-                      {logicalScore > 85 && patternScore > 90 ? 'Rule R-102 matched successfully.' : 'Adjust scores to match a rule condition.'}
+                      {logicalScore > 85 && patternScore > 90 ? 'Aturan R-102 cocok dengan sukses.' : 'Sesuaikan skor untuk memenuhi kondisi aturan.'}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
             <div className="p-8 bg-[#f2f4f6] flex justify-end gap-3">
-              <button className="bg-[#3525cd] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg">Execute Simulation</button>
+              <button className="bg-[#3525cd] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg">Jalankan Simulasi</button>
             </div>
           </div>
         </div>

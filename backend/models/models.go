@@ -13,11 +13,13 @@ type Variable struct {
 	Code     string `gorm:"primaryKey;size:10" json:"code"` // C1-C83
 	Label    string `gorm:"type:text" json:"label"`
 	Category string `json:"category"` // General Intellectual, Academic, etc.
+	AgeGroup string `gorm:"size:30;default:'preschool'" json:"age_group"`
 }
 
 type Indicator struct {
-	Code  string `gorm:"primaryKey;size:10" json:"code"` // I1-I27
-	Label string `gorm:"type:text" json:"label"`
+	Code     string `gorm:"primaryKey;size:10" json:"code"` // I1-I27
+	Label    string `gorm:"type:text" json:"label"`
+	AgeGroup string `gorm:"size:30;default:'preschool'" json:"age_group"`
 }
 
 type IndicatorVariable struct {
@@ -30,6 +32,7 @@ type Criterion struct {
 	Label       string `gorm:"type:text" json:"label"`
 	Description string `gorm:"type:text" json:"description"`
 	Suggestions string `gorm:"type:text" json:"suggestions"` // Actionable suggestions
+	AgeGroup    string `gorm:"size:30;default:'preschool'" json:"age_group"`
 }
 
 type CriterionIndicator struct {

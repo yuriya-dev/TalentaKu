@@ -37,6 +37,7 @@ func main() {
 	api.Post("/intake", handlers.StartIntake)
 	api.Get("/consultations", handlers.GetHistory)
 	api.Get("/consultation/:id", handlers.GetConsultation)
+	api.Get("/consultation/:id/questions", handlers.GetConsultationQuestions)
 	api.Post("/consultation/:id/submit", handlers.SubmitAnswers)
 	api.Get("/consultation/:id/results", handlers.GetResults)
 

@@ -82,10 +82,48 @@ func AuthRequired(c *fiber.Ctx) error {
 
 // Get Variables (for Wizard Page)
 func GetVariables(c *fiber.Ctx) error {
+	ageGroup := c.Query("age_group")
 	var variables []models.Variable
-	if err := db.DB.Order("code ASC").Find(&variables).Error; err != nil {
+	query := db.DB.Order("code ASC")
+	if ageGroup != "" {
+		query = query.Where("age_group = ?", ageGroup)
+	}
+	if err := query.Find(&variables).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch variables"})
 	}
+	return c.JSON(variables)
+}
+
+// Get Variables for a specific Consultation based on child's age group
+func GetConsultationQuestions(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid session ID"})
+	}
+
+	var cons models.Consultation
+	err = db.DB.Preload("Child").Where("id = ?", id).First(&cons).Error
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Assessment session not found"})
+	}
+
+	ageGroup := "preschool"
+	if cons.Child.Age <= 3 {
+		ageGroup = "toddler"
+	} else if cons.Child.Age <= 6 {
+		ageGroup = "preschool"
+	} else if cons.Child.Age <= 9 {
+		ageGroup = "early_elementary"
+	} else {
+		ageGroup = "late_elementary"
+	}
+
+	var variables []models.Variable
+	if err := db.DB.Where("age_group = ?", ageGroup).Order("code ASC").Find(&variables).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch variables"})
+	}
+
 	return c.JSON(variables)
 }
 
@@ -202,6 +240,17 @@ func SubmitAnswers(c *fiber.Ctx) error {
 		ansMap[ans.VariableCode] = ans.Score
 	}
 
+	ageGroup := "preschool"
+	if cons.Child.Age <= 3 {
+		ageGroup = "toddler"
+	} else if cons.Child.Age <= 6 {
+		ageGroup = "preschool"
+	} else if cons.Child.Age <= 9 {
+		ageGroup = "early_elementary"
+	} else {
+		ageGroup = "late_elementary"
+	}
+
 	// Load Knowledge Base
 	var variables []models.Variable
 	var indicators []models.Indicator
@@ -209,10 +258,10 @@ func SubmitAnswers(c *fiber.Ctx) error {
 	var criteria []models.Criterion
 	var critInds []models.CriterionIndicator
 
-	tx.Find(&variables)
-	tx.Find(&indicators)
+	tx.Where("age_group = ?", ageGroup).Find(&variables)
+	tx.Where("age_group = ?", ageGroup).Find(&indicators)
 	tx.Find(&indVars)
-	tx.Find(&criteria)
+	tx.Where("age_group = ?", ageGroup).Find(&criteria)
 	tx.Find(&critInds)
 
 	// Run Forward Chaining engine
@@ -295,6 +344,17 @@ func GetResults(c *fiber.Ctx) error {
 		}
 	}
 
+	ageGroup := "preschool"
+	if cons.Child.Age <= 3 {
+		ageGroup = "toddler"
+	} else if cons.Child.Age <= 6 {
+		ageGroup = "preschool"
+	} else if cons.Child.Age <= 9 {
+		ageGroup = "early_elementary"
+	} else {
+		ageGroup = "late_elementary"
+	}
+
 	// Load Knowledge Base
 	var variables []models.Variable
 	var indicators []models.Indicator
@@ -302,10 +362,10 @@ func GetResults(c *fiber.Ctx) error {
 	var criteria []models.Criterion
 	var critInds []models.CriterionIndicator
 
-	db.DB.Find(&variables)
-	db.DB.Find(&indicators)
+	db.DB.Where("age_group = ?", ageGroup).Find(&variables)
+	db.DB.Where("age_group = ?", ageGroup).Find(&indicators)
 	db.DB.Find(&indVars)
-	db.DB.Find(&criteria)
+	db.DB.Where("age_group = ?", ageGroup).Find(&criteria)
 	db.DB.Find(&critInds)
 
 	// Run Engine
@@ -445,16 +505,27 @@ func GetAdminStats(c *fiber.Ctx) error {
 
 // Admin Rules & Seeding Details (for builder UI)
 func GetRules(c *fiber.Ctx) error {
+	ageGroup := c.Query("age_group")
 	var variables []models.Variable
 	var indicators []models.Indicator
 	var criteria []models.Criterion
 	var indVars []models.IndicatorVariable
 	var critInds []models.CriterionIndicator
 
-	db.DB.Find(&variables)
-	db.DB.Find(&indicators)
+	vQuery := db.DB
+	iQuery := db.DB
+	cQuery := db.DB
+
+	if ageGroup != "" {
+		vQuery = vQuery.Where("age_group = ?", ageGroup)
+		iQuery = iQuery.Where("age_group = ?", ageGroup)
+		cQuery = cQuery.Where("age_group = ?", ageGroup)
+	}
+
+	vQuery.Find(&variables)
+	iQuery.Find(&indicators)
 	db.DB.Find(&indVars)
-	db.DB.Find(&criteria)
+	cQuery.Find(&criteria)
 	db.DB.Find(&critInds)
 
 	return c.JSON(fiber.Map{

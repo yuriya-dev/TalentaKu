@@ -8,13 +8,13 @@ export default function Footer() {
           <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-5 w-auto shrink-0" />
         </div>
         <p className="text-xs text-[#464555] text-center md:text-left">
-          © 2024 TalentaKu Expert Systems. Professional Warmth in Assessment.
+          © 2026 TalentaKu Expert Systems. Kehangatan Profesional dalam Penilaian.
         </p>
       </div>
       <div className="flex gap-8">
-        <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Privacy Policy</Link>
-        <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Terms of Service</Link>
-        <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Support</Link>
+        <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Kebijakan Privasi</Link>
+        <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Ketentuan Layanan</Link>
+        <Link to="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Dukungan</Link>
       </div>
     </footer>
   )

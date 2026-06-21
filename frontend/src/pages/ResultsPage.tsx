@@ -42,7 +42,7 @@ export default function ResultsPage() {
   const [selectedTraceCode, setSelectedTraceCode] = useState<string>('')
 
   useEffect(() => {
-    document.title = 'Assessment Results | TalentaKu'
+    document.title = 'Hasil Penilaian | TalentaKu'
   }, [])
 
   useEffect(() => {
@@ -138,10 +138,10 @@ export default function ResultsPage() {
   const isSatisfied = primaryResult.is_rule_satisfied
 
   function getAgeGroupLabel(age: number) {
-    if (age <= 3) return 'Toddler (3 Tahun)'
-    if (age <= 6) return 'Preschool / Kindergarten (4 - 6 Tahun)'
-    if (age <= 9) return 'Early Elementary (7 - 9 Tahun)'
-    return 'Late Elementary (10 - 12 Tahun)'
+    if (age <= 3) return 'Batita (3 Tahun)'
+    if (age <= 6) return 'Prasekolah / TK (4 - 6 Tahun)'
+    if (age <= 9) return 'SD Awal (7 - 9 Tahun)'
+    return 'SD Akhir (10 - 12 Tahun)'
   }
 
   const suggestions = primaryResult.suggestions || ''
@@ -182,7 +182,7 @@ export default function ResultsPage() {
                 <span className="block text-[#3525cd] text-[48px] font-bold leading-none">
                   {Math.round(primaryResult.score_percentage)}%
                 </span>
-                <span className="text-xs text-[#464555] uppercase tracking-wider">Confidence Score</span>
+                <span className="text-xs text-[#464555] uppercase tracking-wider">Skor Keyakinan</span>
               </div>
             </div>
             <div className="flex flex-col gap-6 max-w-lg">
@@ -242,7 +242,7 @@ export default function ResultsPage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold">{silverResult.criterion_label}</h4>
-                    <p className="text-xs text-[#464555]">{Math.round(silverResult.score_percentage)}% Matching</p>
+                    <p className="text-xs text-[#464555]">{Math.round(silverResult.score_percentage)}% Kesesuaian</p>
                   </div>
                 </div>
                 <span className="text-xs font-mono text-[#777587] font-semibold">{silverResult.criterion_code}</span>
@@ -258,7 +258,7 @@ export default function ResultsPage() {
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold">{bronzeResult.criterion_label}</h4>
-                    <p className="text-xs text-[#464555]">{Math.round(bronzeResult.score_percentage)}% Matching</p>
+                    <p className="text-xs text-[#464555]">{Math.round(bronzeResult.score_percentage)}% Kesesuaian</p>
                   </div>
                 </div>
                 <span className="text-xs font-mono text-[#777587] font-semibold">{bronzeResult.criterion_code}</span>
@@ -337,7 +337,7 @@ export default function ResultsPage() {
           <div className="mb-6">
             <div className="inline-flex items-center gap-2 bg-[#3525cd]/10 px-3 py-1 rounded-full text-[#3525cd] mb-3">
               <span className="material-symbols-outlined text-sm">terminal</span>
-              <span className="text-xs font-semibold uppercase tracking-wider">Expert System Console</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">Konsol Sistem Pakar</span>
             </div>
             <h3 className="text-2xl font-bold mb-2">Pelacakan Inferensi Real-time (Forward Chaining)</h3>
             <p className="text-[#464555] text-base">
@@ -373,15 +373,15 @@ export default function ResultsPage() {
                 <span className="ml-2 font-semibold font-mono select-none">forward_chaining_engine.log</span>
               </div>
               <div>
-                <span>STATUS: {selectedResult.is_rule_satisfied ? 'RULE SATISFIED' : 'RULE UNSATISFIED'}</span>
+                <span>STATUS: {selectedResult.is_rule_satisfied ? 'ATURAN TERPENUHI' : 'ATURAN TIDAK TERPENUHI'}</span>
               </div>
             </div>
 
             {/* Terminal Contents */}
             <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-              <div className="text-slate-500 select-none">[SYSTEM] Initializing Forward Chaining evaluation logic...</div>
-              <div className="text-slate-500 select-none">[SYSTEM] Loading behavior answers for session #{assessmentId}</div>
-              <div className="text-slate-500 select-none">[SYSTEM] Verification threshold set to score &gt;= 4</div>
+              <div className="text-slate-500 select-none">[SYSTEM] Menginisialisasi logika evaluasi Forward Chaining...</div>
+              <div className="text-slate-500 select-none">[SYSTEM] Memuat jawaban perilaku untuk sesi #{assessmentId}</div>
+              <div className="text-slate-500 select-none">[SYSTEM] Ambang batas verifikasi ditetapkan ke skor &gt;= 4</div>
               
               {selectedResult.trace && selectedResult.trace.map((line: string, idx: number) => {
                 const isCheck = line.startsWith('✓')
@@ -405,7 +405,7 @@ export default function ResultsPage() {
                 )
               })}
               
-              <div className="text-slate-500 select-none">[SYSTEM] Evaluation cycle completed for {selectedResult.criterion_code} ({selectedResult.criterion_label})</div>
+              <div className="text-slate-500 select-none">[SYSTEM] Siklus evaluasi selesai untuk {selectedResult.criterion_code} ({selectedResult.criterion_label})</div>
             </div>
           </div>
         </section>

@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
-  { icon: 'home', label: 'Home', to: '/' },
-  { icon: 'assignment', label: 'Assess', to: '/assessment/start' },
-  { icon: 'leaderboard', label: 'Stats', to: '/results/1' },
-  { icon: 'person', label: 'Profile', to: '#' },
+  { icon: 'home', label: 'Beranda', to: '/' },
+  { icon: 'assignment', label: 'Asesmen', to: '/assessment/start' },
+  { icon: 'leaderboard', label: 'Statistik', to: '/results/1' },
+  { icon: 'person', label: 'Profil', to: '#' },
 ]
 
 export default function MobileNav() {

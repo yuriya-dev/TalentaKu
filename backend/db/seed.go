@@ -8,6 +8,11 @@ import (
 )
 
 func SeedData(db *gorm.DB) {
+	// 0. Update empty or null age_group fields to "preschool" for backward compatibility
+	db.Model(&models.Variable{}).Where("age_group = ? OR age_group IS NULL", "").Update("age_group", "preschool")
+	db.Model(&models.Indicator{}).Where("age_group = ? OR age_group IS NULL", "").Update("age_group", "preschool")
+	db.Model(&models.Criterion{}).Where("age_group = ? OR age_group IS NULL", "").Update("age_group", "preschool")
+
 	// 1. Seed Settings
 	var settingCount int64
 	db.Model(&models.Setting{}).Count(&settingCount)
@@ -414,5 +419,283 @@ func SeedData(db *gorm.DB) {
 		db.Create(&mappings2)
 	}
 
+	// 8. Seed other age groups (Toddler, Early Elementary, Late Elementary)
+	seedOtherAgeGroups(db)
+
 	log.Println("Database seeding completed.")
+}
+
+func seedOtherAgeGroups(db *gorm.DB) {
+	// A. Seed Criteria for other age groups
+	var otherCriteriaCount int64
+	db.Model(&models.Criterion{}).Where("age_group != ?", "preschool").Count(&otherCriteriaCount)
+	if otherCriteriaCount == 0 {
+		log.Println("Seeding Criteria for other age groups...")
+		criteria := []models.Criterion{
+			// Toddler (3 Years)
+			{Code: "TK1", Label: "Intelektual Umum", Description: "Kemampuan komunikasi dan memori dasar pada anak usia 3 tahun.", Suggestions: "Dukung dengan membacakan buku bergambar, bernyanyi bersama, dan merespons celoteh anak dengan kalimat lengkap.", AgeGroup: "toddler"},
+			{Code: "TK2", Label: "Akademik Khusus", Description: "Kemampuan mengenal konsep angka dasar (1-3) dan bentuk/warna dasar.", Suggestions: "Ajak bermain puzzle balok sederhana, menyebutkan warna mainan, dan berhitung jari.", AgeGroup: "toddler"},
+			{Code: "TK3", Label: "Berpikir Kreatif dan Produktif", Description: "Kemampuan imajinasi awal dan rasa ingin tahu yang tinggi.", Suggestions: "Sediakan kertas kosong dan krayon besar untuk mencoret-coret, ajak bermain pura-pura (pretend play) sederhana.", AgeGroup: "toddler"},
+			{Code: "TK4", Label: "Kepemimpinan", Description: "Kemampuan sosialisasi awal, kepatuhan instruksi, dan empati sederhana.", Suggestions: "Latih kepatuhan dengan instruksi satu langkah (seperti membereskan mainan), beri contoh berempati secara hangat.", AgeGroup: "toddler"},
+			{Code: "TK5", Label: "Seni Visual dan Pertunjukan", Description: "Kepekaan dasar anak terhadap irama musik dan gambar berwarna.", Suggestions: "Putar musik anak-anak dan ajak bergoyang/bertepuk tangan bersama, sediakan buku bergambar besar.", AgeGroup: "toddler"},
+			{Code: "TK6", Label: "Psikomotorik", Description: "Keterampilan motorik kasar dan halus dasar seperti berlari stabil dan menggenggam krayon.", Suggestions: "Ajak anak bermain lempar-tangkap bola besar, berlari di taman, dan meronce manik-manik besar.", AgeGroup: "toddler"},
+
+			// Early Elementary (7-9 Years)
+			{Code: "EK1", Label: "Intelektual Umum", Description: "Kemampuan penalaran verbal dan logis yang berkembang baik pada usia sekolah awal.", Suggestions: "Ajak anak membaca buku mandiri, bahas kosa kata baru, berikan teka-teki logika atau catur pemula.", AgeGroup: "early_elementary"},
+			{Code: "EK2", Label: "Akademik Khusus", Description: "Kecakapan dalam matematika dasar (penjumlahan/pengurangan) dan ketertarikan pada sains/alam.", Suggestions: "Berikan latihan soal hitungan menyenangkan, ajak berkunjung ke museum sains, lakukan observasi alam.", AgeGroup: "early_elementary"},
+			{Code: "EK3", Label: "Berpikir Kreatif dan Produktif", Description: "Kemampuan menciptakan karya orisinal, kerajinan tangan, dan menemukan solusi alternatif.", Suggestions: "Sediakan bahan daur ulang untuk crafting, ajak menulis buku harian/komik bergambar sendiri.", AgeGroup: "early_elementary"},
+			{Code: "EK4", Label: "Kepemimpinan", Description: "Tanggung jawab mandiri (PR/sekolah), kepemimpinan kelompok bermain, dan kerjasama tim.", Suggestions: "Berikan tugas rumah tangga harian, dukung bergabung dalam klub olahraga atau pramuka sekolah.", AgeGroup: "early_elementary"},
+			{Code: "EK5", Label: "Seni Visual dan Pertunjukan", Description: "Bakat seni rupa detail (proporsi gambar) dan rasa percaya diri tampil seni pertunjukan/musik.", Suggestions: "Ikutkan les menggambar, belajar alat musik dasar (pianika/recorder), dorong tampil di acara sekolah.", AgeGroup: "early_elementary"},
+			{Code: "EK6", Label: "Psikomotorik", Description: "Koordinasi motorik kasar lanjut (sepeda roda dua, lompat tali) dan motorik halus presisi (origami/menggunting pola).", Suggestions: "Latih bersepeda roda dua, bermain bulu tangkis, melatih origami kreatif dan membuat kerajinan tangan rumit.", AgeGroup: "early_elementary"},
+
+			// Late Elementary (10-12 Years)
+			{Code: "LK1", Label: "Intelektual Umum", Description: "Kemampuan penalaran verbal, logika abstrak, debat argumen, dan menulis esai runtut.", Suggestions: "Ajak diskusi kritis tentang isu sosial, berikan buku bacaan sastra anak, dorong anak menulis artikel/esai pendek.", AgeGroup: "late_elementary"},
+			{Code: "LK2", Label: "Akademik Khusus", Description: "Kemampuan pemecahan matematika sekolah tingkat lanjut dan minat riset/teknologi (programming/robotik).", Suggestions: "Dukung bergabung dalam klub matematika, berikan kit robotik sederhana, perkenalkan kelas coding pemula.", AgeGroup: "late_elementary"},
+			{Code: "LK3", Label: "Berpikir Kreatif dan Produktif", Description: "Bakat dalam desain kreatif (digital/seni), inovasi ide proyek, dan apresiasi estetika luas.", Suggestions: "Kenalkan perangkat lunak desain digital, dorong pembuatan video/editing kreatif, ajak mengulas film secara kritis.", AgeGroup: "late_elementary"},
+			{Code: "LK4", Label: "Kepemimpinan", Description: "Kepemimpinan organisasi (ketua kelas/kelompok), resolusi konflik adil, dan sportivitas lomba.", Suggestions: "Dukung berorganisasi di sekolah (OSIS/Pramuka), latih teknik mediasi konflik sebaya, latih sportivitas.", AgeGroup: "late_elementary"},
+			{Code: "LK5", Label: "Seni Visual dan Pertunjukan", Description: "Kemampuan teknik melukis 3D/desain grafis, kemahiran alat musik, dan tari kreasi mandiri.", Suggestions: "Fasilitasi studio lukis sederhana, ikutkan les alat musik lanjutan (gitar/biola), dukung menciptakan koreografi sendiri.", AgeGroup: "late_elementary"},
+			{Code: "LK6", Label: "Psikomotorik", Description: "Penguasaan olahraga tim taktis, kelincahan atletik menonjol, dan keterampilan mekanis/bongkar-pasang presisi.", Suggestions: "Dukung bergabung dengan klub olahraga prestasi (sepak bola/basket), fasilitasi perkakas bongkar pasang mainan mekanik.", AgeGroup: "late_elementary"},
+		}
+		db.Create(&criteria)
+	}
+
+	// B. Seed Indicators for other age groups
+	var otherIndicatorCount int64
+	db.Model(&models.Indicator{}).Where("age_group != ?", "preschool").Count(&otherIndicatorCount)
+	if otherIndicatorCount == 0 {
+		log.Println("Seeding Indicators for other age groups...")
+		indicators := []models.Indicator{
+			// Toddler (3 Years)
+			{Code: "TI1", Label: "Kemampuan Komunikasi & Bicara Dasar", AgeGroup: "toddler"},
+			{Code: "TI2", Label: "Konsep Angka & Warna Dasar", AgeGroup: "toddler"},
+			{Code: "TI3", Label: "Imajinasi Bermain Toddler", AgeGroup: "toddler"},
+			{Code: "TI4", Label: "Kepatuhan & Sosialisasi Dasar", AgeGroup: "toddler"},
+			{Code: "TI5", Label: "Respon Musik & Estetika Toddler", AgeGroup: "toddler"},
+			{Code: "TI6", Label: "Keterampilan Motorik Toddler", AgeGroup: "toddler"},
+
+			// Early Elementary (7-9 Years)
+			{Code: "EI1", Label: "Kemampuan Verbal & Pemahaman Cerita", AgeGroup: "early_elementary"},
+			{Code: "EI2", Label: "Penalaran Logis & Analitis Awal", AgeGroup: "early_elementary"},
+			{Code: "EI3", Label: "Keterampilan Matematika Dasar", AgeGroup: "early_elementary"},
+			{Code: "EI4", Label: "Minat Observasi Alam & Sains", AgeGroup: "early_elementary"},
+			{Code: "EI5", Label: "Orisinalitas & Pembuatan Karya", AgeGroup: "early_elementary"},
+			{Code: "EI6", Label: "Pemecahan Masalah & Kreativitas Praktis", AgeGroup: "early_elementary"},
+			{Code: "EI7", Label: "Kepemimpinan & Kerjasama Kelompok", AgeGroup: "early_elementary"},
+			{Code: "EI8", Label: "Kemandirian & Tanggung Jawab Akademik", AgeGroup: "early_elementary"},
+			{Code: "EI9", Label: "Menggambar dengan Detail & Proporsi", AgeGroup: "early_elementary"},
+			{Code: "EI10", Label: "Bakat Musik & Keberanian Tampil", AgeGroup: "early_elementary"},
+			{Code: "EI11", Label: "Keseimbangan & Kelincahan Fisik", AgeGroup: "early_elementary"},
+			{Code: "EI12", Label: "Keterampilan Motorik Halus Presisi", AgeGroup: "early_elementary"},
+
+			// Late Elementary (10-12 Years)
+			{Code: "LI1", Label: "Penalaran Abstrak & Debat Logis", AgeGroup: "late_elementary"},
+			{Code: "LI2", Label: "Literasi Karangan & Menulis Runtut", AgeGroup: "late_elementary"},
+			{Code: "LI3", Label: "Keterampilan Matematika Lanjut", AgeGroup: "late_elementary"},
+			{Code: "LI4", Label: "Eksperimen Sains & Minat Teknologi", AgeGroup: "late_elementary"},
+			{Code: "LI5", Label: "Inovasi Desain & Proyek Mandiri", AgeGroup: "late_elementary"},
+			{Code: "LI6", Label: "Apresiasi Estetika & Budaya Kritis", AgeGroup: "late_elementary"},
+			{Code: "LI7", Label: "Kepemimpinan Kelompok & Organisasi", AgeGroup: "late_elementary"},
+			{Code: "LI8", Label: "Sportivitas & Resolusi Konflik Sebaya", AgeGroup: "late_elementary"},
+			{Code: "LI9", Label: "Seni Rupa & Media Digital Lanjut", AgeGroup: "late_elementary"},
+			{Code: "LI10", Label: "Kemahiran Instrumen & Tari Mandiri", AgeGroup: "late_elementary"},
+			{Code: "LI11", Label: "Kecakapan Atletik & Olahraga Taktis", AgeGroup: "late_elementary"},
+			{Code: "LI12", Label: "Keterampilan Mekanis & Presisi Fisik", AgeGroup: "late_elementary"},
+		}
+		db.Create(&indicators)
+	}
+
+	// C. Seed Variables for other age groups
+	var otherVariableCount int64
+	db.Model(&models.Variable{}).Where("age_group != ?", "preschool").Count(&otherVariableCount)
+	if otherVariableCount == 0 {
+		log.Println("Seeding Variables for other age groups...")
+		variables := []models.Variable{
+			// Toddler (3 Years)
+			{Code: "T1", Label: "Dapat menyebutkan namanya sendiri dan menunjuk anggota tubuhnya", Category: "General Intellectual", AgeGroup: "toddler"},
+			{Code: "T2", Label: "Dapat meniru kata-kata baru yang didengarnya", Category: "General Intellectual", AgeGroup: "toddler"},
+			{Code: "T3", Label: "Dapat menghitung secara verbal 1-3 benda secara runtut", Category: "Specific Academic", AgeGroup: "toddler"},
+			{Code: "T4", Label: "Mengenal warna dasar (merah, biru, kuning)", Category: "Specific Academic", AgeGroup: "toddler"},
+			{Code: "T5", Label: "Suka mencoret-coret kertas secara bebas", Category: "Creative Thinking", AgeGroup: "toddler"},
+			{Code: "T6", Label: "Suka bermain pura-pura (pretend play) sederhana dengan mainannya", Category: "Creative Thinking", AgeGroup: "toddler"},
+			{Code: "T7", Label: "Mau menunjukkan empati (misal memeluk temannya yang menangis)", Category: "Leadership", AgeGroup: "toddler"},
+			{Code: "T8", Label: "Mau mengikuti petunjuk sederhana satu langkah (misal: ambil mainan)", Category: "Leadership", AgeGroup: "toddler"},
+			{Code: "T9", Label: "Suka bertepuk tangan atau bergoyang saat mendengar lagu anak", Category: "Visual & Performing Arts", AgeGroup: "toddler"},
+			{Code: "T10", Label: "Tertarik mencoba memukul mainan yang berbunyi/musik", Category: "Visual & Performing Arts", AgeGroup: "toddler"},
+			{Code: "T11", Label: "Bisa berlari tanpa sering terjatuh", Category: "Psychomotor", AgeGroup: "toddler"},
+			{Code: "T12", Label: "Bisa memegang krayon dengan genggaman tangannya untuk mencoret", Category: "Psychomotor", AgeGroup: "toddler"},
+
+			// Early Elementary (7-9 Years)
+			{Code: "E1", Label: "Dapat menjelaskan jalan cerita dari buku yang dibacanya", Category: "General Intellectual", AgeGroup: "early_elementary"},
+			{Code: "E2", Label: "Memiliki kosakata yang kaya dan mampu menggunakannya dalam kalimat yang benar", Category: "General Intellectual", AgeGroup: "early_elementary"},
+			{Code: "E3", Label: "Suka bermain puzzle yang membutuhkan pemikiran logis", Category: "General Intellectual", AgeGroup: "early_elementary"},
+			{Code: "E4", Label: "Mampu mengidentifikasi sebab-akibat sederhana dalam kehidupan sehari-hari", Category: "General Intellectual", AgeGroup: "early_elementary"},
+			{Code: "E5", Label: "Mampu melakukan penjumlahan dan pengurangan matematika dasar dengan lancar", Category: "Specific Academic", AgeGroup: "early_elementary"},
+			{Code: "E6", Label: "Tertarik memecahkan teka-teki angka atau logika matematika", Category: "Specific Academic", AgeGroup: "early_elementary"},
+			{Code: "E7", Label: "Suka mengamat serangga, tanaman, atau fenomena alam di sekitar", Category: "Specific Academic", AgeGroup: "early_elementary"},
+			{Code: "E8", Label: "Tertarik membaca buku tentang antariksa, dinosaurus, atau tubuh manusia", Category: "Specific Academic", AgeGroup: "early_elementary"},
+			{Code: "E9", Label: "Sering menemukan cara baru untuk merakit mainan block/lego", Category: "Creative Thinking", AgeGroup: "early_elementary"},
+			{Code: "E10", Label: "Suka mengarang cerita imajinatif atau membuat gambar komik sederhana", Category: "Creative Thinking", AgeGroup: "early_elementary"},
+			{Code: "E11", Label: "Mampu menemukan solusi alternatif saat mainannya rusak", Category: "Creative Thinking", AgeGroup: "early_elementary"},
+			{Code: "E12", Label: "Menunjukkan minat tinggi pada kegiatan kerajinan tangan (crafting)", Category: "Creative Thinking", AgeGroup: "early_elementary"},
+			{Code: "E13", Label: "Mampu memimpin kelompok kecil dalam permainan atau tugas sekolah", Category: "Leadership", AgeGroup: "early_elementary"},
+			{Code: "E14", Label: "Mengalah demi kepentingan bersama saat bermain dengan teman", Category: "Leadership", AgeGroup: "early_elementary"},
+			{Code: "E15", Label: "Mampu menyiapkan perlengkapan sekolahnya sendiri setiap hari", Category: "Leadership", AgeGroup: "early_elementary"},
+			{Code: "E16", Label: "Menyelesaikan tugas pekerjaan rumah (PR) tepat waktu secara mandiri", Category: "Leadership", AgeGroup: "early_elementary"},
+			{Code: "E17", Label: "Mampu menggambar objek dengan detail yang cukup baik (misal ada bayangan/proporsi)", Category: "Visual & Performing Arts", AgeGroup: "early_elementary"},
+			{Code: "E18", Label: "Suka mewarnai dengan kombinasi warna yang harmonis", Category: "Visual & Performing Arts", AgeGroup: "early_elementary"},
+			{Code: "E19", Label: "Mampu menyanyikan lagu dengan nada yang tepat (pitch control)", Category: "Visual & Performing Arts", AgeGroup: "early_elementary"},
+			{Code: "E20", Label: "Percaya diri tampil menari atau menyanyi di depan kelas/keluarga", Category: "Visual & Performing Arts", AgeGroup: "early_elementary"},
+			{Code: "E21", Label: "Lancar mengendarai sepeda roda dua tanpa bantuan roda samping", Category: "Psychomotor", AgeGroup: "early_elementary"},
+			{Code: "E22", Label: "Mampu melakukan lompat tali (skipping) beberapa kali berturut-turut", Category: "Psychomotor", AgeGroup: "early_elementary"},
+			{Code: "E23", Label: "Mampu menggunakan gunting dengan rapi untuk memotong pola yang rumit", Category: "Psychomotor", AgeGroup: "early_elementary"},
+			{Code: "E24", Label: "Dapat meronce manik-manik kecil atau melipat kertas origami dengan rapi", Category: "Psychomotor", AgeGroup: "early_elementary"},
+
+			// Late Elementary (10-12 Years)
+			{Code: "L1", Label: "Mampu memahami konsep abstrak (seperti keadilan, toleransi, atau ekonomi dasar)", Category: "General Intellectual", AgeGroup: "late_elementary"},
+			{Code: "L2", Label: "Suka berdebat secara logis mengenai suatu topik dengan orang tua atau guru", Category: "General Intellectual", AgeGroup: "late_elementary"},
+			{Code: "L3", Label: "Suka membaca novel anak atau artikel pengetahuan yang panjang", Category: "General Intellectual", AgeGroup: "late_elementary"},
+			{Code: "L4", Label: "Mampu menulis karangan atau esai pendek dengan alur pemikiran yang runtut", Category: "General Intellectual", AgeGroup: "late_elementary"},
+			{Code: "L5", Label: "Cepat memahami materi matematika sekolah yang kompleks (pecahan desimal, bangun ruang)", Category: "Specific Academic", AgeGroup: "late_elementary"},
+			{Code: "L6", Label: "Mampu membaca dan membuat grafik atau tabel sederhana secara mandiri", Category: "Specific Academic", AgeGroup: "late_elementary"},
+			{Code: "L7", Label: "Suka melakukan eksperimen sains sekolah dan antusias mencatat hasilnya", Category: "Specific Academic", AgeGroup: "late_elementary"},
+			{Code: "L8", Label: "Tertarik pada teknologi baru, pemrograman komputer dasar, atau robotik", Category: "Specific Academic", AgeGroup: "late_elementary"},
+			{Code: "L9", Label: "Suka mendesain sesuatu (misal poster digital, maket rumah, atau pakaian boneka)", Category: "Creative Thinking", AgeGroup: "late_elementary"},
+			{Code: "L10", Label: "Sering memberikan ide-ide orisinal dalam proyek kelompok sekolah", Category: "Creative Thinking", AgeGroup: "late_elementary"},
+			{Code: "L11", Label: "Suka mengapresiasi karya seni, musik klasik, atau film dengan ulasan kritis sendiri", Category: "Creative Thinking", AgeGroup: "late_elementary"},
+			{Code: "L12", Label: "Tertarik mempelajari budaya, bahasa, atau sejarah daerah/negara lain", Category: "Creative Thinking", AgeGroup: "late_elementary"},
+			{Code: "L13", Label: "Sering ditunjuk atau bersedia menjadi ketua kelas atau pemimpin kelompok", Category: "Leadership", AgeGroup: "late_elementary"},
+			{Code: "L14", Label: "Mampu mengorganisir teman-teman untuk menyelesaikan proyek kelompok dengan baik", Category: "Leadership", AgeGroup: "late_elementary"},
+			{Code: "L15", Label: "Mampu menerima kegagalan dalam lomba dengan sikap sportif dan positif", Category: "Leadership", AgeGroup: "late_elementary"},
+			{Code: "L16", Label: "Mampu membantu menyelesaikan perselisihan antara teman-temannya secara adil", Category: "Leadership", AgeGroup: "late_elementary"},
+			{Code: "L17", Label: "Mampu membuat lukisan atau karya seni tiga dimensi dengan teknik dan arsiran yang baik", Category: "Visual & Performing Arts", AgeGroup: "late_elementary"},
+			{Code: "L18", Label: "Mahir menggunakan media digital untuk menggambar atau mengedit foto/video", Category: "Visual & Performing Arts", AgeGroup: "late_elementary"},
+			{Code: "L19", Label: "Bisa memainkan satu alat musik dengan baik (misal gitar, keyboard, atau biola)", Category: "Visual & Performing Arts", AgeGroup: "late_elementary"},
+			{Code: "L20", Label: "Mampu menciptakan gerakan tari atau melodi lagu sederhana sendiri", Category: "Visual & Performing Arts", AgeGroup: "late_elementary"},
+			{Code: "L21", Label: "Menguasai teknik dasar olahraga tim (seperti sepak bola, basket, atau bulu tangkis)", Category: "Psychomotor", AgeGroup: "late_elementary"},
+			{Code: "L22", Label: "Memiliki kelincahan, kekuatan, dan daya tahan fisik yang menonjol dalam olahraga", Category: "Psychomotor", AgeGroup: "late_elementary"},
+			{Code: "L23", Label: "Suka membongkar dan memperbaiki mainan mekanik atau barang elektronik yang rusak", Category: "Psychomotor", AgeGroup: "late_elementary"},
+			{Code: "L24", Label: "Memiliki ketelitian tinggi dalam menjahit, merakit model miniatur, atau kerajinan tangan presisi", Category: "Psychomotor", AgeGroup: "late_elementary"},
+		}
+		db.Create(&variables)
+	}
+
+	// D. Seed IndicatorVariable mappings (Level 1)
+	var otherMapping1Count int64
+	db.Model(&models.IndicatorVariable{}).Where("indicator_code LIKE ? OR indicator_code LIKE ? OR indicator_code LIKE ?", "TI%", "EI%", "LI%").Count(&otherMapping1Count)
+	if otherMapping1Count == 0 {
+		log.Println("Seeding IndicatorVariable mappings (Level 1) for other age groups...")
+		mappings := []models.IndicatorVariable{
+			// Toddler (3 Years)
+			{IndicatorCode: "TI1", VariableCode: "T1"},
+			{IndicatorCode: "TI1", VariableCode: "T2"},
+			{IndicatorCode: "TI2", VariableCode: "T3"},
+			{IndicatorCode: "TI2", VariableCode: "T4"},
+			{IndicatorCode: "TI3", VariableCode: "T5"},
+			{IndicatorCode: "TI3", VariableCode: "T6"},
+			{IndicatorCode: "TI4", VariableCode: "T7"},
+			{IndicatorCode: "TI4", VariableCode: "T8"},
+			{IndicatorCode: "TI5", VariableCode: "T9"},
+			{IndicatorCode: "TI5", VariableCode: "T10"},
+			{IndicatorCode: "TI6", VariableCode: "T11"},
+			{IndicatorCode: "TI6", VariableCode: "T12"},
+
+			// Early Elementary (7-9 Years)
+			{IndicatorCode: "EI1", VariableCode: "E1"},
+			{IndicatorCode: "EI1", VariableCode: "E2"},
+			{IndicatorCode: "EI2", VariableCode: "E3"},
+			{IndicatorCode: "EI2", VariableCode: "E4"},
+			{IndicatorCode: "EI3", VariableCode: "E5"},
+			{IndicatorCode: "EI3", VariableCode: "E6"},
+			{IndicatorCode: "EI4", VariableCode: "E7"},
+			{IndicatorCode: "EI4", VariableCode: "E8"},
+			{IndicatorCode: "EI5", VariableCode: "E9"},
+			{IndicatorCode: "EI5", VariableCode: "E10"},
+			{IndicatorCode: "EI6", VariableCode: "E11"},
+			{IndicatorCode: "EI6", VariableCode: "E12"},
+			{IndicatorCode: "EI7", VariableCode: "E13"},
+			{IndicatorCode: "EI7", VariableCode: "E14"},
+			{IndicatorCode: "EI8", VariableCode: "E15"},
+			{IndicatorCode: "EI8", VariableCode: "E16"},
+			{IndicatorCode: "EI9", VariableCode: "E17"},
+			{IndicatorCode: "EI9", VariableCode: "E18"},
+			{IndicatorCode: "EI10", VariableCode: "E19"},
+			{IndicatorCode: "EI10", VariableCode: "E20"},
+			{IndicatorCode: "EI11", VariableCode: "E21"},
+			{IndicatorCode: "EI11", VariableCode: "E22"},
+			{IndicatorCode: "EI12", VariableCode: "E23"},
+			{IndicatorCode: "EI12", VariableCode: "E24"},
+
+			// Late Elementary (10-12 Years)
+			{IndicatorCode: "LI1", VariableCode: "L1"},
+			{IndicatorCode: "LI1", VariableCode: "L2"},
+			{IndicatorCode: "LI2", VariableCode: "L3"},
+			{IndicatorCode: "LI2", VariableCode: "L4"},
+			{IndicatorCode: "LI3", VariableCode: "L5"},
+			{IndicatorCode: "LI3", VariableCode: "L6"},
+			{IndicatorCode: "LI4", VariableCode: "L7"},
+			{IndicatorCode: "LI4", VariableCode: "L8"},
+			{IndicatorCode: "LI5", VariableCode: "L9"},
+			{IndicatorCode: "LI5", VariableCode: "L10"},
+			{IndicatorCode: "LI6", VariableCode: "L11"},
+			{IndicatorCode: "LI6", VariableCode: "L12"},
+			{IndicatorCode: "LI7", VariableCode: "L13"},
+			{IndicatorCode: "LI7", VariableCode: "L14"},
+			{IndicatorCode: "LI8", VariableCode: "L15"},
+			{IndicatorCode: "LI8", VariableCode: "L16"},
+			{IndicatorCode: "LI9", VariableCode: "L17"},
+			{IndicatorCode: "LI9", VariableCode: "L18"},
+			{IndicatorCode: "LI10", VariableCode: "L19"},
+			{IndicatorCode: "LI10", VariableCode: "L20"},
+			{IndicatorCode: "LI11", VariableCode: "L21"},
+			{IndicatorCode: "LI11", VariableCode: "L22"},
+			{IndicatorCode: "LI12", VariableCode: "L23"},
+			{IndicatorCode: "LI12", VariableCode: "L24"},
+		}
+		db.Create(&mappings)
+	}
+
+	// E. Seed CriterionIndicator mappings (Level 2)
+	var otherMapping2Count int64
+	db.Model(&models.CriterionIndicator{}).Where("criterion_code LIKE ? OR criterion_code LIKE ? OR criterion_code LIKE ?", "TK%", "EK%", "LK%").Count(&otherMapping2Count)
+	if otherMapping2Count == 0 {
+		log.Println("Seeding CriterionIndicator mappings (Level 2) for other age groups...")
+		mappings := []models.CriterionIndicator{
+			// Toddler (3 Years)
+			{CriterionCode: "TK1", IndicatorCode: "TI1"},
+			{CriterionCode: "TK2", IndicatorCode: "TI2"},
+			{CriterionCode: "TK3", IndicatorCode: "TI3"},
+			{CriterionCode: "TK4", IndicatorCode: "TI4"},
+			{CriterionCode: "TK5", IndicatorCode: "TI5"},
+			{CriterionCode: "TK6", IndicatorCode: "TI6"},
+
+			// Early Elementary (7-9 Years)
+			{CriterionCode: "EK1", IndicatorCode: "EI1"},
+			{CriterionCode: "EK1", IndicatorCode: "EI2"},
+			{CriterionCode: "EK2", IndicatorCode: "EI3"},
+			{CriterionCode: "EK2", IndicatorCode: "EI4"},
+			{CriterionCode: "EK3", IndicatorCode: "EI5"},
+			{CriterionCode: "EK3", IndicatorCode: "EI6"},
+			{CriterionCode: "EK4", IndicatorCode: "EI7"},
+			{CriterionCode: "EK4", IndicatorCode: "EI8"},
+			{CriterionCode: "EK5", IndicatorCode: "EI9"},
+			{CriterionCode: "EK5", IndicatorCode: "EI10"},
+			{CriterionCode: "EK6", IndicatorCode: "EI11"},
+			{CriterionCode: "EK6", IndicatorCode: "EI12"},
+
+			// Late Elementary (10-12 Years)
+			{CriterionCode: "LK1", IndicatorCode: "LI1"},
+			{CriterionCode: "LK1", IndicatorCode: "LI2"},
+			{CriterionCode: "LK2", IndicatorCode: "LI3"},
+			{CriterionCode: "LK2", IndicatorCode: "LI4"},
+			{CriterionCode: "LK3", IndicatorCode: "LI5"},
+			{CriterionCode: "LK3", IndicatorCode: "LI6"},
+			{CriterionCode: "LK4", IndicatorCode: "LI7"},
+			{CriterionCode: "LK4", IndicatorCode: "LI8"},
+			{CriterionCode: "LK5", IndicatorCode: "LI9"},
+			{CriterionCode: "LK5", IndicatorCode: "LI10"},
+			{CriterionCode: "LK6", IndicatorCode: "LI11"},
+			{CriterionCode: "LK6", IndicatorCode: "LI12"},
+		}
+		db.Create(&mappings)
+	}
 }

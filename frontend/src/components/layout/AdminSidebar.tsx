@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
-  { icon: 'dashboard', label: 'Dashboard', to: '/admin' },
-  { icon: 'quiz', label: 'Assessments', to: '/admin/assessments' },
-  { icon: 'account_tree', label: 'Rules Builder', to: '/admin/rules' },
-  { icon: 'tune', label: 'Variables', to: '/admin/variables' },
-  { icon: 'leaderboard', label: 'Indicators', to: '/admin/indicators' },
-  { icon: 'settings', label: 'Settings', to: '/admin/settings' },
+  { icon: 'dashboard', label: 'Dasbor', to: '/admin' },
+  { icon: 'quiz', label: 'Asesmen', to: '/admin/assessments' },
+  { icon: 'account_tree', label: 'Pembuat Aturan', to: '/admin/rules' },
+  { icon: 'tune', label: 'Variabel', to: '/admin/variables' },
+  { icon: 'leaderboard', label: 'Indikator', to: '/admin/indicators' },
+  { icon: 'settings', label: 'Pengaturan', to: '/admin/settings' },
 ]
 
 export default function AdminSidebar() {
@@ -47,11 +47,11 @@ export default function AdminSidebar() {
       <div className="mt-auto flex flex-col gap-1 border-t border-[#c7c4d8] pt-4">
         <button className="text-[#464555] hover:bg-[#e0e3e5]/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-semibold">
           <span className="material-symbols-outlined">help</span>
-          <span>Help</span>
+          <span>Bantuan</span>
         </button>
         <button className="text-[#ba1a1a] flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#ba1a1a]/10 transition-all duration-200 text-sm font-semibold">
           <span className="material-symbols-outlined">logout</span>
-          <span>Logout</span>
+          <span>Keluar</span>
         </button>
       </div>
     </aside>

@@ -1,112 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
-const TOTAL_QUESTIONS = 83
-
 interface Question {
   id: number
   category: string
   code: string
   text: string
-  example: string
+  example?: string
 }
-
-const questions: Question[] = [
-  // Bahasa & Intelektual Umum (C1-C14)
-  { id: 1, category: 'Bahasa & Intelektual Umum', code: 'C1', text: 'Apakah anak dapat menirukan kalimat sederhana dengan jelas?', example: 'Misal: Menirukan kalimat "Ayo kita pergi bermain" secara lengkap tanpa salah ucap.' },
-  { id: 2, category: 'Bahasa & Intelektual Umum', code: 'C2', text: 'Apakah anak dapat meniru kembali 4-5 urutan kata yang didengarnya?', example: 'Misal: Mengulangi kata "meja, kursi, buku, lemari" setelah diucapkan oleh orang tua.' },
-  { id: 3, category: 'Bahasa & Intelektual Umum', code: 'C3', text: 'Apakah anak dapat mengulangi kalimat panjang yang baru didengarnya secara presisi?', example: 'Misal: Mengulangi instruksi "Tolong ambilkan krayon warna biru di atas meja belajar kakak."' },
-  { id: 4, category: 'Bahasa & Intelektual Umum', code: 'C4', text: 'Apakah anak dapat menyanyikan lagu anak-anak lebih dari 20 lagu yang berbeda?', example: 'Misal: Menghafal lirik dan melodi lagu anak seperti Balonku, Pelangi, Bintang Kecil, dll.' },
-  { id: 5, category: 'Bahasa & Intelektual Umum', code: 'C5', text: 'Apakah anak dapat menyebutkan simbol-simbol huruf vokal dan konsonan yang ditunjuk?', example: 'Misal: Menunjuk dan melafalkan huruf \'A\', \'B\', \'C\', \'O\', \'U\' pada poster atau kartu kata.' },
-  { id: 6, category: 'Bahasa & Intelektual Umum', code: 'C6', text: 'Apakah anak mengucapkan syair lagu secara lantang sambil bersenandung mengikuti irama?', example: 'Misal: Bernyanyi dengan keras dan berirama tanpa malu-malu saat mendengar musik.' },
-  { id: 7, category: 'Bahasa & Intelektual Umum', code: 'C7', text: 'Apakah anak dapat mengelompokkan benda-benda sekitar berdasarkan kesamaan fungsinya?', example: 'Misal: Mengumpulkan semua mainan mobil-mobilan di satu kotak, dan balok kayu di kotak lainnya.' },
-  { id: 8, category: 'Bahasa & Intelektual Umum', code: 'C8', text: 'Apakah anak dapat meniru penulisan berbagai lambang huruf vokal dan konsonan di atas kertas?', example: 'Misal: Menyalin tulisan huruf vokal/konsonan yang dicontohkan di buku tulis.' },
-  { id: 9, category: 'Bahasa & Intelektual Umum', code: 'C9', text: 'Apakah anak dapat mengelompokkan peralatan makan, mandi, dan kebersihan secara terpisah?', example: 'Misal: Membedakan piring/sendok dengan sabun/sikat gigi ke tempatnya masing-masing.' },
-  { id: 10, category: 'Bahasa & Intelektual Umum', code: 'C10', text: 'Apakah anak dapat menggunakan kata tanya (apa, mengapa, di mana, berapa, bagaimana) dengan tepat?', example: 'Misal: Sering bertanya "Mengapa daun warnanya hijau?" atau "Berapa banyak mainan ini?".' },
-  { id: 11, category: 'Bahasa & Intelektual Umum', code: 'C11', text: 'Apakah anak dapat bercerita secara runtut tentang gambar yang disediakan atau gambarnya sendiri?', example: 'Misal: Menjelaskan gambar rumah dengan cerita "Ini rumahku, ada pohon besar di sampingnya dan awan di atas".' },
-  { id: 12, category: 'Bahasa & Intelektual Umum', code: 'C12', text: 'Apakah anak aktif menggunakan kata ganti orang (aku, saya, kamu, mereka) dalam percakapan sehari-hari?', example: 'Misal: Menyatakan "Aku mau makan buah" atau "Mereka sedang bermain di luar".' },
-  { id: 13, category: 'Bahasa & Intelektual Umum', code: 'C13', text: 'Apakah anak dapat menceritakan kembali pengalaman menarik atau kejadian sederhana yang dialaminya?', example: 'Misal: Menceritakan kunjungannya ke kebun binatang atau kejadian saat bermain di taman sekolah.' },
-  { id: 14, category: 'Bahasa & Intelektual Umum', code: 'C14', text: 'Apakah anak dapat memberikan keterangan lengkap atau informasi spontan tentang suatu hal?', example: 'Misal: Tiba-tiba bercerita "Tadi kucing warna jingga itu melompati pagar rumah tetangga".' },
-
-  // Akademik Khusus (C15-C25)
-  { id: 15, category: 'Akademik Khusus', code: 'C15', text: 'Apakah anak dapat menyebutkan urutan bilangan 1 sampai 10 secara runtut?', example: 'Misal: Lancar berhitung satu sampai sepuluh tanpa ada angka yang terlewat.' },
-  { id: 16, category: 'Akademik Khusus', code: 'C16', text: 'Apakah anak dapat menunjuk lambang bilangan 1 sampai 10 yang ditulis secara acak?', example: 'Misal: Menunjuk angka 7 dengan benar saat ditanyakan pada kartu angka acak.' },
-  { id: 17, category: 'Akademik Khusus', code: 'C17', text: 'Apakah anak dapat meniru penulisan lambang bilangan 1 sampai 10?', example: 'Misal: Menyalin penulisan angka 3 atau 8 di atas kertas pasir atau buku tulis.' },
-  { id: 18, category: 'Akademik Khusus', code: 'C18', text: 'Apakah anak mengenal dan menyebutkan lambang bilangan 1 sampai 20?', example: 'Misal: Mampu mengidentifikasi angka belasan (11-20) pada buku atau jam dinding.' },
-  { id: 19, category: 'Akademik Khusus', code: 'C19', text: 'Apakah anak dapat membedakan dan membuat dua kumpulan benda berdasarkan jumlah kuantitasnya?', example: 'Misal: Membagi 5 permen di kiri dan 3 permen di kanan, lalu menyebutkan mana yang lebih banyak.' },
-  { id: 20, category: 'Akademik Khusus', code: 'C20', text: 'Apakah anak mengenal perbedaan bentuk geometri benda (lingkaran, segitiga, persegi)?', example: 'Misal: Menunjuk jam dinding sebagai bulat dan atap rumah sebagai segitiga.' },
-  { id: 21, category: 'Akademik Khusus', code: 'C21', text: 'Apakah anak mencoba mencampur warna cat dan antusias menceritakan perubahan warnanya?', example: 'Misal: Mencampur kuning dengan biru, lalu gembira berteriak "Wah, jadi hijau!".' },
-  { id: 22, category: 'Akademik Khusus', code: 'C22', text: 'Apakah anak suka bereksperimen menaruh benda ke air lalu menceritakan peristiwa tenggelam atau terapung?', example: 'Misal: Memasukkan batu (tenggelam) dan daun (terapung) ke dalam wadah air saat mandi atau bermain.' },
-  { id: 23, category: 'Akademik Khusus', code: 'C23', text: 'Apakah anak dapat menirukan dan menceritakan macam-macam bunyi alam atau kendaraan di sekitar?', example: 'Misal: Menirukan bunyi hujan "tik-tik", bunyi petir, atau klakson mobil "tin-tin".' },
-  { id: 24, category: 'Akademik Khusus', code: 'C24', text: 'Apakah anak dapat mengenali dan menceritakan perbedaan macam-macam rasa makanan?', example: 'Misal: Menyebut gula itu manis, garam itu asin, dan obat itu pahit dengan ekspresif.' },
-  { id: 25, category: 'Akademik Khusus', code: 'C25', text: 'Apakah anak dapat menceritakan berbagai jenis bau wewangian atau bau tak sedap secara spesifik?', example: 'Misal: Menyebut bau masakan ibu harum atau bau tempat sampah busuk.' },
-
-  // Kreatif & Seni (C26-C48)
-  { id: 26, category: 'Kreatif & Seni', code: 'C26', text: 'Apakah anak mau mengungkapkan pendapat pribadinya secara sederhana?', example: 'Misal: Mengusulkan ide mainan atau kegiatan saat guru/orang tua bertanya.' },
-  { id: 27, category: 'Kreatif & Seni', code: 'C27', text: 'Apakah anak menjawab pertanyaan dengan antusias ketika dimintai informasi atau keterangan?', example: 'Misal: Cepat dan bersemangat menjawab saat ditanya siapa nama temannya di sekolah.' },
-  { id: 28, category: 'Kreatif & Seni', code: 'C28', text: 'Apakah anak secara spontan menyapa teman sebaya maupun orang dewasa yang dikenalnya?', example: 'Misal: Melambaikan tangan dan berseru "Halo!" saat berpapasan dengan teman di taman.' },
-  { id: 29, category: 'Kreatif & Seni', code: 'C29', text: 'Apakah anak mengucapkan salam saat masuk ke dalam ruangan atau bertemu orang lain?', example: 'Misal: Mengucapkan "Assalamualaikum" atau "Selamat pagi" saat masuk kelas.' },
-  { id: 30, category: 'Kreatif & Seni', code: 'C30', text: 'Apakah anak mengucapkan terima kasih secara sadar setelah menerima bantuan atau barang?', example: 'Misal: Mengatakan terima kasih saat diberi permen tanpa harus diingatkan terlebih dahulu.' },
-  { id: 31, category: 'Kreatif & Seni', code: 'C31', text: 'Apakah anak dapat mengekspresikan perasaannya secara wajar?', example: 'Misal: Menangis sebentar saat sedih lalu tenang kembali setelah diberi penjelasan.' },
-  { id: 32, category: 'Kreatif & Seni', code: 'C32', text: 'Apakah anak membuat perencanaan sederhana mengenai aktivitas bermain yang ingin dilakukannya?', example: 'Misal: Berkata "Nanti aku mau susun lego tinggi dulu, baru buat jalan mobil".' },
-  { id: 33, category: 'Kreatif & Seni', code: 'C33', text: 'Apakah anak mampu mengambil keputusan sederhana sendiri?', example: 'Misal: Memilih baju warna merah dibanding biru saat bersiap untuk bepergian.' },
-  { id: 34, category: 'Kreatif & Seni', code: 'C34', text: 'Apakah anak suka menggambar secara bebas dan ekspresif menggunakan krayon atau spidol?', example: 'Misal: Mencoret-coret kertas dengan warna-warni yang berani membentuk garis-garis imajinatif.' },
-  { id: 35, category: 'Kreatif & Seni', code: 'C35', text: 'Apakah anak mampu membedakan perbuatan yang benar dan salah di lingkungannya?', example: 'Misal: Mengetahui bahwa membuang sampah sembarangan itu salah dan menaruhnya di tempat sampah itu benar.' },
-  { id: 36, category: 'Kreatif & Seni', code: 'C36', text: 'Apakah anak suka menolong teman yang mengalami kesulitan atau terjatuh?', example: 'Misal: Spontan membantu membangunkan temannya yang tersandung di arena bermain.' },
-  { id: 37, category: 'Kreatif & Seni', code: 'C37', text: 'Apakah anak mau bermain dengan siapa saja tanpa membedakan latar belakang atau fisik?', example: 'Misal: Langsung bergaul dengan anak baru tanpa ragu-ragu.' },
-  { id: 38, category: 'Kreatif & Seni', code: 'C38', text: 'Apakah anak menghargai hasil gambar atau susunan balok karya temannya?', example: 'Misal: Tidak merusak menara balok yang dibuat temannya dan melihatnya dengan kagum.' },
-  { id: 39, category: 'Kreatif & Seni', code: 'C39', text: 'Apakah anak mengakui dan memuji keunggulan atau kemampuan yang dimiliki temannya?', example: 'Misal: Memuji temannya dengan berkata "Wah, lari kamu cepat sekali!".' },
-  { id: 40, category: 'Kreatif & Seni', code: 'C40', text: 'Apakah anak menginisiasi permainan dengan mengajak teman-teman sekitarnya bergabung?', example: 'Misal: Berkata "Ayo kita main petak umpet bersama!".' },
-  { id: 41, category: 'Kreatif & Seni', code: 'C41', text: 'Apakah anak mudah memberi maaf kepada teman yang tidak sengaja menyakitinya atau merusak mainannya?', example: 'Misal: Berkata "Tidak apa-apa kok" ketika baloknya tidak sengaja tersenggol runtuh oleh teman.' },
-  { id: 42, category: 'Kreatif & Seni', code: 'C42', text: 'Apakah anak dapat berinteraksi secara ramah dengan teman yang berbeda latar belakang atau agama?', example: 'Misal: Menghormati saat temannya berdoa sebelum makan dengan cara yang berbeda.' },
-  { id: 43, category: 'Kreatif & Seni', code: 'C43', text: 'Apakah anak memberikan pujian verbal kepada teman yang berbuat baik atau berhasil?', example: 'Misal: Mengatakan "Gambar buatanmu bagus sekali!" secara spontan.' },
-  { id: 44, category: 'Kreatif & Seni', code: 'C44', text: 'Apakah anak berpakaian rapi dan menjaga kesopanan selama berada di sekolah atau tempat umum?', example: 'Misal: Merapikan bajunya sendiri setelah dari kamar mandi atau menjaga sikap di restoran.' },
-  { id: 45, category: 'Kreatif & Seni', code: 'C45', text: 'Apakah anak menghormati guru, orang tua, dan orang yang berusia lebih tua?', example: 'Misal: Mencium tangan orang tua saat berpamitan pergi sekolah atau berbicara dengan nada lembut.' },
-  { id: 46, category: 'Kreatif & Seni', code: 'C46', text: 'Apakah anak mendengarkan dengan tenang ketika guru atau temannya sedang berbicara?', example: 'Misal: Tidak memotong pembicaraan orang lain dan memperhatikan dengan kontak mata.' },
-  { id: 47, category: 'Kreatif & Seni', code: 'C47', text: 'Apakah anak menjaga dan memelihara hasil karyanya sendiri agar tidak rusak?', example: 'Misal: Menyimpan gambar buatannya dengan rapi di laci atau menaruh mainan balok ke tempatnya.' },
-  { id: 48, category: 'Kreatif & Seni', code: 'C48', text: 'Apakah anak mentaati aturan dan kesepakatan dalam permainan bersama teman?', example: 'Misal: Tidak berbuat curang saat bermain ular tangga atau bersedia menjadi pencari saat bermain petak umpet.' },
-
-  // Kepemimpinan (C49-C62)
-  { id: 49, category: 'Kepemimpinan', code: 'C49', text: 'Apakah anak berani bertanya kritis dan menjawab pertanyaan di depan umum/kelas?', example: 'Misal: Mengacungkan tangan tinggi-tinggi saat guru bertanya atau menanyakan keheranan ilmiah.' },
-  { id: 50, category: 'Kepemimpinan', code: 'C50', text: 'Apakah anak bertanggung jawab merapikan mainan atau menyelesaikan tugas pribadinya?', example: 'Misal: Mengembalikan lego ke wadahnya setelah selesai bermain tanpa harus disuruh berkali-kali.' },
-  { id: 51, category: 'Kepemimpinan', code: 'C51', text: 'Apakah anak fokus menyelesaikan tugas mandirinya dari awal sampai tuntas tanpa menyerah?', example: 'Misal: Terus mewarnai gambarnya sampai selesai meskipun teman-teman lain sudah mulai bermain.' },
-  { id: 52, category: 'Kepemimpinan', code: 'C52', text: 'Apakah anak dapat melaksanakan 3-5 instruksi berurutan dengan benar?', example: 'Misal: Mampu mengingat perintah: "Ambil tasmu, pakai sepatumu, lalu tunggu bunda di teras".' },
-  { id: 53, category: 'Kepemimpinan', code: 'C53', text: 'Apakah anak dapat membagi peran dan menyelesaikan tugas kelompok dengan gembira?', example: 'Misal: Mengatur temannya "Kamu yang cari daun, aku yang tempel di kertas ya".' },
-  { id: 54, category: 'Kepemimpinan', code: 'C54', text: 'Apakah anak dapat bekerja sama secara aktif dengan teman sebayanya dalam tim?', example: 'Misal: Membantu memegang kardus saat temannya menempelkan perekat saat membuat prakarya bersama.' },
-  { id: 55, category: 'Kepemimpinan', code: 'C55', text: 'Apakah anak senang berinteraksi sosial dan mudah beradaptasi dengan lingkungan baru?', example: 'Misal: Cepat akrab dan mulai mengobrol dengan anak lain saat berkunjung ke tempat rekreasi baru.' },
-  { id: 56, category: 'Kepemimpinan', code: 'C56', text: 'Apakah anak berinisiatif membantu teman kelompoknya yang tertinggal atau mengalami kesulitan?', example: 'Misal: Membantu membagikan krayon untuk teman sebangkunya yang belum memilikinya.' },
-  { id: 57, category: 'Kepemimpinan', code: 'C57', text: 'Apakah anak mau menengahi dan membantu meredakan konflik di antara teman bermainnya?', example: 'Misal: Berkata "Sudah jangan berebut, kita mainnya gantian saja ya".' },
-  { id: 58, category: 'Kepemimpinan', code: 'C58', text: 'Apakah anak mau berbagi makanan atau alat tulis secara sukarela kepada teman?', example: 'Misal: Memberikan sebagian biskuit bekalnya kepada teman yang tidak membawa makanan.' },
-  { id: 59, category: 'Kepemimpinan', code: 'C59', text: 'Apakah anak bersedia meminjamkan mainan miliknya kepada teman lain tanpa harus dipaksa?', example: 'Misal: Menyodorkan boneka atau mobil-mobilan kesayangannya saat teman datang berkunjung.' },
-  { id: 60, category: 'Kepemimpinan', code: 'C60', text: 'Apakah anak sabar menunggu antrean atau gilirannya saat bermain?', example: 'Misal: Menunggu di belakang perosotan dengan tenang sampai anak di depannya meluncur ke bawah.' },
-  { id: 61, category: 'Kepemimpinan', code: 'C61', text: 'Apakah anak dapat mengendalikan emosi secara wajar saat keinginannya tidak terpenuhi?', example: 'Misal: Tidak menangis menjerit-jerit atau melempar barang ketika dilarang membeli permen.' },
-  { id: 62, category: 'Kepemimpinan', code: 'C62', text: 'Apakah anak dapat menerima saran atau masukan sederhana dari guru atau orang tua dengan tenang?', example: 'Misal: Mau memperbaiki cara memegang pensil saat diarahkan tanpa merajuk atau marah.' },
-
-  // Seni Visual & Pertunjukan (C63-C69)
-  { id: 63, category: 'Seni Visual & Pertunjukan', code: 'C63', text: 'Apakah anak dapat melukiskan bentuk nyata yang dilihat atau didengarnya dengan proporsi yang baik?', example: 'Misal: Menggambar kucing lengkap dengan telinga segitiga, kaki empat, dan ekor panjang di tempatnya.' },
-  { id: 64, category: 'Seni Visual & Pertunjukan', code: 'C64', text: 'Apakah anak mampu menggambar pola gabungan dari bentuk dasar titik, garis, lingkaran, dan segitiga?', example: 'Misal: Menggabungkan persegi dan segitiga untuk membentuk sebuah rumah dengan matahari bulat di atasnya.' },
-  { id: 65, category: 'Seni Visual & Pertunjukan', code: 'C65', text: 'Apakah anak dapat membunyikan ketukan teratur pada alat musik anak (seperti angklung atau kolintang)?', example: 'Misal: Memukul alat musik mainan mengikuti tempo lambat dan cepat secara konsisten.' },
-  { id: 66, category: 'Seni Visual & Pertunjukan', code: 'C66', text: 'Apakah anak dapat membedakan bunyi nada tinggi dan rendah dengan tepat?', example: 'Misal: Mengenali suara burung bernada tinggi dan suara gong bernada rendah secara intuitif.' },
-  { id: 67, category: 'Seni Visual & Pertunjukan', code: 'C67', text: 'Apakah anak dapat menyelaraskan gerakan tubuhnya sesuai irama lagu atau musik pengiring?', example: 'Misal: Menari berputar dan melompat tepat mengikuti ketukan lagu tari yang diputar.' },
-  { id: 68, category: 'Seni Visual & Pertunjukan', code: 'C68', text: 'Apakah anak menampilkan ekspresi wajah yang sesuai saat menari atau bercerita?', example: 'Misal: Memasang wajah terkejut yang berlebihan saat menceritakan tokoh dongeng yang kaget.' },
-  { id: 69, category: 'Seni Visual & Pertunjukan', code: 'C69', text: 'Apakah anak mampu bermain peran secara total memerankan karakter tertentu?', example: 'Misal: Berpura-pura menjadi dokter dengan suara berwibawa memeriksa detak jantung bonekanya.' },
-
-  // Psikomotorik (C70-C83)
-  { id: 70, category: 'Psikomotorik', code: 'C70', text: 'Apakah anak dapat berjalan, berlari, dan melompat secara seimbang?', example: 'Misal: Berlari cepat dan langsung berbelok tajam tanpa goyah atau jatuh.' },
-  { id: 71, category: 'Psikomotorik', code: 'C71', text: 'Apakah anak dapat melempar dan menangkap bola kecil dengan terarah?', example: 'Misal: Menangkap bola kasti yang dilempar pelan dari jarak 2 meter menggunakan kedua tangannya.' },
-  { id: 72, category: 'Psikomotorik', code: 'C72', text: 'Apakah anak dapat meniti di atas papan titian atau berjalan dengan tumit menyentuh jempol kaki secara bergantian?', example: 'Misal: Berjalan lurus di atas seutas tali yang dibentangkan di lantai dengan merentangkan tangannya.' },
-  { id: 73, category: 'Psikomotorik', code: 'C73', text: 'Apakah anak dapat menggunakan alat makan (sendok, garpu, gelas) sendiri dengan rapi?', example: 'Misal: Menyendok sup makanan masuk ke mulutnya tanpa tumpah berceceran di meja.' },
-  { id: 74, category: 'Psikomotorik', code: 'C74', text: 'Apakah anak dapat membuka/mengancingkan baju atau memakai sepatu sendiri?', example: 'Misal: Mampu memasukkan kancing baju ke lubangnya satu per satu dari atas ke bawah.' },
-  { id: 75, category: 'Psikomotorik', code: 'C75', text: 'Apakah anak dapat menyusun balok tinggi atau merangkai puzzle dengan 12+ keping?', example: 'Misal: Menyusun menara balok setinggi 10 tingkat tanpa runtuh atau menyelesaikan puzzle gambar hewan.' },
-  { id: 76, category: 'Psikomotorik', code: 'C76', text: 'Apakah anak dapat melipat kertas menjadi bentuk sederhana (seperti lipatan segitiga atau amplop)?', example: 'Misal: Melipat kertas lipat/origami menyatukan sudut-sudutnya dengan presisi sedang.' },
-  { id: 77, category: 'Psikomotorik', code: 'C77', text: 'Apakah anak dapat menggunting kertas mengikuti garis pola (lurus, gelombang, atau lingkaran)?', example: 'Misal: Menggunting pola gambar lingkaran mengikuti garis hitam secara perlahan dan rapi.' },
-  { id: 78, category: 'Psikomotorik', code: 'C78', text: 'Apakah anak dapat membuka dan memutar tutup botol atau toples dengan kekuatan tangannya sendiri?', example: 'Misal: Memutar kencang tutup botol minum mineral atau membuka toples makanan ringan.' },
-  { id: 79, category: 'Psikomotorik', code: 'C79', text: 'Apakah anak dapat memutar mur mainan atau merakit komponen mainan bongkar pasang?', example: 'Misal: Memasang bagian roda mobil-mobilan mainan rakitan menggunakan obeng plastik mainannya.' },
-  { id: 80, category: 'Psikomotorik', code: 'C80', text: 'Apakah anak memegang alat tulis dengan genggaman tiga jari (tripod grasp) secara benar?', example: 'Misal: Menjepit pensil di antara ibu jari, jari telunjuk, dan disangga jari tengah saat menggambar.' },
-  { id: 81, category: 'Psikomotorik', code: 'C81', text: 'Apakah anak dapat mengetuk palu mainan atau memasukkan pasak kayu ke dalam lubangnya secara presisi?', example: 'Misal: Memukul pasak mainan kayu hingga masuk rata ke dalam lubang papan pasak.' },
-  { id: 82, category: 'Psikomotorik', code: 'C82', text: 'Apakah anak dapat berdiri dengan satu kaki selama 5-10 detik secara stabil?', example: 'Misal: Mengangkat kaki kirinya dan berdiri tegak dengan kaki kanan tanpa limbung saat berolahraga pagi.' },
-  { id: 83, category: 'Psikomotorik', code: 'C83', text: 'Apakah anak dapat bergantung atau berayun pada palang besi di arena bermain dengan kuat?', example: 'Misal: Menggantungkan tubuhnya pada monkey bar selama beberapa detik menggunakan kekuatan tangannya.' },
-]
 
 const likertOptions = [
   { value: 1, label: 'Tidak Pernah' },
@@ -125,13 +26,179 @@ const categoryInsights: Record<string, string> = {
   'Psikomotorik': 'Psikomotorik menilai koordinasi fisik, ketangkasan, dan kemampuan kinestetik anak dalam aktivitas sehari-hari.',
 }
 
+function getCategoryName(cat: string) {
+  switch (cat) {
+    case 'General Intellectual': return 'Bahasa & Intelektual Umum'
+    case 'Specific Academic': return 'Akademik Khusus'
+    case 'Creative Thinking': return 'Kreatif & Seni'
+    case 'Leadership': return 'Kepemimpinan'
+    case 'Visual & Performing Arts': return 'Seni Visual & Pertunjukan'
+    case 'Psychomotor': return 'Psikomotorik'
+    default: return cat
+  }
+}
+
+const questionExamples: Record<string, string> = {
+  // Toddler
+  T1: 'Misal: Menyebut "Adek Budi" saat ditanya siapa namanya dan menunjuk hidung atau mata.',
+  T2: 'Misal: Menirukan kata "kucing" atau "makan" setelah didiktekan.',
+  T3: 'Misal: Menunjuk mainannya satu-satu sambil berhitung "satu, dua, tiga".',
+  T4: 'Misal: Bisa membedakan bola merah dengan bola biru ketika diminta mengambilnya.',
+  T5: 'Misal: Membuat coretan melingkar-lingkar tidak beraturan menggunakan krayon besar.',
+  T6: 'Misal: Menyodorkan sendok mainan kosong ke mulut boneka teddy bear.',
+  T7: 'Misal: Mendekat dan mengusap pundak temannya yang sedang menangis.',
+  T8: 'Misal: Mengikuti perintah "Tolong ambilkan bola merah itu".',
+  T9: 'Misal: Menggoyangkan tubuh ke kiri dan kanan sambil tersenyum saat lagu "Balonku" diputar.',
+  T10: 'Misal: Antusias memukul-mukul mainan drum atau piano kecil.',
+  T11: 'Misal: Berlari di halaman rumah dengan langkah stabil tanpa sering tersandung.',
+  T12: 'Misal: Memegang krayon menggunakan kelima jarinya secara mantap saat mencoret.',
+
+  // Preschool
+  C1: 'Misal: Menirukan kalimat "Ayo kita pergi bermain" secara lengkap tanpa salah ucap.',
+  C2: 'Misal: Mengulangi kata "meja, kursi, buku, lemari" setelah diucapkan oleh orang tua.',
+  C3: 'Misal: Mengulangi instruksi "Tolong ambilkan krayon warna biru di atas meja belajar kakak."',
+  C4: 'Misal: Menghafal lirik dan melodi lagu anak seperti Balonku, Pelangi, Bintang Kecil, dll.',
+  C5: 'Misal: Menunjuk dan melafalkan huruf \'A\', \'B\', \'C\', \'O\', \'U\' pada poster atau kartu kata.',
+  C6: 'Misal: Bernyanyi dengan keras dan berirama tanpa malu-malu saat mendengar musik.',
+  C7: 'Misal: Mengumpulkan semua mainan mobil-mobilan di satu kotak, dan balok kayu di kotak lainnya.',
+  C8: 'Misal: Menyalin tulisan huruf vokal/konsonan yang dicontohkan di buku tulis.',
+  C9: 'Misal: Membedakan piring/sendok dengan sabun/sikat gigi ke tempatnya masing-masing.',
+  C10: 'Misal: Sering bertanya "Mengapa daun warnanya hijau?" atau "Berapa banyak mainan ini?".',
+  C11: 'Misal: Menjelaskan gambar rumah dengan cerita "Ini rumahku, ada pohon besar di sampingnya dan awan di atas".',
+  C12: 'Misal: Menyatakan "Aku mau makan buah" atau "Mereka sedang bermain di luar".',
+  C13: 'Misal: Menceritakan kunjungannya ke kebun binatang atau kejadian saat bermain di taman sekolah.',
+  C14: 'Misal: Tiba-tiba bercerita "Tadi kucing warna jingga itu melompati pagar rumah tetangga".',
+  C15: 'Misal: Lancar berhitung satu sampai sepuluh tanpa ada angka yang terlewat.',
+  C16: 'Misal: Menunjuk angka 7 dengan benar saat ditanyakan pada kartu angka acak.',
+  C17: 'Misal: Menyalin penulisan angka 3 atau 8 di atas kertas pasir atau buku tulis.',
+  C18: 'Misal: Mampu mengidentifikasi angka belasan (11-20) pada buku atau jam dinding.',
+  C19: 'Misal: Membagi 5 permen di kiri dan 3 permen di kanan, lalu menyebutkan mana yang lebih banyak.',
+  C20: 'Misal: Menunjuk jam dinding sebagai bulat dan atap rumah sebagai segitiga.',
+  C21: 'Misal: Mencampur kuning dengan biru, lalu gembira berteriak "Wah, jadi hijau!".',
+  C22: 'Misal: Memasukkan batu (tenggelam) dan daun (terapung) ke dalam wadah air saat mandi atau bermain.',
+  C23: 'Misal: Menirukan dan menceritakan macam-macam bunyi alam atau kendaraan sekitar.',
+  C24: 'Misal: Menyebut gula itu manis, garam itu asin, dan obat itu pahit dengan ekspresif.',
+  C25: 'Misal: Menyebut bau masakan ibu harum atau bau tempat sampah busuk.',
+  C26: 'Misal: Mengusulkan ide mainan atau kegiatan saat guru/orang tua bertanya.',
+  C27: 'Misal: Cepat dan bersemangat menjawab saat ditanya siapa nama temannya di sekolah.',
+  C28: 'Misal: Melambaikan tangan dan berseru "Halo!" saat berpapasan dengan teman di taman.',
+  C29: 'Misal: Mengucapkan "Assalamualaikum" atau "Selamat pagi" saat masuk kelas.',
+  C30: 'Misal: Mengatakan terima kasih saat diberi permen tanpa harus diingatkan terlebih dahulu.',
+  C31: 'Misal: Menangis sebentar saat sedih lalu tenang kembali setelah diberi penjelasan.',
+  C32: 'Misal: Berkata "Nanti aku mau susun lego tinggi dulu, baru buat jalan mobil".',
+  C33: 'Misal: Memilih baju warna merah dibanding biru saat bersiap untuk bepergian.',
+  C34: 'Misal: Mencoret-coret kertas dengan warna-warni yang berani membentuk garis-garis imajinatif.',
+  C35: 'Misal: Mengetahui bahwa membuang sampah sembarangan itu salah dan menaruhnya di tempat sampah itu benar.',
+  C36: 'Misal: Spontan membantu membangunkan temannya yang tersandung di arena bermain.',
+  C37: 'Misal: Langsung bergaul dengan anak baru tanpa ragu-ragu.',
+  C38: 'Misal: Tidak merusak menara balok yang dibuat temannya dan melihatnya dengan kagum.',
+  C39: 'Misal: Memuji temannya dengan berkata "Wah, lari kamu cepat sekali!".',
+  C40: 'Misal: Berkata "Ayo kita main petak umpet bersama!".',
+  C41: 'Misal: Berkata "Tidak apa-apa kok" ketika baloknya tidak sengaja tersenggol runtuh oleh teman.',
+  C42: 'Misal: Menghormati saat temannya berdoa sebelum makan dengan cara yang berbeda.',
+  C43: 'Misal: Mengatakan "Gambar buatanmu bagus sekali!" secara spontan.',
+  C44: 'Misal: Merapikan bajunya sendiri setelah dari kamar mandi atau menjaga sikap di restoran.',
+  C45: 'Misal: Mencium tangan orang tua saat berpamitan pergi sekolah atau berbicara dengan nada lembut.',
+  C46: 'Misal: Tidak memotong pembicaraan orang lain dan memperhatikan dengan kontak mata.',
+  C47: 'Misal: Menyimpan gambar buatannya dengan rapi di laci atau menaruh mainan balok ke tempatnya.',
+  C48: 'Misal: Tidak berbuat curang saat bermain ular tangga atau bersedia menjadi pencari saat bermain petak umpet.',
+  C49: 'Misal: Mengacungkan tangan tinggi-tinggi saat guru bertanya atau menanyakan keheranan ilmiah.',
+  C50: 'Misal: Menggunakan krayon/spidol secara mandiri dan mengembalikannya ke tempat semula.',
+  C51: 'Misal: Terus mewarnai gambarnya sampai selesai meskipun teman-teman lain sudah mulai bermain.',
+  C52: 'Misal: Mampu mengingat perintah: "Ambil tasmu, pakai sepatumu, lalu tunggu bunda di teras".',
+  C53: 'Misal: Mengatur temannya "Kamu yang cari daun, aku yang tempel di kertas ya".',
+  C54: 'Misal: Membantu memegang kardus saat temannya menempelkan perekat saat membuat prakarya bersama.',
+  C55: 'Misal: Cepat akrab dan mulai mengobrol dengan anak lain saat berkunjung ke tempat rekreasi baru.',
+  C56: 'Misal: Membantu membagikan krayon untuk teman sebangkunya yang belum memilikinya.',
+  C57: 'Misal: Berkata "Sudah jangan berebut, kita mainnya gantian saja ya".',
+  C58: 'Misal: Memberikan sebagian biskuit bekalnya kepada teman yang tidak membawa makanan.',
+  C59: 'Misal: Menyodorkan boneka atau mobil-mobilan kesayangannya saat teman datang berkunjung.',
+  C60: 'Misal: Menunggu di belakang perosotan dengan tenang sampai anak di depannya meluncur ke bawah.',
+  C61: 'Misal: Tidak menangis menjerit-jerit atau melempar barang ketika dilarang membeli permen.',
+  C62: 'Misal: Mau memperbaiki cara memegang pensil saat diarahkan tanpa merajuk atau marah.',
+  C63: 'Misal: Menggambar kucing lengkap dengan telinga segitiga, kaki empat, dan ekor panjang di tempatnya.',
+  C64: 'Misal: Menggabungkan persegi dan segitiga untuk membentuk sebuah rumah dengan matahari bulat di atasnya.',
+  C65: 'Misal: Memukul alat musik mainan mengikuti tempo lambat dan cepat secara konsisten.',
+  C66: 'Misal: Mengenali suara burung bernada tinggi dan suara gong bernada rendah secara intuitif.',
+  C67: 'Misal: Menari berputar dan melompat tepat mengikuti ketukan lagu tari yang diputar.',
+  C68: 'Misal: Memasang wajah terkejut yang berlebihan saat menceritakan tokoh dongeng yang kaget.',
+  C69: 'Misal: Berpura-pura menjadi dokter dengan suara berwibawa memeriksa detak jantung bonekanya.',
+  C70: 'Misal: Berlari cepat dan langsung berbelok tajam tanpa goyah atau jatuh.',
+  C71: 'Misal: Menangkap bola kasti yang dilempar pelan dari jarak 2 meter menggunakan kedua tangannya.',
+  C72: 'Misal: Berjalan lurus di atas seutas tali yang dibentangkan di lantai dengan merentangkan tangannya.',
+  C73: 'Misal: Menyendok sup makanan masuk ke mulutnya tanpa tumpah berceceran di meja.',
+  C74: 'Misal: Mampu memasukkan kancing baju ke lubangnya satu per satu dari atas ke bawah.',
+  C75: 'Misal: Menyusun menara balok setinggi 10 tingkat tanpa runtuh atau menyelesaikan puzzle gambar hewan.',
+  C76: 'Misal: Melipat kertas lipat/origami menyatukan sudut-sudutnya dengan presisi sedang.',
+  C77: 'Misal: Menggunting pola gambar lingkaran mengikuti garis hitam secara perlahan dan rapi.',
+  C78: 'Misal: Memutar kencang tutup botol minum mineral atau membuka toples makanan ringan.',
+  C79: 'Misal: Memasang bagian roda mobil-mobilan mainan rakitan menggunakan obeng plastik mainannya.',
+  C80: 'Misal: Menjepit pensil di antara ibu jari, jari telunjuk, dan disangga jari tengah saat menggambar.',
+  C81: 'Misal: Memukul pasak mainan kayu hingga masuk rata ke dalam lubang papan pasak.',
+  C82: 'Misal: Mengangkat kaki kirinya dan berdiri tegak dengan kaki kanan tanpa limbung saat berolahraga pagi.',
+  C83: 'Misal: Menggantungkan tubuhnya pada monkey bar selama beberapa detik menggunakan kekuatan tangannya.',
+
+  // Early Elementary
+  E1: 'Misal: Dapat menceritakan alur utama cerita dan karakter dalam buku yang baru dibacanya.',
+  E2: 'Misal: Menggunakan kata-kata seperti "sebaliknya", "mungkin saja", atau "berarti" dengan tepat.',
+  E3: 'Misal: Mampu memecahkan teka-teki logika bergambar atau bermain rubik/puzzle.',
+  E4: 'Misal: Memahami bahwa "jika tanaman tidak disiram, maka ia akan layu dan mati".',
+  E5: 'Misal: Menyelesaikan soal matematika sekolah seperti 15 + 8 atau 24 - 7 tanpa menghitung jari.',
+  E6: 'Misal: Senang bermain game matematika komputer atau sudoku anak.',
+  E7: 'Misal: Mengamati semut berbaris dengan kaca pembesar atau mengoleksi daun kering.',
+  E8: 'Misal: Tertarik menceritakan planet-planet di tata surya atau nama-nama dinosaurus.',
+  E9: 'Misal: Membuat kastil atau stasiun luar angkasa unik dari lego tanpa mengikuti buku panduan.',
+  E10: 'Misal: Menulis cerita petualangan pendek lengkap dengan ilustrasi buatannya sendiri.',
+  E11: 'Misal: Mencoba memperbaiki roda mainan yang lepas menggunakan lem atau selotip secara kreatif.',
+  E12: 'Misal: Antusias membuat gantungan kunci, origami hewan rumit, atau kerajinan tangan dari kardus bekas.',
+  E13: 'Misal: Mengatur giliran dan peran saat bermain bentengan atau kerja kelompok membuat prakarya.',
+  E14: 'Misal: Bersedia meminjamkan mainan langka kepada temannya agar permainan kelompok tetap berjalan.',
+  E15: 'Misal: Memasukkan buku pelajaran, botol minum, dan pensil ke tas sesuai jadwal esok hari.',
+  E16: 'Misal: Langsung mengerjakan PR sepulang sekolah sebelum pergi bermain.',
+  E17: 'Misal: Menggambar pemandangan dengan adanya efek perspektif (jalan mengecil di kejauhan).',
+  E18: 'Misal: Mewarnai gradasi warna langit (jingga ke kuning) pada gambar senja.',
+  E19: 'Misal: Menyanyikan lagu wajib nasional atau lagu pop anak dengan nada stabil dan tidak fals.',
+  E20: 'Misal: Mengikuti audisi pentas seni sekolah atau bernyanyi solo di depan kelas.',
+  E21: 'Misal: Bersepeda berkeliling kompleks rumah dengan lincah tanpa goyah.',
+  E22: 'Misal: Melompat tali secara konstan sebanyak 15 kali putaran tanpa tersangkut.',
+  E23: 'Misal: Menggunting gambar wajah tokoh kartun mengikuti lekukan garis rambutnya dengan presisi.',
+  E24: 'Misal: Melipat kertas membentuk burung bangau origami secara mandiri.',
+
+  // Late Elementary
+  L1: 'Misal: Mampu menjelaskan arti "kebebasan berpendapat" atau "kenapa kita harus bertoleransi".',
+  L2: 'Misal: Menyampaikan argumen "menurut saya bermain game bermanfaat melatih strategi karena..." saat berdiskusi.',
+  L3: 'Misal: Menyelesaikan membaca buku novel anak setebal 100+ halaman dalam beberapa hari.',
+  L4: 'Misal: Menulis artikel majalah dinding sekolah atau esai liburan dengan struktur paragraf yang baik.',
+  L5: 'Misal: Lancar mengerjakan perkalian puluhan atau pembagian bersusun di luar kepala.',
+  L6: 'Misal: Mampu membuat diagram batang tentang tinggi badan teman sekelasnya.',
+  L7: 'Misal: Membuat laporan praktikum sederhana tentang pertumbuhan kecambah dengan mengukur tingginya setiap hari.',
+  L8: 'Misal: Mencoba belajar bahasa pemrograman Scratch atau merakit robot lego mindstorm.',
+  L9: 'Misal: Mendesain undangan ulang tahun sendiri menggunakan aplikasi Canva atau menggambar digital.',
+  L10: 'Misal: Mengusulkan metode pengumpulan sampah yang unik untuk proyek kebersihan kelas.',
+  L11: 'Misal: Menjelaskan alasan menyukai suatu lukisan atau arsitektur gedung dengan kosakata seni.',
+  L12: 'Misal: Antusias menceritakan sejarah candi Borobudur atau pakaian adat dari daerah lain.',
+  L13: 'Misal: Memimpin rapat kelas untuk menentukan pembagian tugas piket kebersihan.',
+  L14: 'Misal: Mendelegasikan peran secara adil dan menyemangati anggota tim saat lomba olahraga.',
+  L15: 'Misal: Menyalami lawan yang memenangkan pertandingan futsal di sekolah dengan lapang dada.',
+  L16: 'Misal: Membantu menenangkan dan mendamaikan dua teman dekatnya yang sedang bertengkar.',
+  L17: 'Misal: Melukis pemandangan menggunakan cat air dengan teknik gradasi dan arsiran bayangan yang matang.',
+  L18: 'Misal: Membuat video stop-motion atau animasi pendek menggunakan HP.',
+  L19: 'Misal: Memainkan intro lagu populer menggunakan gitar atau keyboard dengan lancar.',
+  L20: 'Misal: Menggubah gerakan tari modern sendiri untuk dipentaskan bersama teman kelompok.',
+  L21: 'Misal: Bermain sebagai bek atau penyerang dalam tim sepak bola sekolah dengan memahami strategi tim.',
+  L22: 'Misal: Memiliki ketahanan fisik berlari memutari lapangan sekolah beberapa kali tanpa kelelahan ekstrem.',
+  L23: 'Misal: Memperbaiki rantai sepedanya yang lepas atau membongkar jam dinding mati untuk melihat mesinnya.',
+  L24: 'Misal: Merakit model gundam/miniatur kapal dengan lem kayu secara rapi dan sangat detail.'
+}
+
 const QUESTIONS_PER_PAGE = 5
-const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_PAGE)
 
 export default function AssessmentPage() {
   const { pageId } = useParams()
   const navigate = useNavigate()
   const currentPage = parseInt(pageId || '1', 10)
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [loadingQuestions, setLoadingQuestions] = useState(true)
   const [answers, setAnswers] = useState<Record<number, number>>(() => {
     const cached = sessionStorage.getItem('assessment_answers')
     return cached ? JSON.parse(cached) : {}
@@ -140,18 +207,54 @@ export default function AssessmentPage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  const consId = sessionStorage.getItem('consultation_id')
+
+  useEffect(() => {
+    async function loadQuestions() {
+      if (!consId) {
+        setSubmitError('Sesi penilaian tidak ditemukan. Silakan mulai ulang dari halaman awal.')
+        setLoadingQuestions(false)
+        return
+      }
+      setLoadingQuestions(true)
+      try {
+        const res = await fetch(`http://localhost:8080/api/consultation/${consId}/questions`)
+        if (!res.ok) {
+          throw new Error('Gagal memuat pertanyaan dari server.')
+        }
+        const data = await res.json()
+        const mappedQuestions: Question[] = data.map((v: any, index: number) => ({
+          id: index + 1,
+          category: getCategoryName(v.category),
+          code: v.code,
+          text: v.label,
+          example: questionExamples[v.code] || ''
+        }))
+        setQuestions(mappedQuestions)
+      } catch (err: any) {
+        setSubmitError(err.message || 'Terjadi kesalahan saat memuat pertanyaan.')
+      } finally {
+        setLoadingQuestions(false)
+      }
+    }
+    loadQuestions()
+  }, [consId])
+
+  const TOTAL_QUESTIONS = questions.length
+  const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_PAGE)
+
   const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE
   const endIndex = Math.min(startIndex + QUESTIONS_PER_PAGE, TOTAL_QUESTIONS)
   const pageQuestions = questions.slice(startIndex, endIndex)
 
-  const progress = ((currentPage - 1) / TOTAL_PAGES) * 100
-  const pageCategory = pageQuestions[0]?.category || 'Assessment'
+  const progress = TOTAL_PAGES > 0 ? ((currentPage - 1) / TOTAL_PAGES) * 100 : 0
+  const pageCategory = pageQuestions[0]?.category || 'Asesmen'
   
   // Check if all questions on this page are answered
-  const allAnswered = pageQuestions.every((q) => answers[q.id] !== undefined)
+  const allAnswered = pageQuestions.length > 0 && pageQuestions.every((q) => answers[q.id] !== undefined)
 
   useEffect(() => {
-    document.title = `Assessment Wizard — Page ${currentPage} | TalentaKu`
+    document.title = `Panduan Asesmen — Halaman ${currentPage} | TalentaKu`
     setAnimating(true)
     const t = setTimeout(() => setAnimating(false), 50)
     return () => clearTimeout(t)
@@ -221,6 +324,32 @@ export default function AssessmentPage() {
       sessionStorage.removeItem('assessment_answers')
       navigate('/')
     }
+  }
+
+  if (loadingQuestions) {
+    return (
+      <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col">
+        <header className="bg-[#f7f9fb]/80 glass-header sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-sm">
+          <Link to="/" className="flex items-center">
+            <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-7 w-auto shrink-0" />
+          </Link>
+        </header>
+        <main className="flex-grow flex flex-col items-center justify-center pt-24 pb-32">
+          <div className="flex flex-col items-center gap-4 text-center px-4">
+            <span className="material-symbols-outlined text-5xl text-[#3525cd] animate-spin">
+              sync
+            </span>
+            <h3 className="text-xl font-bold text-[#191c1e]">Memuat Pertanyaan...</h3>
+            <p className="text-sm text-[#464555] max-w-sm">
+              Menyiapkan evaluasi yang disesuaikan dengan kelompok usia anak.
+            </p>
+          </div>
+        </main>
+        <footer className="w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 border-t border-[#e0e3e5]/50">
+          <p className="text-xs text-[#464555]">© 2026 TalentaKu Expert Systems. Profesional & Bersahabat.</p>
+        </footer>
+      </div>
+    )
   }
 
   return (
@@ -435,7 +564,7 @@ export default function AssessmentPage() {
 
       {/* Footer */}
       <footer className="w-full py-8 px-4 md:px-10 flex flex-col md:flex-row justify-between items-center gap-4 border-t border-[#e0e3e5]/50">
-        <p className="text-xs text-[#464555]">© 2024 TalentaKu Expert Systems. Profesional & Bersahabat.</p>
+        <p className="text-xs text-[#464555]">© 2026 TalentaKu Expert Systems. Profesional & Bersahabat.</p>
         <div className="flex gap-6">
           <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Bantuan</a>
           <a href="#" className="text-xs text-[#464555] hover:text-[#3525cd] transition-colors">Kebijakan Privasi</a>
