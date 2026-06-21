@@ -6,9 +6,9 @@ Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mo
 
 ## 1. Halaman Pengguna Publik (Public User Flow)
 
-### ❌ Halaman Riwayat Asesmen (*My Assessments*)
-*   **Status**: Belum Dibuat di Frontend.
-*   **Detail**: Backend telah menyediakan endpoint `/api/consultations` (mengambil seluruh riwayat asesmen anak), namun di frontend belum ada halaman `/history` atau `/consultations` untuk menampilkan daftar ini. Navigasi "Asesmen Saya" di header saat ini dialihkan langsung ke `/assessment/start` (mulai baru).
+### ✅ Halaman Riwayat Asesmen (*My Assessments*)
+*   **Status**: Selesai.
+*   **Detail**: Halaman `/assessments` telah diimplementasikan dengan fitur daftar riwayat, filter pencarian, status badge, detail hasil dominan, dan fungsionalitas melanjutkan asesmen. Navigasi header dan mobile juga sudah terintegrasi ke rute baru ini.
 
 ### ⚠️ Halaman Hasil Asesmen (*Results Page*)
 *   **Status**: Terintegrasi Sebagian.
@@ -23,9 +23,9 @@ Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mo
 
 ## 2. Panel Admin (Admin Dashboard & Management)
 
-### ❌ Autentikasi Admin & Manajemen Sesi (*Admin Login*)
-*   **Status**: Belum Dibuat di Frontend.
-*   **Detail**: Backend sudah mendukung sistem login berbasis JWT lewat endpoint `/api/admin/login` dan middleware keamanan. Namun di frontend, halaman `/admin` dapat diakses langsung tanpa login. Tidak ada layar login (*Login Screen*), dan tombol *Logout* di sidebar belum difungsikan.
+### ✅ Autentikasi Admin & Manajemen Sesi (*Admin Login*)
+*   **Status**: Selesai.
+*   **Detail**: Layar login admin (`/admin/login`) telah diimplementasikan dengan validasi JWT. Rute admin (`/admin/*`) dilindungi oleh wrapper guard component `AdminRoute` yang memvalidasi masa berlaku token. Tombol "Keluar" (Logout) di sidebar admin sekarang menghapus sesi token JWT dan mengalihkan pengguna ke layar masuk. Endpoint backend `/api/admin/*` telah diamankan dengan middleware `AuthRequired`.
 
 ### ⚠️ Dasbor Utama Admin (*Admin Dashboard*)
 *   **Status**: Masih Menggunakan Data Tiruan (*Mock Data*).
