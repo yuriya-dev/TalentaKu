@@ -16,6 +16,10 @@
   - **Inference Trace:** Complete transparency showing the exact rules and behavioral observations that led to the talent determination.
 
 ### 🔑 Admin Flow (Expert Management)
+- **Admin Authentication:** Secure JWT-based access control protecting all administrative APIs and dashboards.
+  - **Default Credentials:**
+    - **Email:** `admin@talentaku.com`
+    - **Password:** `admin123`
 - **System Overview:** Aggregate analytics on talent distribution and assessment volume.
 - **Variable & Indicator CRUD:** Manage the 83 behavioral variables and 27 indicators.
 - **Visual Rule Builder:** Configure the 33-rule knowledge base logic through a graphical UI.
@@ -66,8 +70,10 @@ TalentaKu/
 │   ├── package.json          # Node dependencies and scripts
 │   └── vite.config.ts        # Vite configuration
 │
-├── PRD.md                    # Product Requirement Document
-├── project_brief.md          # Project description and technical constraints
+├── docs/                     # Product Requirements & Design Documentation
+│   ├── PRD.md                # Product Requirement Document
+│   ├── project_brief.md      # Project description and technical constraints
+│   └── todos.md              # Todo list and gap analysis
 └── README.md                 # This file
 ```
 
