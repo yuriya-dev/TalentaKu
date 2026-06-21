@@ -2,9 +2,9 @@ import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
   { icon: 'home', label: 'Beranda', to: '/' },
-  { icon: 'assignment', label: 'Asesmen', to: '/assessments' },
-  { icon: 'leaderboard', label: 'Statistik', to: '/results/1' },
-  { icon: 'person', label: 'Profil', to: '#' },
+  { icon: 'history', label: 'Asesmen', to: '/assessments' },
+  { icon: 'menu_book', label: 'Sumber Daya', to: '/resources' },
+  { icon: 'admin_panel_settings', label: 'Admin', to: '/admin' },
 ]
 
 export default function MobileNav() {

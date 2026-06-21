@@ -320,7 +320,7 @@ export default function ResultsPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-8">
+            <div className="mt-8 no-print">
               <button 
                 onClick={() => window.print()}
                 className="w-full bg-[#3525cd] text-white text-sm font-semibold py-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#4f46e5] transition-all active:scale-95 shadow-md"
@@ -333,7 +333,7 @@ export default function ResultsPage() {
         </div>
 
         {/* Inference Chaining Trace Log Section */}
-        <section className="mt-16 bg-white border border-[#c7c4d8] rounded-[2rem] p-8 shadow-sm">
+        <section className="mt-16 bg-white border border-[#c7c4d8] rounded-[2rem] p-8 shadow-sm no-print">
           <div className="mb-6">
             <div className="inline-flex items-center gap-2 bg-[#3525cd]/10 px-3 py-1 rounded-full text-[#3525cd] mb-3">
               <span className="material-symbols-outlined text-sm">terminal</span>
@@ -411,7 +411,7 @@ export default function ResultsPage() {
         </section>
 
         {/* Back Link */}
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center no-print">
           <Link
             to="/assessment/start"
             className="inline-flex items-center gap-2 text-[#3525cd] hover:text-[#4f46e5] font-semibold text-base transition-colors"
