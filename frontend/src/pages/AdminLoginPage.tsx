@@ -131,7 +131,6 @@ export default function AdminLoginPage() {
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-lg">login</span>
                 Masuk Sistem
               </>
             )}

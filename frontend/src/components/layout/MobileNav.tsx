@@ -4,7 +4,6 @@ const navItems = [
   { icon: 'home', label: 'Beranda', to: '/' },
   { icon: 'history', label: 'Asesmen', to: '/assessments' },
   { icon: 'menu_book', label: 'Sumber Daya', to: '/resources' },
-  { icon: 'admin_panel_settings', label: 'Admin', to: '/admin' },
 ]
 
 export default function MobileNav() {
@@ -18,7 +17,7 @@ export default function MobileNav() {
           <Link
             key={item.label}
             to={item.to}
-            className={`flex flex-col items-center justify-center px-4 py-2 rounded-2xl transition-all ${
+            className={`flex-1 max-w-[120px] flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all text-center ${
               isActive
                 ? 'bg-[#4f46e5] text-[#dad7ff]'
                 : 'text-[#464555] hover:bg-[#e6e8ea]'
