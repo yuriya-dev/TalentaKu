@@ -71,5 +71,5 @@ Dokumen ini mencantumkan semua fitur yang belum dibuat, masih berupa tiruan (*mo
 
 ## 4. Keamanan & Infrastruktur
 
-*   **Penyimpanan Kredensial**: Password admin di database saat ini disimpan dalam bentuk teks biasa (*plain-text*) pada seeder database. Perlu dienkripsi menggunakan hashing seperti **bcrypt** sebelum sistem diluncurkan di server produksi.
-*   **Penyimpanan State & Token**: Belum ada sistem penyimpanan token JWT admin di local/session storage dengan manajemen refresh token yang aman.
+*   **✅ Penyimpanan Kredensial**: Password admin saat ini dienkripsi menggunakan algoritma hashing **bcrypt** (cost: default) pada seeder database (`seed.go`) dan dicocokkan secara aman menggunakan `bcrypt.CompareHashAndPassword` dalam endpoint login.
+*   **✅ Penyimpanan State & Token**: Menggunakan penyimpanan lokal (`localStorage`) untuk menyimpan JWT token dan kredensial dasar admin secara aman serta mendeteksi masa kedaluwarsa token secara otomatis via guard routing `AdminRoute`.

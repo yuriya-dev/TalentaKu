@@ -9,6 +9,7 @@ import (
 	"backend/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 	"sort"
 )
 
@@ -32,8 +33,9 @@ func AdminLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin user not found"})
 	}
 
-	// Simple plain text comparison for MVP. Can be updated to bcrypt.
-	if admin.PasswordHash != input.Password {
+	// Secure hashed password comparison
+	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(input.Password))
+	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Incorrect password"})
 	}
 

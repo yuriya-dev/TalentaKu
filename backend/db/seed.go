@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"backend/models"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -30,9 +31,13 @@ func SeedData(db *gorm.DB) {
 	db.Model(&models.AdminUser{}).Count(&adminCount)
 	if adminCount == 0 {
 		log.Println("Seeding Admin User...")
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+		if err != nil {
+			log.Fatalf("Failed to hash seeded admin password: %v", err)
+		}
 		admin := models.AdminUser{
 			Email:        "admin@talentaku.com",
-			PasswordHash: "admin123", // Simple plain password for MVP testing, or we can implement hashing
+			PasswordHash: string(hashedPassword),
 			Role:         "superadmin",
 		}
 		db.Create(&admin)

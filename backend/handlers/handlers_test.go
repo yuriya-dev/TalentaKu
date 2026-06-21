@@ -221,3 +221,55 @@ func TestIntakeAgeValidation(t *testing.T) {
 		}
 	}
 }
+
+func TestAdminLogin(t *testing.T) {
+	os.Setenv("DATABASE_URL", "test_login.db")
+	defer func() {
+		os.Remove("test_login.db")
+		os.Unsetenv("DATABASE_URL")
+	}()
+
+	db.InitDB()
+
+	app := fiber.New()
+	app.Post("/api/admin/login", AdminLogin)
+
+	// Test successful login
+	loginInput := map[string]string{
+		"email":    "admin@talentaku.com",
+		"password": "admin123",
+	}
+	body, _ := json.Marshal(loginInput)
+	req := httptest.NewRequest("POST", "/api/admin/login", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := app.Test(req)
+	if err != nil {
+		t.Fatalf("Failed to test admin login: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status 200 OK, got %d", resp.StatusCode)
+	}
+
+	var loginResp map[string]interface{}
+	respBody, _ := io.ReadAll(resp.Body)
+	json.Unmarshal(respBody, &loginResp)
+
+	if _, exists := loginResp["token"]; !exists {
+		t.Error("Expected token in login response")
+	}
+
+	// Test incorrect password
+	loginInputBad := map[string]string{
+		"email":    "admin@talentaku.com",
+		"password": "wrongpassword",
+	}
+	bodyBad, _ := json.Marshal(loginInputBad)
+	reqBad := httptest.NewRequest("POST", "/api/admin/login", bytes.NewBuffer(bodyBad))
+	reqBad.Header.Set("Content-Type", "application/json")
+	respBad, _ := app.Test(reqBad)
+
+	if respBad.StatusCode != http.StatusUnauthorized {
+		t.Errorf("Expected status 401 Unauthorized for incorrect password, got %d", respBad.StatusCode)
+	}
+}
