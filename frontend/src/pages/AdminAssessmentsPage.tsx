@@ -32,7 +32,11 @@ export default function AdminAssessmentsPage() {
 
     async function fetchAssessments() {
       try {
-        const res = await fetch('http://localhost:8080/api/consultations')
+        const res = await fetch('http://localhost:8080/api/consultations', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         if (!res.ok) {
           throw new Error('Gagal memuat riwayat asesmen.')
         }

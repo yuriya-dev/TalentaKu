@@ -107,7 +107,11 @@ export default function AdminDashboard() {
         })
 
         // Fetch recent consultations
-        const consRes = await fetch('http://localhost:8080/api/consultations')
+        const consRes = await fetch('http://localhost:8080/api/consultations', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         if (!consRes.ok) {
           throw new Error('Gagal memuat konsultasi terbaru.')
         }
