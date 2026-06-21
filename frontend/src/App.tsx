@@ -7,6 +7,8 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminRulesPage from './pages/AdminRulesPage'
 import ResourcesPage from './pages/ResourcesPage'
 import HistoryPage from './pages/HistoryPage'
+import AdminLoginPage from './pages/AdminLoginPage'
+import AdminRoute from './components/layout/AdminRoute'
 
 function App() {
   return (
@@ -18,8 +20,11 @@ function App() {
         <Route path="/assessment/start" element={<ChildIntakePage />} />
         <Route path="/assessment/:pageId" element={<AssessmentPage />} />
         <Route path="/results/:assessmentId" element={<ResultsPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/rules" element={<AdminRulesPage />} />
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/rules" element={<AdminRulesPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

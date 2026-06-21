@@ -41,12 +41,13 @@ func main() {
 	api.Post("/consultation/:id/submit", handlers.SubmitAnswers)
 	api.Get("/consultation/:id/results", handlers.GetResults)
 
-	// Admin Config & Simulation
-	api.Get("/admin/stats", handlers.GetAdminStats)
-	api.Get("/admin/rules", handlers.GetRules)
-	api.Post("/admin/rules/simulate", handlers.SimulateInference)
-	api.Get("/admin/settings", handlers.GetSettings)
-	api.Post("/admin/settings", handlers.UpdateSettings)
+	// Admin Config & Simulation (Protected)
+	adminGroup := api.Group("/admin", handlers.AuthRequired)
+	adminGroup.Get("/stats", handlers.GetAdminStats)
+	adminGroup.Get("/rules", handlers.GetRules)
+	adminGroup.Post("/rules/simulate", handlers.SimulateInference)
+	adminGroup.Get("/settings", handlers.GetSettings)
+	adminGroup.Post("/settings", handlers.UpdateSettings)
 
 	// 5. Start Server
 	port := os.Getenv("PORT")

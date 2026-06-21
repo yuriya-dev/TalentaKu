@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const navItems = [
   { icon: 'dashboard', label: 'Dasbor', to: '/admin' },
@@ -11,6 +11,13 @@ const navItems = [
 
 export default function AdminSidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_user')
+    navigate('/admin/login')
+  }
 
   return (
     <aside className="h-full w-64 hidden md:flex flex-col bg-[#f2f4f6] py-8 px-4 gap-4 z-40 border-r border-[#c7c4d8]">
@@ -45,11 +52,14 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="mt-auto flex flex-col gap-1 border-t border-[#c7c4d8] pt-4">
-        <button className="text-[#464555] hover:bg-[#e0e3e5]/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-semibold">
+        <button className="text-[#464555] hover:bg-[#e0e3e5]/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-semibold w-full text-left">
           <span className="material-symbols-outlined">help</span>
           <span>Bantuan</span>
         </button>
-        <button className="text-[#ba1a1a] flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#ba1a1a]/10 transition-all duration-200 text-sm font-semibold">
+        <button
+          onClick={handleLogout}
+          className="text-[#ba1a1a] flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#ba1a1a]/10 transition-all duration-200 text-sm font-semibold w-full text-left"
+        >
           <span className="material-symbols-outlined">logout</span>
           <span>Keluar</span>
         </button>
