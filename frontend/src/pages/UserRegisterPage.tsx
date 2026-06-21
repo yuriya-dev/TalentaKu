@@ -12,11 +12,89 @@ export default function UserRegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
+  const handleGoogleCredentialResponse = async (response: any) => {
+    setLoading(true)
+    setError(null)
+    setSuccessMsg(null)
+
+    try {
+      const res = await fetch('http://localhost:8080/api/login/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ credential: response.credential }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Gagal masuk menggunakan Google.')
+      }
+
+      // Store User Token & Data
+      localStorage.setItem('user_token', data.token)
+      localStorage.setItem('user_data', JSON.stringify(data.user))
+
+      // Check if there is an anonymous assessment to claim
+      const claimId = sessionStorage.getItem('claim_consultation_id')
+      if (claimId) {
+        try {
+          const claimRes = await fetch('http://localhost:8080/api/consultations/claim', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.token}`
+            },
+            body: JSON.stringify({ consultation_id: parseInt(claimId) })
+          })
+
+          if (claimRes.ok) {
+            sessionStorage.removeItem('claim_consultation_id')
+            setSuccessMsg('Pendaftaran berhasil! Hasil asesmen terakhir Anda telah disimpan ke akun Anda.')
+          }
+        } catch (claimErr) {
+          console.error('Failed to claim consultation:', claimErr)
+        }
+      }
+
+      setSuccessMsg('Pendaftaran berhasil menggunakan Google! Mengalihkan...')
+      setTimeout(() => {
+        navigate('/assessments')
+      }, 1500)
+
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan sistem saat mencoba mendaftar dengan Google.')
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleBypass = () => {
+    const mockEmail = `google-bypass-${Date.now()}@gmail.com`
+    handleGoogleCredentialResponse({ credential: `mock-google-token-${mockEmail}|Bypass Google User` })
+  }
+
   useEffect(() => {
     document.title = 'Daftar Akun | TalentaKu'
     const token = localStorage.getItem('user_token')
     if (token) {
       navigate('/assessments')
+      return
+    }
+
+    // Initialize Google Sign-in button
+    const google = (window as any).google
+    if (google) {
+      google.accounts.id.initialize({
+        client_id: "123456789012-abc123def456.apps.googleusercontent.com", // Dummy client ID for fallback/custom configuration
+        callback: (response: any) => {
+          handleGoogleCredentialResponse(response)
+        }
+      })
+      google.accounts.id.renderButton(
+        document.getElementById("google-signin-btn"),
+        { theme: "outline", size: "large", width: 380, logo_alignment: "left" }
+      )
     }
   }, [navigate])
 
@@ -188,6 +266,28 @@ export default function UserRegisterPage() {
               )}
             </button>
           </form>
+
+          {/* Divider OR */}
+          <div className="relative flex py-4 items-center w-full">
+            <div className="flex-grow border-t border-[#c7c4d8]/40"></div>
+            <span className="flex-shrink mx-4 text-xs text-[#777587] font-bold uppercase tracking-wider">atau masuk dengan</span>
+            <div className="flex-grow border-t border-[#c7c4d8]/40"></div>
+          </div>
+
+          {/* Google Sign-in Button Wrapper */}
+          <div className="w-full flex justify-center mb-3">
+            <div id="google-signin-btn"></div>
+          </div>
+
+          {/* Bypass Button for development */}
+          <button
+            type="button"
+            onClick={handleGoogleBypass}
+            className="w-full py-2.5 border border-[#c7c4d8]/60 hover:bg-[#f2f4f6] text-[#464555] font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm">construction</span>
+            Masuk dengan Mock Google (Bypass)
+          </button>
 
           {/* Login Link */}
           <div className="mt-6 text-xs text-[#464555] text-center">

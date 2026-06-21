@@ -273,3 +273,53 @@ func TestAdminLogin(t *testing.T) {
 		t.Errorf("Expected status 401 Unauthorized for incorrect password, got %d", respBad.StatusCode)
 	}
 }
+
+func TestUserGoogleLogin(t *testing.T) {
+	os.Setenv("DATABASE_URL", "test_google_login.db")
+	defer func() {
+		os.Remove("test_google_login.db")
+		os.Unsetenv("DATABASE_URL")
+	}()
+
+	db.InitDB()
+
+	app := fiber.New()
+	app.Post("/api/login/google", UserGoogleLogin)
+
+	// Test login using mock Google token (bypass)
+	loginInput := map[string]string{
+		"credential": "mock-google-token-tester@talentaku.com|Tester Google",
+	}
+	body, _ := json.Marshal(loginInput)
+	req := httptest.NewRequest("POST", "/api/login/google", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := app.Test(req)
+	if err != nil {
+		t.Fatalf("Failed to test Google login: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status 200 OK, got %d", resp.StatusCode)
+	}
+
+	var loginResp map[string]interface{}
+	respBody, _ := io.ReadAll(resp.Body)
+	json.Unmarshal(respBody, &loginResp)
+
+	if _, exists := loginResp["token"]; !exists {
+		t.Error("Expected token in Google login response")
+	}
+
+	userMap, ok := loginResp["user"].(map[string]interface{})
+	if !ok {
+		t.Fatal("Expected user object in response")
+	}
+
+	if userMap["email"] != "tester@talentaku.com" {
+		t.Errorf("Expected email to be tester@talentaku.com, got %v", userMap["email"])
+	}
+
+	if userMap["name"] != "Tester Google" {
+		t.Errorf("Expected name to be Tester Google, got %v", userMap["name"])
+	}
+}

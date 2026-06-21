@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"encoding/json"
+	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"backend/db"
@@ -10,7 +14,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
-	"sort"
 )
 
 var JwtSecret = []byte("talentaku-super-secret-key-123456")
@@ -849,4 +852,106 @@ func ClaimConsultation(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "Sesi asesmen berhasil disimpan ke akun Anda."})
+}
+
+// User Google Login
+func UserGoogleLogin(c *fiber.Ctx) error {
+	type GoogleLoginInput struct {
+		Credential string `json:"credential"`
+	}
+
+	var input GoogleLoginInput
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if input.Credential == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Google credential is required"})
+	}
+
+	type GoogleTokenInfo struct {
+		Email         string `json:"email"`
+		Name          string `json:"name"`
+		EmailVerified string `json:"email_verified"`
+		Error         string `json:"error"`
+	}
+
+	var info GoogleTokenInfo
+
+	// Bypass verification if it's a mock token for development/testing
+	if strings.HasPrefix(input.Credential, "mock-google-token-") {
+		email := strings.TrimPrefix(input.Credential, "mock-google-token-")
+		name := "Mock Google User"
+		parts := strings.Split(email, "|")
+		if len(parts) > 1 {
+			email = parts[0]
+			name = parts[1]
+		}
+		info = GoogleTokenInfo{
+			Email:         email,
+			Name:          name,
+			EmailVerified: "true",
+		}
+	} else {
+		// Call Google's tokeninfo API to verify credential
+		resp, err := http.Get("https://oauth2.googleapis.com/tokeninfo?id_token=" + input.Credential)
+		if err != nil {
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "Gagal terhubung dengan layanan Google OAuth"})
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Kredensial Google tidak valid"})
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal membaca respons dari Google"})
+		}
+
+		if info.Error != "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Kesalahan token Google: " + info.Error})
+		}
+
+		if info.EmailVerified != "true" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Email Google belum diverifikasi"})
+		}
+	}
+
+	// Check if user already exists
+	var user models.User
+	err := db.DB.Where("email = ?", info.Email).First(&user).Error
+	if err != nil {
+		// Register user
+		user = models.User{
+			Email:        info.Email,
+			Name:         info.Name,
+			PasswordHash: "", // Google users do not need standard password hashes
+			CreatedAt:    time.Now(),
+		}
+		if err := db.DB.Create(&user).Error; err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal membuat akun pengguna baru"})
+		}
+	}
+
+	// Generate JWT Token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":   user.ID,
+		"email": user.Email,
+		"role":  "user",
+		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
+	})
+
+	tokenString, err := token.SignedString(JwtSecret)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
+	}
+
+	return c.JSON(fiber.Map{
+		"token": tokenString,
+		"user": fiber.Map{
+			"id":    user.ID,
+			"email": user.Email,
+			"name":  user.Name,
+		},
+	})
 }
