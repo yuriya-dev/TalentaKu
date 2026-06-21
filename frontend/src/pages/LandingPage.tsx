@@ -48,9 +48,9 @@ export default function LandingPage() {
                   Mulai Asesmen
                   <span className="material-symbols-outlined">arrow_forward</span>
                 </Link>
-                <button className="px-8 py-4 bg-white text-[#3525cd] border border-[#c7c4d8] rounded-xl text-sm font-semibold hover:bg-[#eceef0] transition-all flex items-center justify-center gap-2">
+                <Link to="/resources" className="px-8 py-4 bg-white text-[#3525cd] border border-[#c7c4d8] rounded-xl text-sm font-semibold hover:bg-[#eceef0] transition-all flex items-center justify-center gap-2">
                   Pelajari Metodologi
-                </button>
+                </Link>
               </div>
 
               {/* Social proof */}
@@ -139,9 +139,9 @@ export default function LandingPage() {
                   Berdasarkan penelitian oleh Salisah, Lidya, dan Defit (2015), sistem kami mencakup pilar-pilar penting potensi bakat anak usia dini.
                 </p>
               </div>
-              <button className="text-[#3525cd] text-sm font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+              <Link to="/resources" className="text-[#3525cd] text-sm font-semibold flex items-center gap-2 hover:gap-3 transition-all">
                 Lihat Metodologi Lengkap <span className="material-symbols-outlined">arrow_right_alt</span>
-              </button>
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-6 gap-6 md:h-[600px]">

@@ -5,12 +5,14 @@ import AssessmentPage from './pages/AssessmentPage'
 import ResultsPage from './pages/ResultsPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminRulesPage from './pages/AdminRulesPage'
+import ResourcesPage from './pages/ResourcesPage'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/assessment/start" element={<ChildIntakePage />} />
         <Route path="/assessment/:pageId" element={<AssessmentPage />} />
         <Route path="/results/:assessmentId" element={<ResultsPage />} />

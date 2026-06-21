@@ -22,7 +22,12 @@ export default function Navbar() {
         >
           Asesmen Saya
         </Link>
-        <a href="#" className="text-sm font-semibold text-[#464555] hover:text-[#3525cd] transition-colors">Sumber Daya</a>
+        <Link
+          to="/resources"
+          className={`text-sm font-semibold transition-colors ${location.pathname === '/resources' ? 'text-[#3525cd] border-b-2 border-[#3525cd]' : 'text-[#464555] hover:text-[#3525cd]'}`}
+        >
+          Sumber Daya
+        </Link>
       </nav>
 
       <div className="flex items-center gap-4">
