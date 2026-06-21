@@ -49,6 +49,7 @@ export default function ResultsPage() {
   const userToken = localStorage.getItem('user_token')
   const userDataStr = localStorage.getItem('user_data')
   const userData = userDataStr ? JSON.parse(userDataStr) : null
+  const isAdmin = !!localStorage.getItem('admin_token')
 
   useEffect(() => {
     document.title = 'Hasil Penilaian | TalentaKu'
@@ -224,7 +225,23 @@ export default function ResultsPage() {
 
   return (
     <div className="bg-[#f7f9fb] text-[#191c1e] font-sans overflow-x-hidden">
-      <Navbar />
+      {isAdmin ? (
+        <header className="bg-slate-900 text-white sticky top-0 z-50 flex justify-between items-center w-full px-4 md:px-10 py-4 shadow-md no-print">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-[#3525cd] bg-white p-1.5 rounded-lg text-lg">admin_panel_settings</span>
+            <span className="text-sm font-bold tracking-wider uppercase">Panel Admin — Detail Hasil Asesmen</span>
+          </div>
+          <Link
+            to="/admin/assessments"
+            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Kembali ke Admin
+          </Link>
+        </header>
+      ) : (
+        <Navbar />
+      )}
 
       <main className="pt-24 pb-32 px-4 md:px-10 max-w-screen-xl mx-auto">
         {/* Header Celebration */}
@@ -242,7 +259,7 @@ export default function ResultsPage() {
         </header>
 
         {/* Claim Banner (if not owned/associated with a user yet) */}
-        {!localUserId && (
+        {!localUserId && !isAdmin && (
           <div className="mb-12 max-w-4xl mx-auto bg-gradient-to-r from-[#3525cd]/10 to-[#57dffe]/10 border border-[#c7c4d8]/60 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm no-print">
             <div className="flex gap-4 items-start">
               <span className="material-symbols-outlined text-4xl text-[#3525cd] bg-white p-3 rounded-2xl shadow-sm">
@@ -551,11 +568,11 @@ export default function ResultsPage() {
         {/* Back Link */}
         <div className="mt-12 text-center no-print">
           <Link
-            to="/assessment/start"
+            to={isAdmin ? "/admin/assessments" : "/assessment/start"}
             className="inline-flex items-center gap-2 text-[#3525cd] hover:text-[#4f46e5] font-semibold text-base transition-colors"
           >
-            <span className="material-symbols-outlined">restart_alt</span>
-            Mulai Penilaian Baru
+            <span className="material-symbols-outlined">{isAdmin ? "arrow_back" : "restart_alt"}</span>
+            {isAdmin ? "Kembali ke Panel Admin" : "Mulai Penilaian Baru"}
           </Link>
         </div>
       </main>
