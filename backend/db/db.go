@@ -3,8 +3,10 @@ package db
 import (
 	"log"
 	"os"
+	"strings"
 
 	"backend/models"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -20,7 +22,14 @@ func InitDB() *gorm.DB {
 
 	log.Printf("Connecting to database: %s", dbPath)
 
-	DB, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	var dialector gorm.Dialector
+	if strings.HasPrefix(dbPath, "postgres://") || strings.HasPrefix(dbPath, "postgresql://") {
+		dialector = postgres.Open(dbPath)
+	} else {
+		dialector = sqlite.Open(dbPath)
+	}
+
+	DB, err = gorm.Open(dialector, &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
