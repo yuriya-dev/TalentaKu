@@ -39,7 +39,6 @@ export default function ResultsPage() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedTraceCode, setSelectedTraceCode] = useState<string>('')
 
   const [claiming, setClaiming] = useState(false)
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null)
@@ -76,9 +75,6 @@ export default function ResultsPage() {
         setData(json)
         if (json.user_id) {
           setLocalUserId(json.user_id)
-        }
-        if (json.results && json.results.length > 0) {
-          setSelectedTraceCode(json.results[0].criterion_code)
         }
       } catch (err: any) {
         setError(err.message || 'Terjadi kesalahan jaringan atau server tidak merespons.')
@@ -220,8 +216,6 @@ export default function ResultsPage() {
         return s.charAt(0).toUpperCase() + s.slice(1)
       }).filter(Boolean)
     : []
-
-  const selectedResult = results.find((r: any) => r.criterion_code === selectedTraceCode) || primaryResult
 
   return (
     <div className="bg-[#f7f9fb] text-[#191c1e] font-sans overflow-x-hidden">
@@ -486,84 +480,6 @@ export default function ResultsPage() {
             </div>
           </section>
         </div>
-
-        {/* Inference Chaining Trace Log Section */}
-        <section className="mt-16 bg-white border border-[#c7c4d8] rounded-[2rem] p-8 shadow-sm no-print">
-          <div className="mb-6">
-            <div className="inline-flex items-center gap-2 bg-[#3525cd]/10 px-3 py-1 rounded-full text-[#3525cd] mb-3">
-              <span className="material-symbols-outlined text-sm">terminal</span>
-              <span className="text-xs font-semibold uppercase tracking-wider">Konsol Sistem Pakar</span>
-            </div>
-            <h3 className="text-2xl font-bold mb-2">Pelacakan Inferensi Real-time (Forward Chaining)</h3>
-            <p className="text-[#464555] text-base">
-              Pilih kriteria untuk menelusuri bagaimana aturan sistem pakar dievaluasi langkah demi langkah dari variabel hingga kriteria akhir.
-            </p>
-          </div>
-
-          {/* Tab Selector */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {results.map((res: any) => (
-              <button
-                key={res.criterion_code}
-                onClick={() => setSelectedTraceCode(res.criterion_code)}
-                className={`px-4 py-2.5 rounded-lg text-xs font-semibold font-mono transition-all border ${
-                  selectedTraceCode === res.criterion_code
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                    : 'bg-[#f2f4f6] text-[#464555] border-transparent hover:bg-[#eceef0]'
-                }`}
-              >
-                {res.criterion_code} ({res.criterion_label})
-              </button>
-            ))}
-          </div>
-
-          {/* Terminal Panel */}
-          <div className="bg-slate-950 text-slate-100 font-mono text-sm rounded-xl p-6 shadow-inner border border-slate-800 relative overflow-hidden">
-            {/* Terminal Header */}
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4 text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-rose-500" />
-                <span className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="ml-2 font-semibold font-mono select-none">forward_chaining_engine.log</span>
-              </div>
-              <div>
-                <span>STATUS: {selectedResult.is_rule_satisfied ? 'ATURAN TERPENUHI' : 'ATURAN TIDAK TERPENUHI'}</span>
-              </div>
-            </div>
-
-            {/* Terminal Contents */}
-            <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-              <div className="text-slate-500 select-none">[SYSTEM] Menginisialisasi logika evaluasi Forward Chaining...</div>
-              <div className="text-slate-500 select-none">[SYSTEM] Memuat jawaban perilaku untuk sesi #{assessmentId}</div>
-              <div className="text-slate-500 select-none">[SYSTEM] Ambang batas verifikasi ditetapkan ke skor &gt;= 4</div>
-              
-              {selectedResult.trace && selectedResult.trace.map((line: string, idx: number) => {
-                const isCheck = line.startsWith('✓')
-                const isCross = line.startsWith('✗')
-                const isSatisfiedRule = line.includes('RULE TRUE')
-                const isFailedRule = line.includes('RULE FALSE')
-
-                let textColor = 'text-slate-300'
-                if (isCheck) textColor = 'text-emerald-400 font-medium'
-                if (isCross) textColor = 'text-rose-400'
-                if (isSatisfiedRule) textColor = 'text-emerald-300 font-bold bg-emerald-950/40 py-0.5 px-1 rounded border border-emerald-900/50'
-                if (isFailedRule) textColor = 'text-rose-400 font-bold bg-rose-950/40 py-0.5 px-1 rounded border border-rose-900/50'
-
-                return (
-                  <div key={idx} className={`flex items-start gap-3 leading-relaxed ${textColor}`}>
-                    <span className="text-slate-600 select-none font-mono w-14 text-right">
-                      {String(idx + 1).padStart(2, '0')}:
-                    </span>
-                    <span className="flex-1 whitespace-pre-wrap">{line}</span>
-                  </div>
-                )
-              })}
-              
-              <div className="text-slate-500 select-none">[SYSTEM] Siklus evaluasi selesai untuk {selectedResult.criterion_code} ({selectedResult.criterion_label})</div>
-            </div>
-          </div>
-        </section>
 
         {/* Back Link */}
         <div className="mt-12 text-center no-print">
