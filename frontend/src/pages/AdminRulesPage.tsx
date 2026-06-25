@@ -72,6 +72,7 @@ export default function AdminRulesPage() {
   const [simLoading, setSimLoading] = useState(false)
   const [simResults, setSimResults] = useState<any[]>([])
   const [simSearch, setSimSearch] = useState('')
+  const [selectedTraceCode, setSelectedTraceCode] = useState<string | null>(null)
 
   // Fetch Knowledge Base Rules
   useEffect(() => {
@@ -204,6 +205,7 @@ export default function AdminRulesPage() {
 
   async function handleRunSimulation() {
     setSimLoading(true)
+    const token = localStorage.getItem('admin_token')
     try {
       const answersArray = Object.entries(simAnswers).map(([code, score]) => ({
         variable_code: code,
@@ -213,7 +215,8 @@ export default function AdminRulesPage() {
       const res = await fetch('http://localhost:8080/api/admin/rules/simulate', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           answers: answersArray,
@@ -227,6 +230,7 @@ export default function AdminRulesPage() {
 
       const data = await res.json()
       setSimResults(data.results || [])
+      setSelectedTraceCode(null)
     } catch (err: any) {
       alert(err.message || 'Gagal menjalankan simulasi.')
     } finally {
@@ -789,40 +793,124 @@ export default function AdminRulesPage() {
                         </p>
                       </div>
                     ) : (
-                      simResults.map((res) => (
-                        <div key={res.criterion_code} className="bg-white border border-[#c7c4d8]/20 rounded-2xl p-4 shadow-sm space-y-2">
-                          <div className="flex justify-between items-start gap-2">
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="px-2 py-0.5 bg-[#00687a]/10 text-[#00687a] rounded text-[10px] font-bold">{res.criterion_code}</span>
-                                <h5 className="font-bold text-sm text-[#191c1e]">{res.criterion?.label || res.criterion_code}</h5>
-                              </div>
-                              <span className="text-[10px] text-[#777587] mt-0.5 block leading-tight">Peringkat #{res.ranking}</span>
-                            </div>
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                                res.is_rule_satisfied
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
+                      simResults.map((res) => {
+                        const isExpanded = selectedTraceCode === res.criterion_code
+                        return (
+                          <div 
+                            key={res.criterion_code} 
+                            className={`bg-white border rounded-2xl p-4 shadow-sm space-y-2 transition-all ${
+                              isExpanded ? 'border-[#3525cd]/40 ring-1 ring-[#3525cd]/10' : 'border-[#c7c4d8]/20'
+                            }`}
+                          >
+                            {/* Card Header (Clickable to toggle) */}
+                            <div 
+                              className="flex justify-between items-start gap-2 cursor-pointer group"
+                              onClick={() => {
+                                setSelectedTraceCode(isExpanded ? null : res.criterion_code)
+                              }}
                             >
-                              {res.is_rule_satisfied ? 'Terpenuhi' : 'Kecenderungan'}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-3 pt-1">
-                            <div className="flex-1 bg-[#eceef0] rounded-full h-1.5">
-                              <div
-                                className={`h-1.5 rounded-full ${res.is_rule_satisfied ? 'bg-emerald-500' : 'bg-[#3525cd]'}`}
-                                style={{ width: `${res.score_percentage}%` }}
-                              />
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="px-2 py-0.5 bg-[#00687a]/10 text-[#00687a] rounded text-[10px] font-bold">{res.criterion_code}</span>
+                                  <h5 className="font-bold text-sm text-[#191c1e] group-hover:text-[#3525cd] transition-colors">{res.criterion?.label || res.criterion_code}</h5>
+                                </div>
+                                <span className="text-[10px] text-[#777587] mt-0.5 block leading-tight">Peringkat #{res.ranking}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                                    res.is_rule_satisfied
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-amber-100 text-amber-800'
+                                  }`}
+                                >
+                                  {res.is_rule_satisfied ? 'Terpenuhi' : 'Kecenderungan'}
+                                </span>
+                                <span className={`material-symbols-outlined text-xs text-[#777587] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                  keyboard_arrow_down
+                                </span>
+                              </div>
                             </div>
-                            <span className={`text-xs font-bold shrink-0 ${res.is_rule_satisfied ? 'text-emerald-700' : 'text-[#3525cd]'}`}>
-                              {Math.round(res.score_percentage)}%
-                            </span>
+
+                            {/* Score & Console Button */}
+                            <div className="flex items-center justify-between gap-3 pt-1">
+                              <div className="flex-grow flex items-center gap-3">
+                                <div className="flex-1 bg-[#eceef0] rounded-full h-1.5">
+                                  <div
+                                    className={`h-1.5 rounded-full ${res.is_rule_satisfied ? 'bg-emerald-500' : 'bg-[#3525cd]'}`}
+                                    style={{ width: `${res.score_percentage}%` }}
+                                  />
+                                </div>
+                                <span className={`text-xs font-bold shrink-0 ${res.is_rule_satisfied ? 'text-emerald-700' : 'text-[#3525cd]'}`}>
+                                  {Math.round(res.score_percentage)}%
+                                </span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedTraceCode(isExpanded ? null : res.criterion_code)
+                                }}
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold transition-all border ${
+                                  isExpanded
+                                    ? 'bg-slate-900 text-white border-slate-900'
+                                    : 'text-[#464555] border-[#c7c4d8]/40 hover:bg-[#eceef0]'
+                                }`}
+                              >
+                                <span className="material-symbols-outlined text-[12px]">terminal</span>
+                                {isExpanded ? 'Tutup Log' : 'Konsol Pakar'}
+                              </button>
+                            </div>
+
+                            {/* Log Panel */}
+                            {isExpanded && (
+                              <div className="mt-3 bg-slate-950 text-slate-100 font-mono text-[11px] rounded-xl p-4 shadow-inner border border-slate-800 relative overflow-hidden">
+                                {/* Terminal Header */}
+                                <div className="flex justify-between items-center border-b border-slate-800/80 pb-2 mb-3 text-[10px] text-slate-400">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                    <span className="ml-1 font-semibold font-mono select-none text-[9px]">forward_chaining_engine.log</span>
+                                  </div>
+                                  <div>
+                                    <span>STATUS: {res.is_rule_satisfied ? 'RULE TRUE' : 'RULE FALSE'}</span>
+                                  </div>
+                                </div>
+
+                                {/* Terminal Contents */}
+                                <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
+                                  <div className="text-slate-500 select-none">[SYSTEM] Menginisialisasi logika evaluasi Forward Chaining...</div>
+                                  <div className="text-slate-500 select-none">[SYSTEM] Ambang batas verifikasi ditetapkan ke skor &gt;= {simThreshold}</div>
+
+                                  {res.trace && res.trace.map((line: string, idx: number) => {
+                                    const isCheck = line.startsWith('✓')
+                                    const isCross = line.startsWith('✗')
+                                    const isSatisfiedRule = line.includes('RULE TRUE')
+                                    const isFailedRule = line.includes('RULE FALSE')
+
+                                    let textColor = 'text-slate-300'
+                                    if (isCheck) textColor = 'text-emerald-400 font-medium'
+                                    if (isCross) textColor = 'text-rose-400'
+                                    if (isSatisfiedRule) textColor = 'text-emerald-300 font-bold bg-emerald-950/40 py-0.5 px-1 rounded border border-emerald-900/50'
+                                    if (isFailedRule) textColor = 'text-rose-400 font-bold bg-rose-950/40 py-0.5 px-1 rounded border border-rose-900/50'
+
+                                    return (
+                                      <div key={idx} className={`flex items-start gap-2 leading-relaxed ${textColor}`}>
+                                        <span className="text-slate-650 select-none font-mono w-6 text-right shrink-0">
+                                          {String(idx + 1).padStart(2, '0')}:
+                                        </span>
+                                        <span className="flex-1 whitespace-pre-wrap">{line}</span>
+                                      </div>
+                                    )
+                                  })}
+
+                                  <div className="text-slate-500 select-none">[SYSTEM] Siklus evaluasi selesai untuk {res.criterion_code}</div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ))
+                        )
+                      })
                     )}
                   </div>
 
