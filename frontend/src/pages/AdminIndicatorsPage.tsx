@@ -15,6 +15,52 @@ export default function AdminIndicatorsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Create Indicator Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [newCode, setNewCode] = useState('')
+  const [newLabel, setNewLabel] = useState('')
+  const [newAgeGroup, setNewAgeGroup] = useState('preschool')
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [successToast, setSuccessToast] = useState<string | null>(null)
+
+  const handleCreateIndicator = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/indicators', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: newCode.trim(),
+          label: newLabel.trim(),
+          age_group: newAgeGroup
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menambahkan indikator.')
+      }
+
+      const created = await res.json()
+      setIndicators([created, ...indicators])
+      setIsModalOpen(false)
+      setNewCode('')
+      setNewLabel('')
+      
+      setSuccessToast('Indikator baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
   useEffect(() => {
     document.title = 'Manajemen Indikator | TalentaKu Admin'
 
@@ -69,7 +115,22 @@ export default function AdminIndicatorsPage() {
               </span>
             </div>
           </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-[#3525cd] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined text-base">add</span>
+            Tambah Indikator
+          </button>
         </header>
+
+        {/* Success Toast */}
+        {successToast && (
+          <div className="absolute top-20 right-10 z-[110] bg-emerald-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm animate-bounce">
+            <span className="material-symbols-outlined">check_circle</span>
+            <span>{successToast}</span>
+          </div>
+        )}
 
         {loading ? (
           <div className="flex-grow flex flex-col p-4 md:p-10 space-y-6">
@@ -155,6 +216,79 @@ export default function AdminIndicatorsPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create Indicator Modal */}
+        {isModalOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <div 
+              className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl border border-[#c7c4d8]/40 animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
+                <h3 className="text-xl font-bold text-[#3525cd]">Tambah Indikator Bakat</h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              <form onSubmit={handleCreateIndicator} className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-[#464555] block mb-1">Kode Indikator</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: I28, TI7, EI13, LI13"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#464555] block mb-1">Nama Indikator Bakat</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Kemampuan Verbal Lanjut"
+                    value={newLabel}
+                    onChange={(e) => setNewLabel(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
+                  <select
+                    value={newAgeGroup}
+                    onChange={(e) => setNewAgeGroup(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                  >
+                    <option value="toddler">Batita (Toddler)</option>
+                    <option value="preschool">Prasekolah / TK (Preschool)</option>
+                    <option value="early_elementary">SD Awal (Early Elementary)</option>
+                    <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                  </select>
+                </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-[#c7c4d8]/20">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 border border-[#c7c4d8]/40 rounded-xl text-xs font-semibold text-[#464555] hover:bg-[#eceef0]"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitLoading}
+                    className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    {submitLoading ? 'Menyimpan...' : 'Simpan Indikator'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

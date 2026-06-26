@@ -746,6 +746,146 @@ func GetRules(c *fiber.Ctx) error {
 	})
 }
 
+// Create Variable
+func CreateVariable(c *fiber.Ctx) error {
+	var input models.Variable
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if input.Code == "" || input.Label == "" || input.Category == "" || input.AgeGroup == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+	
+	// Check if already exists
+	var count int64
+	db.DB.Model(&models.Variable{}).Where("code = ?", input.Code).Count(&count)
+	if count > 0 {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Variable code already exists"})
+	}
+
+	if err := db.DB.Create(&input).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create variable"})
+	}
+
+	return c.JSON(input)
+}
+
+// Create Indicator
+func CreateIndicator(c *fiber.Ctx) error {
+	var input models.Indicator
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if input.Code == "" || input.Label == "" || input.AgeGroup == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+
+	// Check if already exists
+	var count int64
+	db.DB.Model(&models.Indicator{}).Where("code = ?", input.Code).Count(&count)
+	if count > 0 {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Indicator code already exists"})
+	}
+
+	if err := db.DB.Create(&input).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create indicator"})
+	}
+
+	return c.JSON(input)
+}
+
+// Create Criterion
+func CreateCriterion(c *fiber.Ctx) error {
+	var input models.Criterion
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if input.Code == "" || input.Label == "" || input.AgeGroup == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+
+	// Check if already exists
+	var count int64
+	db.DB.Model(&models.Criterion{}).Where("code = ?", input.Code).Count(&count)
+	if count > 0 {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Criterion code already exists"})
+	}
+
+	if err := db.DB.Create(&input).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create criterion"})
+	}
+
+	return c.JSON(input)
+}
+
+// Save or Update a Rule Relation
+func SaveRule(c *fiber.Ctx) error {
+	type RuleInput struct {
+		Type        string   `json:"type"`        // "L1" or "L2"
+		TargetCode  string   `json:"target_code"`  // e.g. "I1" or "K1"
+		SourceCodes []string `json:"source_codes"` // e.g. ["C1", "C2"] or ["I1", "I2"]
+	}
+
+	var input RuleInput
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	if input.Type == "" || input.TargetCode == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Type and TargetCode are required"})
+	}
+
+	tx := db.DB.Begin()
+
+	if input.Type == "L1" {
+		// Delete existing mappings
+		if err := tx.Where("indicator_code = ?", input.TargetCode).Delete(&models.IndicatorVariable{}).Error; err != nil {
+			tx.Rollback()
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update rule relations"})
+		}
+		// Insert new mappings
+		for _, src := range input.SourceCodes {
+			if src == "" {
+				continue
+			}
+			mapping := models.IndicatorVariable{
+				IndicatorCode: input.TargetCode,
+				VariableCode:  src,
+			}
+			if err := tx.Create(&mapping).Error; err != nil {
+				tx.Rollback()
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create rule relations"})
+			}
+		}
+	} else if input.Type == "L2" {
+		// Delete existing mappings
+		if err := tx.Where("criterion_code = ?", input.TargetCode).Delete(&models.CriterionIndicator{}).Error; err != nil {
+			tx.Rollback()
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update rule relations"})
+		}
+		// Insert new mappings
+		for _, src := range input.SourceCodes {
+			if src == "" {
+				continue
+			}
+			mapping := models.CriterionIndicator{
+				CriterionCode: input.TargetCode,
+				IndicatorCode: src,
+			}
+			if err := tx.Create(&mapping).Error; err != nil {
+				tx.Rollback()
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create rule relations"})
+			}
+		}
+	} else {
+		tx.Rollback()
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid rule type"})
+	}
+
+	tx.Commit()
+	return c.JSON(fiber.Map{"status": "success", "message": "Rule saved successfully"})
+}
+
 // Simulate Rule Engine Outputs
 func SimulateInference(c *fiber.Ctx) error {
 	type SimulationInput struct {

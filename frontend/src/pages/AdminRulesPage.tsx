@@ -65,6 +65,269 @@ export default function AdminRulesPage() {
   const [editSourceCodes, setEditSourceCodes] = useState<string[]>([])
   const [successToast, setSuccessToast] = useState<string | null>(null)
 
+  // Create Criterion Modal States
+  const [isCritModalOpen, setIsCritModalOpen] = useState(false)
+  const [newCritCode, setNewCritCode] = useState('')
+  const [newCritLabel, setNewCritLabel] = useState('')
+  const [newCritDescription, setNewCritDescription] = useState('')
+  const [newCritSuggestions, setNewCritSuggestions] = useState('')
+  const [newCritAgeGroup, setNewCritAgeGroup] = useState('preschool')
+  const [critSubmitLoading, setCritSubmitLoading] = useState(false)
+
+  // Create Variable Modal States (in Rules Page)
+  const [isVarModalOpen, setIsVarModalOpen] = useState(false)
+  const [newVarCode, setNewVarCode] = useState('')
+  const [newVarLabel, setNewVarLabel] = useState('')
+  const [newVarCategory, setNewVarCategory] = useState('General Intellectual')
+  const [newVarAgeGroup, setNewVarAgeGroup] = useState('preschool')
+  const [varSubmitLoading, setVarSubmitLoading] = useState(false)
+
+  // Create Indicator Modal States (in Rules Page)
+  const [isIndModalOpen, setIsIndModalOpen] = useState(false)
+  const [newIndCode, setNewIndCode] = useState('')
+  const [newIndLabel, setNewIndLabel] = useState('')
+  const [newIndAgeGroup, setNewIndAgeGroup] = useState('preschool')
+  const [indSubmitLoading, setIndSubmitLoading] = useState(false)
+
+  // Create Rule Modal States
+  const [isRuleModalOpen, setIsRuleModalOpen] = useState(false)
+  const [newRuleType, setNewRuleType] = useState<'L1' | 'L2'>('L1')
+  const [newRuleTargetCode, setNewRuleTargetCode] = useState('')
+  const [newRuleSourceCodes, setNewRuleSourceCodes] = useState<string[]>([])
+  const [ruleSubmitLoading, setRuleSubmitLoading] = useState(false)
+
+  const handleCreateVariable = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setVarSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/variables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: newVarCode.trim(),
+          label: newVarLabel.trim(),
+          category: newVarCategory,
+          age_group: newVarAgeGroup
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menambahkan variabel.')
+      }
+
+      const created = await res.json()
+      setVariables([created, ...variables])
+      setIsVarModalOpen(false)
+      setNewVarCode('')
+      setNewVarLabel('')
+      
+      setSuccessToast('Variabel masukan baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setVarSubmitLoading(false)
+    }
+  }
+
+  const handleCreateIndicator = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIndSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/indicators', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: newIndCode.trim(),
+          label: newIndLabel.trim(),
+          age_group: newIndAgeGroup
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menambahkan indikator.')
+      }
+
+      const created = await res.json()
+      setIndicators([created, ...indicators])
+      
+      // Also append a new L1 rule locally with empty source codes for now
+      const newRule: RuleItem = {
+        id: `RULE-${created.code}`,
+        type: 'L1',
+        logicParts: [],
+        target: created.label,
+        targetCode: created.code,
+        sourceCodes: [],
+        status: 'Draft (Belum Konfigurasi)',
+        statusColor: 'bg-amber-100 text-amber-800'
+      }
+      setRules((prevRules) => [newRule, ...prevRules])
+
+      setIsIndModalOpen(false)
+      setNewIndCode('')
+      setNewIndLabel('')
+      
+      setSuccessToast('Indikator bakat baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setIndSubmitLoading(false)
+    }
+  }
+
+  const handleCreateCriterion = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCritSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/criteria', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: newCritCode.trim(),
+          label: newCritLabel.trim(),
+          description: newCritDescription.trim(),
+          suggestions: newCritSuggestions.trim(),
+          age_group: newCritAgeGroup
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menambahkan kriteria evaluasi.')
+      }
+
+      const created = await res.json()
+      setCriteria([...criteria, created])
+      
+      // Also append a new L2 rule locally for the new criterion with empty source codes for now
+      const newRule: RuleItem = {
+        id: `RULE-${created.code}`,
+        type: 'L2',
+        logicParts: [],
+        target: created.label,
+        targetCode: created.code,
+        sourceCodes: [],
+        status: 'Draft (Belum Konfigurasi)',
+        statusColor: 'bg-amber-100 text-amber-800'
+      }
+      setRules((prevRules) => [newRule, ...prevRules])
+
+      setIsCritModalOpen(false)
+      setNewCritCode('')
+      setNewCritLabel('')
+      setNewCritDescription('')
+      setNewCritSuggestions('')
+      
+      setSuccessToast('Kriteria evaluasi baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setCritSubmitLoading(false)
+    }
+  }
+
+  const handleCreateRule = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newRuleTargetCode) {
+      alert('Pilih target hasil (THEN) terlebih dahulu.')
+      return
+    }
+    if (newRuleSourceCodes.length === 0) {
+      alert('Pilih setidaknya satu kondisi input (IF) untuk aturan ini.')
+      return
+    }
+
+    setRuleSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/rules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type: newRuleType,
+          target_code: newRuleTargetCode,
+          source_codes: newRuleSourceCodes
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menyimpan aturan baru.')
+      }
+
+      // Update state locally
+      const targetLabel = newRuleType === 'L1'
+        ? indicators.find((ind) => ind.code === newRuleTargetCode)?.label || newRuleTargetCode
+        : criteria.find((crit) => crit.code === newRuleTargetCode)?.label || newRuleTargetCode
+
+      const ruleId = `RULE-${newRuleTargetCode}`
+      const exists = rules.some((r) => r.id === ruleId && r.type === newRuleType)
+      const parts = newRuleSourceCodes.map((c) =>
+        newRuleType === 'L1' ? `${c} >= Threshold` : `${c} == TRUE`
+      )
+
+      if (exists) {
+        setRules((prev) =>
+          prev.map((r) => {
+            if (r.id === ruleId && r.type === newRuleType) {
+              return {
+                ...r,
+                sourceCodes: newRuleSourceCodes,
+                logicParts: parts,
+                status: newRuleSourceCodes.length > 0 ? 'Tervalidasi' : 'Draft (Belum Konfigurasi)',
+                statusColor: newRuleSourceCodes.length > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+              }
+            }
+            return r
+          })
+        )
+      } else {
+        const newRuleItem: RuleItem = {
+          id: ruleId,
+          type: newRuleType,
+          logicParts: parts,
+          target: targetLabel,
+          targetCode: newRuleTargetCode,
+          sourceCodes: newRuleSourceCodes,
+          status: newRuleSourceCodes.length > 0 ? 'Tervalidasi' : 'Draft (Belum Konfigurasi)',
+          statusColor: newRuleSourceCodes.length > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+        }
+        setRules((prev) => [newRuleItem, ...prev])
+      }
+
+      setIsRuleModalOpen(false)
+      setNewRuleTargetCode('')
+      setNewRuleSourceCodes([])
+
+      setSuccessToast('Aturan inferensi baru berhasil dikonfigurasi dan disimpan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setRuleSubmitLoading(false)
+    }
+  }
+
   // Simulation
   const [simOpen, setSimOpen] = useState(false)
   const [simThreshold, setSimThreshold] = useState(4)
@@ -177,30 +440,55 @@ export default function AdminRulesPage() {
     setEditSourceCodes(editSourceCodes.filter((c) => c !== code))
   }
 
-  function handleSaveRule() {
+  async function handleSaveRule() {
     if (!selectedRule) return
+    const token = localStorage.getItem('admin_token')
 
-    // Update rule logic parts and source codes in local state
-    const updatedRules = rules.map((r) => {
-      if (r.id === selectedRule.id) {
-        const parts = editSourceCodes.map((c) =>
-          selectedRule.type === 'L1' ? `${c} >= Threshold` : `${c} == TRUE`
-        )
-        return {
-          ...r,
-          sourceCodes: editSourceCodes,
-          logicParts: parts
-        }
+    try {
+      const res = await fetch('http://localhost:8080/api/admin/rules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type: selectedRule.type,
+          target_code: selectedRule.targetCode,
+          source_codes: editSourceCodes
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menyimpan aturan.')
       }
-      return r
-    })
 
-    setRules(updatedRules)
-    setPanelOpen(false)
+      // Update locally
+      const updatedRules = rules.map((r) => {
+        if (r.id === selectedRule.id) {
+          const parts = editSourceCodes.map((c) =>
+            selectedRule.type === 'L1' ? `${c} >= Threshold` : `${c} == TRUE`
+          )
+          return {
+            ...r,
+            sourceCodes: editSourceCodes,
+            logicParts: parts,
+            status: editSourceCodes.length > 0 ? 'Tervalidasi' : 'Draft (Belum Konfigurasi)',
+            statusColor: editSourceCodes.length > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+          }
+        }
+        return r
+      })
 
-    // Trigger success notification
-    setSuccessToast(`Aturan ${selectedRule.id} berhasil diperbarui secara lokal.`)
-    setTimeout(() => setSuccessToast(null), 4000)
+      setRules(updatedRules)
+      setPanelOpen(false)
+
+      // Trigger success notification
+      setSuccessToast(`Aturan ${selectedRule.id} berhasil disimpan ke database.`)
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat menyimpan aturan.')
+    }
   }
 
   async function handleRunSimulation() {
@@ -283,6 +571,25 @@ export default function AdminRulesPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => {
+                setIsRuleModalOpen(true)
+                setNewRuleType('L1')
+                setNewRuleTargetCode('')
+                setNewRuleSourceCodes([])
+              }}
+              className="flex items-center gap-2 bg-[#3525cd] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-base">add_box</span>
+              Tambah Aturan
+            </button>
+            <button
+              onClick={() => setIsCritModalOpen(true)}
+              className="flex items-center gap-2 bg-white border border-[#c7c4d8] text-[#464555] hover:bg-[#eceef0] px-4 py-2 rounded-xl text-sm font-semibold shadow-sm active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-base">add</span>
+              Tambah Kriteria
+            </button>
+            <button
+              onClick={() => {
                 setSimOpen(true)
                 setSimResults([])
               }}
@@ -361,7 +668,16 @@ export default function AdminRulesPage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-[10px] text-[#777587] mt-4 text-center font-semibold">Tersedia {variables.length - 3} variabel masukan lainnya</p>
+                <div className="mt-4 flex gap-2 justify-between items-center">
+                  <p className="text-[10px] text-[#777587] font-semibold">Tersedia {variables.length - 3} variabel lainnya</p>
+                  <button
+                    onClick={() => setIsVarModalOpen(true)}
+                    className="text-[10px] bg-[#3525cd] hover:bg-[#2515bd] text-white px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1 animate-pulse"
+                  >
+                    <span className="material-symbols-outlined text-[12px]">add</span>
+                    Tambah Baru
+                  </button>
+                </div>
               </div>
 
               {/* L2: Indicators Bakat */}
@@ -384,7 +700,16 @@ export default function AdminRulesPage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-[10px] text-[#3525cd] mt-4 text-center font-semibold">Tersedia {indicators.length - 3} indikator bakat lainnya</p>
+                <div className="mt-4 flex gap-2 justify-between items-center">
+                  <p className="text-[10px] text-[#3525cd] font-semibold">Tersedia {indicators.length - 3} indikator lainnya</p>
+                  <button
+                    onClick={() => setIsIndModalOpen(true)}
+                    className="text-[10px] bg-[#3525cd] hover:bg-[#2515bd] text-white px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1 animate-pulse"
+                  >
+                    <span className="material-symbols-outlined text-[12px]">add</span>
+                    Tambah Baru
+                  </button>
+                </div>
               </div>
 
               {/* L3: Criteria Evaluasi */}
@@ -407,7 +732,16 @@ export default function AdminRulesPage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-[10px] text-[#00687a] mt-4 text-center font-semibold">Tersedia {criteria.length - 3} kriteria evaluasi lainnya</p>
+                <div className="mt-4 flex gap-2 justify-between items-center">
+                  <p className="text-[10px] text-[#00687a] font-semibold">Tersedia {criteria.length - 3} kriteria lainnya</p>
+                  <button
+                    onClick={() => setIsCritModalOpen(true)}
+                    className="text-[10px] bg-[#00687a] hover:bg-[#005260] text-white px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1 animate-pulse"
+                  >
+                    <span className="material-symbols-outlined text-[12px]">add</span>
+                    Tambah Baru
+                  </button>
+                </div>
               </div>
             </section>
 
@@ -419,6 +753,18 @@ export default function AdminRulesPage() {
                   <p className="text-sm text-[#464555]">Mengelola kombinasi aturan logika Forward Chaining sistem pakar.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setIsRuleModalOpen(true)
+                      setNewRuleType('L1')
+                      setNewRuleTargetCode('')
+                      setNewRuleSourceCodes([])
+                    }}
+                    className="flex items-center gap-2 bg-[#3525cd] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-sm">add_box</span>
+                    Tambah Aturan
+                  </button>
                   {/* Filter Type Tabs */}
                   <div className="bg-[#f2f4f6] rounded-xl p-1 flex">
                     <button
@@ -925,6 +1271,427 @@ export default function AdminRulesPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Criterion Modal */}
+      {isCritModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+          onClick={() => setIsCritModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl border border-[#c7c4d8]/40 animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
+              <h3 className="text-xl font-bold text-[#3525cd]">Tambah Kriteria Evaluasi</h3>
+              <button onClick={() => setIsCritModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleCreateCriterion} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Kode Kriteria</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: K7, TK7, EK7, LK7"
+                  value={newCritCode}
+                  onChange={(e) => setNewCritCode(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Nama Kriteria Evaluasi</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Kecerdasan Logika Lanjut"
+                  value={newCritLabel}
+                  onChange={(e) => setNewCritLabel(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
+                <select
+                  value={newCritAgeGroup}
+                  onChange={(e) => setNewCritAgeGroup(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                >
+                  <option value="toddler">Batita (Toddler)</option>
+                  <option value="preschool">Prasekolah / TK (Preschool)</option>
+                  <option value="early_elementary">SD Awal (Early Elementary)</option>
+                  <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Deskripsi Kriteria</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Deskripsi penjelasan mengenai kriteria bakat/evaluasi ini..."
+                  value={newCritDescription}
+                  onChange={(e) => setNewCritDescription(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm resize-none font-semibold"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Saran Pengembangan / Aktivitas</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Saran tindakan nyata atau aktivitas pengembangan untuk anak..."
+                  value={newCritSuggestions}
+                  onChange={(e) => setNewCritSuggestions(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm resize-none font-semibold"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#c7c4d8]/20">
+                <button
+                  type="button"
+                  onClick={() => setIsCritModalOpen(false)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 rounded-xl text-xs font-semibold text-[#464555] hover:bg-[#eceef0]"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={critSubmitLoading}
+                  className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {critSubmitLoading ? 'Menyimpan...' : 'Simpan Kriteria'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Variable Modal */}
+      {isVarModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+          onClick={() => setIsVarModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl border border-[#c7c4d8]/40 animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
+              <h3 className="text-xl font-bold text-[#3525cd]">Tambah Variabel Masukan</h3>
+              <button onClick={() => setIsVarModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleCreateVariable} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Kode Variabel</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: C84, T13, E25"
+                  value={newVarCode}
+                  onChange={(e) => setNewVarCode(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Kategori</label>
+                <select
+                  value={newVarCategory}
+                  onChange={(e) => setNewVarCategory(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                >
+                  <option value="General Intellectual">Intelektual Umum (K1)</option>
+                  <option value="Specific Academic">Akademik Khusus (K2)</option>
+                  <option value="Creative Thinking">Berpikir Kreatif (K3)</option>
+                  <option value="Leadership">Kepemimpinan (K4)</option>
+                  <option value="Visual & Performing Arts">Seni Rupa & Visual (K5)</option>
+                  <option value="Psychomotor">Psikomotorik (K6)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
+                <select
+                  value={newVarAgeGroup}
+                  onChange={(e) => setNewVarAgeGroup(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                >
+                  <option value="toddler">Batita (Toddler)</option>
+                  <option value="preschool">Prasekolah / TK (Preschool)</option>
+                  <option value="early_elementary">SD Awal (Early Elementary)</option>
+                  <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Teks Pertanyaan Observasi</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Contoh: Apakah anak dapat melakukan sesuatu..."
+                  value={newVarLabel}
+                  onChange={(e) => setNewVarLabel(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm resize-none font-semibold"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#c7c4d8]/20">
+                <button
+                  type="button"
+                  onClick={() => setIsVarModalOpen(false)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 rounded-xl text-xs font-semibold text-[#464555] hover:bg-[#eceef0]"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={varSubmitLoading}
+                  className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {varSubmitLoading ? 'Menyimpan...' : 'Simpan Variabel'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Indicator Modal */}
+      {isIndModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+          onClick={() => setIsIndModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl border border-[#c7c4d8]/40 animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
+              <h3 className="text-xl font-bold text-[#3525cd]">Tambah Indikator Bakat</h3>
+              <button onClick={() => setIsIndModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleCreateIndicator} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Kode Indikator</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: I28, TI7, EI13, LI13"
+                  value={newIndCode}
+                  onChange={(e) => setNewIndCode(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Nama Indikator Bakat</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Kemampuan Verbal Lanjut"
+                  value={newIndLabel}
+                  onChange={(e) => setNewIndLabel(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
+                <select
+                  value={newIndAgeGroup}
+                  onChange={(e) => setNewIndAgeGroup(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                >
+                  <option value="toddler">Batita (Toddler)</option>
+                  <option value="preschool">Prasekolah / TK (Preschool)</option>
+                  <option value="early_elementary">SD Awal (Early Elementary)</option>
+                  <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#c7c4d8]/20">
+                <button
+                  type="button"
+                  onClick={() => setIsIndModalOpen(false)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 rounded-xl text-xs font-semibold text-[#464555] hover:bg-[#eceef0]"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={indSubmitLoading}
+                  className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {indSubmitLoading ? 'Menyimpan...' : 'Simpan Indikator'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Rule Modal */}
+      {isRuleModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
+          onClick={() => setIsRuleModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-[2rem] max-w-lg w-full p-8 shadow-2xl border border-[#c7c4d8]/40 animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
+              <h3 className="text-xl font-bold text-[#3525cd]">Tambah Aturan Baru</h3>
+              <button onClick={() => setIsRuleModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleCreateRule} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">Level Aturan</label>
+                <select
+                  value={newRuleType}
+                  onChange={(e) => {
+                    setNewRuleType(e.target.value as 'L1' | 'L2')
+                    setNewRuleTargetCode('')
+                    setNewRuleSourceCodes([])
+                  }}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                >
+                  <option value="L1">L1: Variabel Masukan ➔ Indikator Bakat</option>
+                  <option value="L2">L2: Indikator Bakat ➔ Kriteria Evaluasi</option>
+                </select>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-[#464555] block">Target Hasil (THEN)</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRuleModalOpen(false)
+                      if (newRuleType === 'L1') {
+                        setIsIndModalOpen(true)
+                      } else {
+                        setIsCritModalOpen(true)
+                      }
+                    }}
+                    className="text-[10px] text-[#3525cd] hover:underline font-bold"
+                  >
+                    + Buat {newRuleType === 'L1' ? 'Indikator' : 'Kriteria'} Baru
+                  </button>
+                </div>
+                <select
+                  required
+                  value={newRuleTargetCode}
+                  onChange={(e) => setNewRuleTargetCode(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                >
+                  <option value="" disabled>-- Pilih Target Aturan --</option>
+                  {newRuleType === 'L1'
+                    ? indicators.map((ind) => {
+                        const rule = rules.find((r) => r.id === `RULE-${ind.code}` && r.type === 'L1')
+                        const isConfigured = rule ? rule.sourceCodes.length > 0 : false
+                        return (
+                          <option key={ind.code} value={ind.code}>
+                            {ind.code} - {ind.label.slice(0, 50)} {isConfigured ? '(Sudah Ada)' : '(Belum Ada/Draft)'}
+                          </option>
+                        )
+                      })
+                    : criteria.map((crit) => {
+                        const rule = rules.find((r) => r.id === `RULE-${crit.code}` && r.type === 'L2')
+                        const isConfigured = rule ? rule.sourceCodes.length > 0 : false
+                        return (
+                          <option key={crit.code} value={crit.code}>
+                            {crit.code} - {crit.label.slice(0, 50)} {isConfigured ? '(Sudah Ada)' : '(Belum Ada/Draft)'}
+                          </option>
+                        )
+                      })
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#464555] block mb-1">
+                  Kondisi Premis (IF) - Tambah {newRuleType === 'L1' ? 'Variabel' : 'Indikator'}
+                </label>
+                <select
+                  className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val && !newRuleSourceCodes.includes(val)) {
+                      setNewRuleSourceCodes([...newRuleSourceCodes, val])
+                    }
+                    e.target.value = ''
+                  }}
+                  defaultValue=""
+                >
+                  <option value="" disabled>-- Tambah Kondisi Input --</option>
+                  {newRuleType === 'L1'
+                    ? variables
+                        .filter((v) => !newRuleSourceCodes.includes(v.code))
+                        .map((v) => (
+                          <option key={v.code} value={v.code}>
+                            {v.code} - {v.label.slice(0, 50)}...
+                          </option>
+                        ))
+                    : indicators
+                        .filter((ind) => !newRuleSourceCodes.includes(ind.code))
+                        .map((ind) => (
+                          <option key={ind.code} value={ind.code}>
+                            {ind.code} - {ind.label.slice(0, 50)}...
+                          </option>
+                        ))
+                  }
+                </select>
+
+                {/* Selected source codes list */}
+                {newRuleSourceCodes.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <label className="text-[10px] font-bold text-[#777587] uppercase tracking-wider block">Kondisi yang Dipilih:</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {newRuleSourceCodes.map((code) => (
+                        <span key={code} className="inline-flex items-center gap-1.5 bg-[#e2dfff]/60 text-[#3525cd] px-2.5 py-1 rounded-xl text-xs font-semibold">
+                          {code}
+                          <button
+                            type="button"
+                            onClick={() => setNewRuleSourceCodes(newRuleSourceCodes.filter((c) => c !== code))}
+                            className="text-red-500 hover:text-red-700 transition-colors flex items-center"
+                          >
+                            <span className="material-symbols-outlined text-xs">close</span>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-xl text-amber-800 text-[11px] flex gap-2 shadow-sm">
+                <span className="material-symbols-outlined text-amber-600 shrink-0 text-sm">info</span>
+                <p className="opacity-95 leading-relaxed">
+                  Menyimpan aturan baru akan menggantikan konfigurasi lama untuk target tersebut jika sudah ada sebelumnya. Aturan ini akan langsung aktif di database.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#c7c4d8]/20">
+                <button
+                  type="button"
+                  onClick={() => setIsRuleModalOpen(false)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 rounded-xl text-xs font-semibold text-[#464555] hover:bg-[#eceef0]"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={ruleSubmitLoading}
+                  className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {ruleSubmitLoading ? 'Menyimpan...' : 'Simpan Aturan'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

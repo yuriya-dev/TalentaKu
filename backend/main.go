@@ -71,6 +71,8 @@ func main() {
 	api.Post("/consultations/claim", handlers.ClaimConsultation)
 	api.Get("/variables", handlers.GetVariables)
 	api.Post("/intake", handlers.StartIntake)
+	api.Post("/user/variables", handlers.AuthRequired, handlers.CreateVariable)
+	api.Post("/user/indicators", handlers.AuthRequired, handlers.CreateIndicator)
 	api.Get("/consultations", handlers.GetHistory)
 	api.Get("/consultation/:id", handlers.GetConsultation)
 	api.Get("/consultation/:id/questions", handlers.GetConsultationQuestions)
@@ -82,8 +84,12 @@ func main() {
 	adminGroup.Get("/stats", handlers.GetAdminStats)
 	adminGroup.Get("/rules", handlers.GetRules)
 	adminGroup.Post("/rules/simulate", handlers.SimulateInference)
+	adminGroup.Post("/rules", handlers.SaveRule)
 	adminGroup.Get("/settings", handlers.GetSettings)
 	adminGroup.Post("/settings", handlers.UpdateSettings)
+	adminGroup.Post("/variables", handlers.CreateVariable)
+	adminGroup.Post("/indicators", handlers.CreateIndicator)
+	adminGroup.Post("/criteria", handlers.CreateCriterion)
 
 	// 5. Start Server
 	port := os.Getenv("PORT")

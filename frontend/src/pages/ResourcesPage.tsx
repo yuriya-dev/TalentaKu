@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import MobileNav from '../components/layout/MobileNav'
@@ -74,12 +75,112 @@ const faqs = [
 ]
 
 export default function ResourcesPage() {
-  const [activeTab, setActiveTab] = useState<'bakat' | 'metode' | 'panduan'>('bakat')
+  const [activeTab, setActiveTab] = useState<'bakat' | 'metode' | 'panduan' | 'kontribusi'>('bakat')
   const [faqOpen, setFaqOpen] = useState<number | null>(null)
+
+  // User login status
+  const [userToken, setUserToken] = useState<string | null>(null)
+
+  // Form states for Variable
+  const [varCode, setVarCode] = useState('')
+  const [varLabel, setVarLabel] = useState('')
+  const [varCategory, setVarCategory] = useState('General Intellectual')
+  const [varAgeGroup, setVarAgeGroup] = useState('preschool')
+  const [varLoading, setVarLoading] = useState(false)
+
+  // Form states for Indicator
+  const [indCode, setIndCode] = useState('')
+  const [indLabel, setIndLabel] = useState('')
+  const [indAgeGroup, setIndAgeGroup] = useState('preschool')
+  const [indLoading, setIndLoading] = useState(false)
+
+  const [successToast, setSuccessToast] = useState<string | null>(null)
+  const [errorToast, setErrorToast] = useState<string | null>(null)
+
+  const handleAddVariable = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!userToken) return
+    setVarLoading(true)
+    setErrorToast(null)
+    setSuccessToast(null)
+
+    try {
+      const res = await fetch('http://localhost:8080/api/user/variables', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`
+        },
+        body: JSON.stringify({
+          code: varCode.trim(),
+          label: varLabel.trim(),
+          category: varCategory,
+          age_group: varAgeGroup
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menambahkan variabel.')
+      }
+
+      setSuccessToast('Variabel masukan baru berhasil ditambahkan!')
+      setVarCode('')
+      setVarLabel('')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      setErrorToast(err.message || 'Terjadi kesalahan.')
+      setTimeout(() => setErrorToast(null), 4000)
+    } finally {
+      setVarLoading(false)
+    }
+  }
+
+  const handleAddIndicator = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!userToken) return
+    setIndLoading(true)
+    setErrorToast(null)
+    setSuccessToast(null)
+
+    try {
+      const res = await fetch('http://localhost:8080/api/user/indicators', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`
+        },
+        body: JSON.stringify({
+          code: indCode.trim(),
+          label: indLabel.trim(),
+          age_group: indAgeGroup
+        })
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Gagal menambahkan indikator.')
+      }
+
+      setSuccessToast('Indikator bakat baru berhasil ditambahkan!')
+      setIndCode('')
+      setIndLabel('')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      setErrorToast(err.message || 'Terjadi kesalahan.')
+      setTimeout(() => setErrorToast(null), 4000)
+    } finally {
+      setIndLoading(false)
+    }
+  }
 
   useEffect(() => {
     document.title = 'Sumber Daya & Metodologi | TalentaKu'
     window.scrollTo(0, 0)
+    
+    // Check user token
+    const token = localStorage.getItem('user_token')
+    setUserToken(token)
   }, [])
 
   return (
@@ -106,7 +207,8 @@ export default function ResourcesPage() {
           {[
             { id: 'bakat', label: '6 Kategori Bakat', icon: 'stars' },
             { id: 'metode', label: 'Metodologi Forward Chaining', icon: 'account_tree' },
-            { id: 'panduan', label: 'Panduan Observasi & FAQ', icon: 'help_center' }
+            { id: 'panduan', label: 'Panduan Observasi & FAQ', icon: 'help_center' },
+            { id: 'kontribusi', label: 'Kontribusi Data', icon: 'volunteer_activism' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -286,6 +388,181 @@ export default function ResourcesPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* TAB 4: KONTRIBUSI DATA */}
+          {activeTab === 'kontribusi' && (
+            <div className="animate-fade-in space-y-8 relative">
+              {/* Success Toast */}
+              {successToast && (
+                <div className="fixed top-20 right-10 z-[110] bg-emerald-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm animate-bounce">
+                  <span className="material-symbols-outlined">check_circle</span>
+                  <span>{successToast}</span>
+                </div>
+              )}
+              {/* Error Toast */}
+              {errorToast && (
+                <div className="fixed top-20 right-10 z-[110] bg-rose-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm animate-bounce">
+                  <span className="material-symbols-outlined">error</span>
+                  <span>{errorToast}</span>
+                </div>
+              )}
+
+              {!userToken ? (
+                <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 md:p-12 text-center max-w-2xl mx-auto space-y-6 shadow-sm">
+                  <div className="w-16 h-16 bg-[#3525cd]/15 rounded-full flex items-center justify-center text-[#3525cd] mx-auto">
+                    <span className="material-symbols-outlined text-3xl">lock</span>
+                  </div>
+                  <h3 className="text-2xl font-bold">Akses Kontribusi Terbatas</h3>
+                  <p className="text-sm text-[#464555] leading-relaxed">
+                    Untuk ikut serta menyumbangkan data berupa **Variabel Masukan** atau **Indikator Bakat baru** ke dalam sistem pakar TalentaKu, Anda harus masuk log atau membuat akun terlebih dahulu.
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <Link
+                      to="/login"
+                      className="bg-[#3525cd] text-white px-6 py-2.5 text-sm font-semibold rounded-xl hover:brightness-110 shadow-md active:scale-95 transition-all"
+                    >
+                      Masuk Log
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="px-6 py-2.5 border border-[#c7c4d8]/40 hover:bg-[#eceef0] rounded-xl text-sm font-semibold transition-all"
+                    >
+                      Daftar Akun
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                  {/* Form Variable */}
+                  <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 md:p-8 space-y-6 shadow-sm">
+                    <div>
+                      <h3 className="text-lg font-bold text-[#3525cd] flex items-center gap-2">
+                        <span className="material-symbols-outlined">playlist_add</span>
+                        Tambah Variabel Masukan
+                      </h3>
+                      <p className="text-xs text-[#464555] mt-1">Variabel masukan baru merupakan perilaku anak yang dapat diobservasi.</p>
+                    </div>
+
+                    <form onSubmit={handleAddVariable} className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Kode Variabel</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Contoh: C84, T13, E25"
+                          value={varCode}
+                          onChange={(e) => setVarCode(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Kategori Bakat</label>
+                        <select
+                          value={varCategory}
+                          onChange={(e) => setVarCategory(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                        >
+                          <option value="General Intellectual">Intelektual Umum (K1)</option>
+                          <option value="Specific Academic">Akademik Khusus (K2)</option>
+                          <option value="Creative Thinking">Berpikir Kreatif (K3)</option>
+                          <option value="Leadership">Kepemimpinan (K4)</option>
+                          <option value="Visual & Performing Arts">Seni Rupa & Visual (K5)</option>
+                          <option value="Psychomotor">Psikomotorik (K6)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
+                        <select
+                          value={varAgeGroup}
+                          onChange={(e) => setVarAgeGroup(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                        >
+                          <option value="toddler">Batita (Toddler)</option>
+                          <option value="preschool">Prasekolah / TK (Preschool)</option>
+                          <option value="early_elementary">SD Awal (Early Elementary)</option>
+                          <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Teks Pertanyaan Observasi</label>
+                        <textarea
+                          required
+                          rows={3}
+                          placeholder="Contoh: Apakah anak dapat bernyanyi..."
+                          value={varLabel}
+                          onChange={(e) => setVarLabel(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm resize-none font-semibold"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={varLoading}
+                        className="w-full py-2.5 bg-[#3525cd] text-white rounded-xl text-xs font-bold hover:brightness-110 shadow-md active:scale-95 transition-all disabled:opacity-50"
+                      >
+                        {varLoading ? 'Mengirim...' : 'Kirim Variabel'}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Form Indicator */}
+                  <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 md:p-8 space-y-6 shadow-sm">
+                    <div>
+                      <h3 className="text-lg font-bold text-[#00687a] flex items-center gap-2">
+                        <span className="material-symbols-outlined">add_task</span>
+                        Tambah Indikator Bakat
+                      </h3>
+                      <p className="text-xs text-[#464555] mt-1">Indikator baru untuk memicu kriteria bakat pada aturan Forward Chaining.</p>
+                    </div>
+
+                    <form onSubmit={handleAddIndicator} className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Kode Indikator</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Contoh: I28, TI7, EI13, LI13"
+                          value={indCode}
+                          onChange={(e) => setIndCode(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Nama Indikator Bakat</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Contoh: Kemampuan Verbal Tingkat Lanjut"
+                          value={indLabel}
+                          onChange={(e) => setIndLabel(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
+                        <select
+                          value={indAgeGroup}
+                          onChange={(e) => setIndAgeGroup(e.target.value)}
+                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                        >
+                          <option value="toddler">Batita (Toddler)</option>
+                          <option value="preschool">Prasekolah / TK (Preschool)</option>
+                          <option value="early_elementary">SD Awal (Early Elementary)</option>
+                          <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                        </select>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={indLoading}
+                        className="w-full py-2.5 bg-[#00687a] text-white rounded-xl text-xs font-bold hover:brightness-110 shadow-md active:scale-95 transition-all disabled:opacity-50"
+                      >
+                        {indLoading ? 'Mengirim...' : 'Kirim Indikator'}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
