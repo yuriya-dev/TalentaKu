@@ -7,7 +7,8 @@
         },
         "backend": {
             "entrypoint": "backend/main.go",
-            "routePrefix": "/_/backend"
+            "routePrefix": "/_/backend",
+            "framework": "go"
         }
     }
 }

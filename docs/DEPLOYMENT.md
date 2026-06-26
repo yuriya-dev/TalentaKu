@@ -78,7 +78,8 @@ File ini telah disiapkan di direktori root proyek untuk mengarahkan lalu lintas 
         },
         "backend": {
             "entrypoint": "backend/main.go",
-            "routePrefix": "/_/backend"
+            "routePrefix": "/_/backend",
+            "framework": "go"
         }
     }
 }
