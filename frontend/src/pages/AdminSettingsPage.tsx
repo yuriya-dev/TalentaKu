@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import { API_BASE } from '../config'
 
 export default function AdminSettingsPage() {
   const navigate = useNavigate()
@@ -22,7 +23,7 @@ export default function AdminSettingsPage() {
 
     async function fetchSettings() {
       try {
-        const res = await fetch('http://localhost:8080/api/admin/settings', {
+        const res = await fetch(`${API_BASE}/api/admin/settings`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -69,7 +70,7 @@ export default function AdminSettingsPage() {
     }
 
     try {
-      const res = await fetch('http://localhost:8080/api/admin/settings', {
+      const res = await fetch(`${API_BASE}/api/admin/settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

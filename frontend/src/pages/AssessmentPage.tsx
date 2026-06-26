@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { API_BASE } from '../config'
 
 interface Question {
   id: number
@@ -218,7 +219,7 @@ export default function AssessmentPage() {
       }
       setLoadingQuestions(true)
       try {
-        const res = await fetch(`http://localhost:8080/api/consultation/${consId}/questions`)
+        const res = await fetch(`${API_BASE}/api/consultation/${consId}/questions`)
         if (!res.ok) {
           throw new Error('Gagal memuat pertanyaan dari server.')
         }
@@ -287,7 +288,7 @@ export default function AssessmentPage() {
       }))
 
       try {
-        const res = await fetch(`http://localhost:8080/api/consultation/${consId}/submit`, {
+        const res = await fetch(`${API_BASE}/api/consultation/${consId}/submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

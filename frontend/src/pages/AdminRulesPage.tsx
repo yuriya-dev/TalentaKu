@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import { API_BASE } from '../config'
 
 interface Variable {
   code: string
@@ -101,7 +102,7 @@ export default function AdminRulesPage() {
     setVarSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
     try {
-      const res = await fetch('http://localhost:8080/api/admin/variables', {
+      const res = await fetch(`${API_BASE}/api/admin/variables`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +141,7 @@ export default function AdminRulesPage() {
     setIndSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
     try {
-      const res = await fetch('http://localhost:8080/api/admin/indicators', {
+      const res = await fetch(`${API_BASE}/api/admin/indicators`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -192,7 +193,7 @@ export default function AdminRulesPage() {
     setCritSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
     try {
-      const res = await fetch('http://localhost:8080/api/admin/criteria', {
+      const res = await fetch(`${API_BASE}/api/admin/criteria`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -257,7 +258,7 @@ export default function AdminRulesPage() {
     setRuleSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
     try {
-      const res = await fetch('http://localhost:8080/api/admin/rules', {
+      const res = await fetch(`${API_BASE}/api/admin/rules`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -345,7 +346,7 @@ export default function AdminRulesPage() {
 
     async function fetchRules() {
       try {
-        const res = await fetch('http://localhost:8080/api/admin/rules', {
+        const res = await fetch(`${API_BASE}/api/admin/rules`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -445,7 +446,7 @@ export default function AdminRulesPage() {
     const token = localStorage.getItem('admin_token')
 
     try {
-      const res = await fetch('http://localhost:8080/api/admin/rules', {
+      const res = await fetch(`${API_BASE}/api/admin/rules`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -500,7 +501,7 @@ export default function AdminRulesPage() {
         score
       }))
 
-      const res = await fetch('http://localhost:8080/api/admin/rules/simulate', {
+      const res = await fetch(`${API_BASE}/api/admin/rules/simulate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

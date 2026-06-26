@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
+import { API_BASE } from '../config'
 
 function launchConfetti() {
   const colors = ['#4F46E5', '#57dffe', '#10B981', '#FCD34D']
@@ -88,7 +89,7 @@ export default function ResultsPage() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`http://localhost:8080/api/consultation/${assessmentId}/results`)
+        const res = await fetch(`${API_BASE}/api/consultation/${assessmentId}/results`)
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}))
           throw new Error(errData.error || 'Gagal memuat hasil evaluasi.')
@@ -113,7 +114,7 @@ export default function ResultsPage() {
     setClaimError(null)
     setClaimSuccess(null)
     try {
-      const res = await fetch('http://localhost:8080/api/consultations/claim', {
+      const res = await fetch(`${API_BASE}/api/consultations/claim`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

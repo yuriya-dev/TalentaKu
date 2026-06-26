@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import { API_BASE } from '../config'
 
 interface AssessmentItem {
   id: number
@@ -32,7 +33,7 @@ export default function AdminAssessmentsPage() {
 
     async function fetchAssessments() {
       try {
-        const res = await fetch('http://localhost:8080/api/consultations', {
+        const res = await fetch(`${API_BASE}/api/consultations`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

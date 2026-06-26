@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import { API_BASE } from '../config'
 
 interface HeatmapRow {
   group: string
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
     async function fetchDashboardData() {
       try {
         // Fetch stats
-        const statsRes = await fetch('http://localhost:8080/api/admin/stats', {
+        const statsRes = await fetch(`${API_BASE}/api/admin/stats`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
         })
 
         // Fetch recent consultations
-        const consRes = await fetch('http://localhost:8080/api/consultations', {
+        const consRes = await fetch(`${API_BASE}/api/consultations`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

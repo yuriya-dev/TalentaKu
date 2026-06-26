@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import { API_BASE } from '../config'
 
 interface Variable {
   code: string
@@ -31,7 +32,7 @@ export default function AdminVariablesPage() {
     setSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
     try {
-      const res = await fetch('http://localhost:8080/api/admin/variables', {
+      const res = await fetch(`${API_BASE}/api/admin/variables`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +77,7 @@ export default function AdminVariablesPage() {
 
     async function fetchVariables() {
       try {
-        const res = await fetch('http://localhost:8080/api/variables')
+        const res = await fetch(`${API_BASE}/api/variables`)
         if (!res.ok) {
           throw new Error('Gagal mengambil data variabel dari backend.')
         }

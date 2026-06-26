@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
+import { API_BASE } from '../config'
 
 export default function UserRegisterPage() {
   const navigate = useNavigate()
@@ -18,7 +19,7 @@ export default function UserRegisterPage() {
     setSuccessMsg(null)
 
     try {
-      const res = await fetch('http://localhost:8080/api/login/google', {
+      const res = await fetch(`${API_BASE}/api/login/google`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,7 +43,7 @@ export default function UserRegisterPage() {
       const claimId = sessionStorage.getItem('claim_consultation_id')
       if (claimId) {
         try {
-          const claimRes = await fetch('http://localhost:8080/api/consultations/claim', {
+          const claimRes = await fetch(`${API_BASE}/api/consultations/claim`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ export default function UserRegisterPage() {
     setSuccessMsg(null)
 
     try {
-      const res = await fetch('http://localhost:8080/api/register', {
+      const res = await fetch(`${API_BASE}/api/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +127,7 @@ export default function UserRegisterPage() {
       const claimId = sessionStorage.getItem('claim_consultation_id')
       if (claimId) {
         try {
-          const claimRes = await fetch('http://localhost:8080/api/consultations/claim', {
+          const claimRes = await fetch(`${API_BASE}/api/consultations/claim`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

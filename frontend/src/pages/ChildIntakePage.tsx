@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { API_BASE } from '../config'
 
 const ageRanges = [
   { label: 'Batita', range: 'Usia 3 Tahun', value: 3 },
@@ -44,7 +45,7 @@ export default function ChildIntakePage() {
     }
 
     try {
-      const res = await fetch('http://localhost:8080/api/intake', {
+      const res = await fetch(`${API_BASE}/api/intake`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),

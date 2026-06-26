@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import MobileNav from '../components/layout/MobileNav'
+import { API_BASE } from '../config'
 
 interface HistoryItem {
   id: number
@@ -36,7 +37,7 @@ export default function HistoryPage() {
       }
 
       try {
-        const res = await fetch('http://localhost:8080/api/consultations', {
+        const res = await fetch(`${API_BASE}/api/consultations`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import MobileNav from '../components/layout/MobileNav'
+import { API_BASE } from '../config'
 
 const categories = [
   {
@@ -105,7 +106,7 @@ export default function ResourcesPage() {
     setSuccessToast(null)
 
     try {
-      const res = await fetch('http://localhost:8080/api/user/variables', {
+      const res = await fetch(`${API_BASE}/api/user/variables`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ export default function ResourcesPage() {
     setSuccessToast(null)
 
     try {
-      const res = await fetch('http://localhost:8080/api/user/indicators', {
+      const res = await fetch(`${API_BASE}/api/user/indicators`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
