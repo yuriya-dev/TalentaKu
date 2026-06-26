@@ -582,13 +582,6 @@ export default function AdminRulesPage() {
               Tambah Aturan
             </button>
             <button
-              onClick={() => setIsCritModalOpen(true)}
-              className="flex items-center gap-2 bg-white border border-[#c7c4d8] text-[#464555] hover:bg-[#eceef0] px-4 py-2 rounded-xl text-sm font-semibold shadow-sm active:scale-95 transition-all"
-            >
-              <span className="material-symbols-outlined text-base">add</span>
-              Tambah Kriteria
-            </button>
-            <button
               onClick={() => {
                 setSimOpen(true)
                 setSimResults([])

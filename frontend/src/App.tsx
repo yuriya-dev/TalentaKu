@@ -11,6 +11,7 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import AdminRoute from './components/layout/AdminRoute'
 import AdminVariablesPage from './pages/AdminVariablesPage'
 import AdminIndicatorsPage from './pages/AdminIndicatorsPage'
+import AdminCriteriaPage from './pages/AdminCriteriaPage'
 import AdminSettingsPage from './pages/AdminSettingsPage'
 import AdminAssessmentsPage from './pages/AdminAssessmentsPage'
 import UserLoginPage from './pages/UserLoginPage'
@@ -35,6 +36,7 @@ function App() {
           <Route path="/admin/rules" element={<AdminRulesPage />} />
           <Route path="/admin/variables" element={<AdminVariablesPage />} />
           <Route path="/admin/indicators" element={<AdminIndicatorsPage />} />
+          <Route path="/admin/criteria" element={<AdminCriteriaPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
         </Route>
       </Routes>

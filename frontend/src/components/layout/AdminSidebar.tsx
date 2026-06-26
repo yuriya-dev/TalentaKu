@@ -6,6 +6,7 @@ const navItems = [
   { icon: 'account_tree', label: 'Pembuat Aturan', to: '/admin/rules' },
   { icon: 'tune', label: 'Variabel', to: '/admin/variables' },
   { icon: 'leaderboard', label: 'Indikator', to: '/admin/indicators' },
+  { icon: 'verified', label: 'Kriteria', to: '/admin/criteria' },
   { icon: 'settings', label: 'Pengaturan', to: '/admin/settings' },
 ]
 
