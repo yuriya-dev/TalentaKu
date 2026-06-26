@@ -2,12 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
 
+interface HeatmapRow {
+  group: string
+  groupLabel: string
+  code: string
+  talent: string
+  value: number
+}
+
 interface DashboardStats {
   totalAssessments: number
   activeStudents: number
   identifiedTalents: number
   pendingReviews: number
-  chartBars: Array<{ label: string; pct: number }>
+  chartBars: Array<{ code: string; label: string; pct: number }>
+  heatmapData: HeatmapRow[]
 }
 
 interface ConsultationItem {
@@ -36,13 +45,13 @@ const variableCategories = [
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
-  const [chartLoaded, setChartLoaded] = useState(false)
   const [statsData, setStatsData] = useState<DashboardStats>({
     totalAssessments: 0,
     activeStudents: 0,
     identifiedTalents: 0,
     pendingReviews: 0,
-    chartBars: []
+    chartBars: [],
+    heatmapData: []
   })
   const [recentConsultations, setRecentConsultations] = useState<ConsultationItem[]>([])
   const [adminUser, setAdminUser] = useState<{ email: string; role: string } | null>(null)
@@ -94,7 +103,8 @@ export default function AdminDashboard() {
         const dist = rawStats.talent_distribution || []
         const maxCount = Math.max(...dist.map((d: any) => d.count), 0)
         const chartBarsMapped = dist.map((d: any) => ({
-          label: d.label,
+          code: d.code || '',
+          label: d.label || '',
           pct: maxCount > 0 ? Math.round((d.count / maxCount) * 100) : 0
         }))
 
@@ -103,7 +113,8 @@ export default function AdminDashboard() {
           activeStudents: rawStats.active_students || 0,
           identifiedTalents: rawStats.identified_talents || 0,
           pendingReviews: rawStats.pending_reviews || 0,
-          chartBars: chartBarsMapped
+          chartBars: chartBarsMapped,
+          heatmapData: rawStats.heatmap_data || []
         })
 
         // Fetch recent consultations
@@ -142,7 +153,6 @@ export default function AdminDashboard() {
         })
 
         setRecentConsultations(recentMapped)
-        setTimeout(() => setChartLoaded(true), 300)
       } catch (err: any) {
         setError(err.message || 'Terjadi kesalahan sistem saat memuat data dasbor.')
       } finally {
@@ -250,40 +260,98 @@ export default function AdminDashboard() {
 
             {/* Chart + Health */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Bar Chart */}
-              <div className="xl:col-span-2 card-level-1 p-8 bg-white border border-[#c7c4d8]/40 rounded-3xl shadow-sm">
-                <div className="flex justify-between items-center mb-8">
-                  <h4 className="text-xl font-bold">Analisis Distribusi Bakat</h4>
-                </div>
-                <div className="relative h-64 w-full bg-[#f2f4f6] rounded-2xl overflow-hidden flex items-end justify-around px-8 pb-4">
-                  {statsData.chartBars.length === 0 ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <p className="text-xs text-[#777587]">Tidak ada data distribusi bakat yang tercatat.</p>
+              {/* Heatmap Chart */}
+              <div className="xl:col-span-2 card-level-1 p-8 bg-white border border-[#c7c4d8]/40 rounded-3xl shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-center mb-8">
+                    <div>
+                      <h4 className="text-xl font-bold">Analisis Distribusi Bakat</h4>
+                      <p className="text-xs text-[#777587] mt-0.5">Visualisasi hubungan kelompok usia (Sumbu Y) dan jenis bakat (Sumbu X)</p>
                     </div>
-                  ) : (
-                    statsData.chartBars.map((bar, i) => (
-                      <div key={bar.label} className="relative group flex flex-col items-center">
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#191c1e] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-sm">
-                          {bar.pct}%
+                  </div>
+                  
+                  <div className="space-y-2 max-w-2xl mx-auto">
+                    {/* Y-axis rows */}
+                    {['LK', 'EK', 'TK', 'K'].map((group) => {
+                      const groupLabel = group === 'LK' ? 'SD Akhir (LK)' : group === 'EK' ? 'SD Awal (EK)' : group === 'TK' ? 'Prasekolah (TK)' : 'Batita (K)';
+                      return (
+                        <div key={group} className="grid grid-cols-12 gap-2 items-center">
+                          {/* Y-axis Label */}
+                          <div className="col-span-2 text-right pr-2">
+                            <span className="text-xs font-bold text-[#464555] font-mono">{group}</span>
+                            <span className="hidden sm:block text-[9px] text-[#777587] truncate" title={groupLabel.split(' (')[0]}>
+                              {groupLabel.split(' (')[0]}
+                            </span>
+                          </div>
+                          {/* Heatmap cells (6 columns) */}
+                          <div className="col-span-10 grid grid-cols-6 gap-2">
+                            {['K1', 'K2', 'K3', 'K4', 'K5', 'K6'].map((code) => {
+                              const dataItem = statsData.heatmapData.find(d => d.group === group && d.code === code);
+                              const value = dataItem ? dataItem.value : 0;
+                              const talent = dataItem ? dataItem.talent : '';
+                              // Calculate color weight (0.05 to 0.95) based on percentage
+                              const opacity = 0.05 + (value / 100) * 0.92;
+                              const isDark = opacity > 0.45;
+                              
+                              return (
+                                <div key={code} className="relative group border border-slate-200/40 rounded-lg overflow-visible">
+                                  <div
+                                    style={{ backgroundColor: `rgba(53, 37, 205, ${opacity})` }}
+                                    className="w-full h-11 rounded-lg cursor-default transition-all duration-300 hover:scale-[1.06] hover:shadow-md hover:z-20 flex items-center justify-center text-[10px] font-bold"
+                                  >
+                                    <span style={{ color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(25,28,30,0.85)' }}>
+                                      {value}%
+                                    </span>
+                                  </div>
+                                  {/* Custom Tooltip */}
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-[#191c1e] text-white text-[10px] sm:text-xs p-2.5 rounded-xl opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50 shadow-xl whitespace-nowrap border border-white/10">
+                                    <p className="font-bold text-[#57dffe]">{groupLabel}</p>
+                                    <p className="font-medium mt-0.5">{talent} ({code})</p>
+                                    <p className="font-bold mt-1 text-white flex items-center gap-1.5">
+                                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: `rgba(53, 37, 205, ${opacity})`, border: '1px solid rgba(255,255,255,0.4)' }} />
+                                      {value}% Kesesuaian
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div
-                          className="w-10 sm:w-12 bg-[#3525cd] rounded-t-lg transition-all duration-700 hover:opacity-85"
-                          style={{ height: chartLoaded ? `${bar.pct}%` : '0%', opacity: `${1 - (i % 6) * 0.12}` }}
-                        />
+                      );
+                    })}
+                    
+                    {/* X-axis Labels */}
+                    <div className="grid grid-cols-12 gap-2 items-center mt-2">
+                      <div className="col-span-2" />
+                      <div className="col-span-10 grid grid-cols-6 gap-2 text-center">
+                        {['K1', 'K2', 'K3', 'K4', 'K5', 'K6'].map((code) => (
+                          <span key={code} className="text-xs font-bold text-[#464555] font-mono">
+                            {code}
+                          </span>
+                        ))}
                       </div>
-                    ))
-                  )}
-                </div>
-                <div className="flex justify-around mt-4 overflow-hidden">
-                  {statsData.chartBars.map((bar) => (
-                    <span
-                      key={bar.label}
-                      className="text-[10px] font-medium text-[#464555] text-center truncate w-20 px-1"
-                      title={bar.label}
-                    >
-                      {bar.label.split(' - ')[0]}
-                    </span>
-                  ))}
+                    </div>
+                  </div>
+
+                  {/* Legend & Labels explaining K1 - K6 */}
+                  <div className="mt-6 pt-5 border-t border-[#c7c4d8]/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
+                    {/* Color Scale Legend */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <span className="text-[#777587] font-semibold text-[10px]">Rendah (0%)</span>
+                      <div className="h-2.5 w-32 rounded-full border border-slate-200/80 bg-gradient-to-r from-[rgba(53,37,205,0.05)] to-[rgba(53,37,205,0.97)] shadow-inner" />
+                      <span className="text-[#777587] font-semibold text-[10px]">Tinggi (100%)</span>
+                    </div>
+                    
+                    {/* Legend explanation for K1-K6 */}
+                    <div className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-[#464555] font-medium text-[9px] w-full sm:w-auto">
+                      <span><strong>K1:</strong> Intelektual</span>
+                      <span><strong>K2:</strong> Akademik</span>
+                      <span><strong>K3:</strong> Kreatif</span>
+                      <span><strong>K4:</strong> Kepemimpinan</span>
+                      <span><strong>K5:</strong> Seni</span>
+                      <span><strong>K6:</strong> Psikomotorik</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
