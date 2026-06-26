@@ -29,12 +29,17 @@ func InitDB() *gorm.DB {
 
 	var dialector gorm.Dialector
 	if strings.HasPrefix(dbPath, "postgres://") || strings.HasPrefix(dbPath, "postgresql://") {
-		dialector = postgres.Open(dbPath)
+		dialector = postgres.New(postgres.Config{
+			DSN:                  dbPath,
+			PreferSimpleProtocol: true, // Required for PgBouncer / Supabase Pooler compatibility
+		})
 	} else {
 		dialector = sqlite.Open(dbPath)
 	}
 
-	DB, err = gorm.Open(dialector, &gorm.Config{})
+	DB, err = gorm.Open(dialector, &gorm.Config{
+		PrepareStmt: false, // Disable prepared statements caching for PgBouncer transaction mode
+	})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
