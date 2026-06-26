@@ -72,12 +72,12 @@ File ini telah disiapkan di direktori root proyek untuk mengarahkan lalu lintas 
 {
     "experimentalServices": {
         "frontend": {
-            "root": "frontend",
+            "entrypoint": "frontend",
             "routePrefix": "/",
             "framework": "vite"
         },
         "backend": {
-            "root": "backend",
+            "entrypoint": "backend/main.go",
             "routePrefix": "/_/backend"
         }
     }
