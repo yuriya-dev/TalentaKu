@@ -108,7 +108,7 @@ export default function ChildIntakePage() {
           </div>
 
           {/* Form Card */}
-          <div className="glass-card rounded-xl p-8 shadow-sm">
+          <div className="clay-card p-8">
             {errorMsg && (
               <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 rounded-lg text-red-800 text-sm flex items-start gap-2 shadow-sm">
                 <span className="material-symbols-outlined text-red-600 text-lg">error</span>
@@ -124,7 +124,7 @@ export default function ChildIntakePage() {
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#777587] group-focus-within:text-[#3525cd] transition-colors">person</span>
                   <input
-                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-[#c7c4d8] rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] transition-all outline-none text-base"
+                    className="w-full pl-12 pr-4 py-3.5 clay-input text-base"
                     id="child-name"
                     name="name"
                     placeholder="Masukkan nama lengkap"
@@ -177,7 +177,7 @@ export default function ChildIntakePage() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-[#191c1e] block px-1" htmlFor="child-school">Sekolah / TK</label>
                   <input
-                    className="w-full px-4 py-2.5 bg-white border border-[#c7c4d8] rounded-lg focus:ring-2 focus:ring-[#3525cd]/20 focus:border-[#3525cd] transition-all outline-none text-base"
+                    className="w-full px-4 py-2.5 clay-input text-base"
                     id="child-school"
                     name="school"
                     placeholder="Nama Sekolah"
@@ -199,7 +199,7 @@ export default function ChildIntakePage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full md:w-auto bg-[#3525cd] text-white text-sm font-semibold px-10 py-4 rounded-full shadow-lg shadow-[#3525cd]/20 hover:bg-[#4f46e5] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full md:w-auto clay-btn-primary text-sm font-semibold px-10 py-4 flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

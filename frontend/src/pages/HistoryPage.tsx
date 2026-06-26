@@ -114,7 +114,7 @@ export default function HistoryPage() {
           </div>
           <Link
             to="/assessment/start"
-            className="inline-flex items-center justify-center gap-2 bg-[#3525cd] text-white px-6 py-3.5 rounded-xl text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:bg-[#4f46e5] active:scale-95 transition-all"
+            className="clay-btn-primary inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold"
           >
             <span className="material-symbols-outlined text-lg">add_circle</span>
             Mulai Asesmen Baru
@@ -122,7 +122,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-[#c7c4d8]/40 shadow-sm flex items-center gap-3 mb-8">
+        <div className="p-4 clay-input flex items-center gap-3 mb-8">
           <span className="material-symbols-outlined text-[#777587]">search</span>
           <input
             type="text"
@@ -180,7 +180,7 @@ export default function HistoryPage() {
                 </p>
                 <Link
                   to="/assessment/start"
-                  className="bg-[#3525cd] text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-[#4f46e5] transition-all inline-flex items-center gap-2"
+                  className="clay-btn-primary px-6 py-3 text-sm font-semibold inline-flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined">play_circle</span>
                   Mulai Asesmen Pertama
@@ -193,7 +193,7 @@ export default function HistoryPage() {
                   return (
                     <div
                       key={item.id}
-                      className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                      className="clay-card p-6 flex flex-col justify-between"
                     >
                       <div className="space-y-4">
                         {/* Title and Badges */}
@@ -261,7 +261,7 @@ export default function HistoryPage() {
                         {isCompleted ? (
                           <Link
                             to={`/results/${item.id}`}
-                            className="w-full text-center py-3 bg-[#3525cd] hover:bg-[#4f46e5] text-white text-xs font-semibold rounded-xl shadow-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                            className="w-full text-center py-3 clay-btn-primary text-xs font-semibold flex items-center justify-center gap-2"
                           >
                             <span className="material-symbols-outlined text-base">emoji_events</span>
                             Lihat Hasil Asesmen
@@ -269,7 +269,7 @@ export default function HistoryPage() {
                         ) : (
                           <button
                             onClick={() => handleResume(item.id, item.child_name)}
-                            className="w-full text-center py-3 border border-[#3525cd] text-[#3525cd] hover:bg-[#3525cd]/5 text-xs font-semibold rounded-xl shadow-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                            className="w-full text-center py-3 clay-btn-secondary text-xs font-semibold flex items-center justify-center gap-2"
                           >
                             <span className="material-symbols-outlined text-base">play_arrow</span>
                             Lanjutkan Asesmen

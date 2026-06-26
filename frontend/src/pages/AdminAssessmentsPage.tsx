@@ -143,7 +143,7 @@ export default function AdminAssessmentsPage() {
               <div className="relative shrink-0 w-full md:w-64">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587] text-lg">search</span>
                 <input
-                  className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
+                  className="pl-9 pr-4 py-2 clay-input text-xs w-full"
                   placeholder="Cari nama, sekolah, atau bakat..."
                   type="text"
                   value={searchQuery}
@@ -153,7 +153,7 @@ export default function AdminAssessmentsPage() {
             </div>
 
             {/* Assessments Table */}
-            <div className="flex-1 bg-white border border-[#c7c4d8]/40 rounded-[2rem] overflow-hidden shadow-sm flex flex-col min-h-0">
+            <div className="flex-1 clay-card overflow-hidden flex flex-col min-h-0">
               <div className="overflow-y-auto flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-[#f8fafc] text-xs font-bold text-[#464555] uppercase tracking-wider sticky top-0 z-10 border-b border-[#c7c4d8]/20">

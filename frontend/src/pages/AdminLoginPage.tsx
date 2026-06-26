@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-br from-[#06b6d4]/10 to-[#3525cd]/15 blur-[100px] pointer-events-none" />
 
       {/* Main Glass Container */}
-      <div className="relative w-full max-w-md p-8 sm:p-10 mx-4 bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_20px_50px_rgba(53,37,205,0.08)] rounded-[2.5rem] flex flex-col items-center">
+      <div className="relative w-full max-w-md p-8 sm:p-10 mx-4 clay-card flex flex-col items-center">
         {/* Logo and Header */}
         <div className="flex flex-col items-center mb-8">
           <img src="/logo_text.svg" alt="TalentaKu Logo" className="h-9 w-auto mb-2 object-contain" />
@@ -92,7 +92,7 @@ export default function AdminLoginPage() {
                 id="email"
                 type="email"
                 required
-                className="w-full pl-11 pr-4 py-3.5 bg-white border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-2xl text-sm text-[#191c1e] outline-none shadow-sm focus:shadow-md focus:shadow-[#3525cd]/5 transition-all"
+                className="w-full pl-11 pr-4 py-3.5 clay-input text-sm text-[#191c1e]"
                 placeholder="nama@talentaku.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
                 id="password"
                 type="password"
                 required
-                className="w-full pl-11 pr-4 py-3.5 bg-white border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-2xl text-sm text-[#191c1e] outline-none shadow-sm focus:shadow-md focus:shadow-[#3525cd]/5 transition-all"
+                className="w-full pl-11 pr-4 py-3.5 clay-input text-sm text-[#191c1e]"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -122,7 +122,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 mt-2 bg-[#3525cd] text-white font-bold rounded-2xl text-sm shadow-lg shadow-[#3525cd]/25 hover:bg-[#4f46e5] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-4 mt-2 clay-btn-primary text-sm flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

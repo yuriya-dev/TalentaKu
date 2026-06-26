@@ -425,7 +425,7 @@ export default function AssessmentPage() {
 
         {/* Question Card */}
         <section
-          className={`max-w-[850px] w-full bg-white p-6 md:p-10 rounded-[2rem] border border-[#e0e3e5] shadow-sm transition-all duration-200 ${animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+          className={`max-w-[850px] w-full clay-card p-6 md:p-10 transition-all duration-200 ${animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
         >
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto mb-10">
@@ -535,7 +535,7 @@ export default function AssessmentPage() {
             <button
               onClick={handleBack}
               disabled={currentPage <= 1 || submitting}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-[#e0e3e5] text-sm font-semibold text-[#464555] hover:bg-[#eceef0] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="clay-btn-secondary flex items-center gap-2 px-6 py-3 text-sm font-semibold"
             >
               <span className="material-symbols-outlined">arrow_back</span>
               Sebelumnya
@@ -543,7 +543,7 @@ export default function AssessmentPage() {
             <button
               onClick={handleNext}
               disabled={submitting}
-              className="flex items-center gap-2 px-10 py-3 rounded-xl bg-[#3525cd] text-white text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="clay-btn-primary flex items-center gap-2 px-10 py-3 text-sm font-semibold"
             >
               {submitting ? (
                 <>

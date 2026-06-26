@@ -43,12 +43,12 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   to="/assessment/start"
-                  className="px-8 py-4 bg-[#3525cd] text-white rounded-xl text-sm font-semibold shadow-lg shadow-[#3525cd]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="clay-btn-primary px-8 py-4 text-sm font-semibold flex items-center justify-center gap-2"
                 >
                   Mulai Asesmen
                   <span className="material-symbols-outlined">arrow_forward</span>
                 </Link>
-                <Link to="/resources" className="px-8 py-4 bg-white text-[#3525cd] border border-[#c7c4d8] rounded-xl text-sm font-semibold hover:bg-[#eceef0] transition-all flex items-center justify-center gap-2">
+                <Link to="/resources" className="clay-btn-secondary px-8 py-4 text-sm font-semibold flex items-center justify-center gap-2">
                   Pelajari Metodologi
                 </Link>
               </div>
@@ -250,11 +250,11 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/assessment/start"
-                className="px-10 py-5 bg-[#3525cd] text-white rounded-2xl text-sm font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                className="clay-btn-primary px-10 py-5 text-sm font-semibold flex items-center justify-center gap-2"
               >
                 Mulai Sekarang <span className="material-symbols-outlined">play_circle</span>
               </Link>
-              <button className="px-10 py-5 bg-white text-[#191c1e] border border-slate-200 rounded-2xl text-sm font-semibold hover:bg-slate-50 transition-all">
+              <button className="clay-btn-secondary px-10 py-5 text-sm font-semibold">
                 Konsultasi dengan Ahli
               </button>
             </div>

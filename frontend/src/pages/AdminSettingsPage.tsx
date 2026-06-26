@@ -142,7 +142,7 @@ export default function AdminSettingsPage() {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 md:p-10 max-w-3xl">
-            <form onSubmit={handleSave} className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 shadow-sm space-y-6">
+            <form onSubmit={handleSave} className="clay-card p-8 space-y-6">
               <h3 className="text-lg font-bold text-[#191c1e] border-b border-[#c7c4d8]/20 pb-4">Parameter Logika & Tampilan</h3>
 
               {/* Likert Threshold Selector */}
@@ -151,7 +151,7 @@ export default function AdminSettingsPage() {
                 <select
                   value={likertThreshold}
                   onChange={(e) => setLikertThreshold(e.target.value)}
-                  className="w-full bg-[#f8fafc] border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-2xl text-sm p-3.5 outline-none shadow-sm focus:shadow-md focus:shadow-[#3525cd]/5 transition-all"
+                  className="w-full clay-input text-sm p-3.5"
                 >
                   <option value="3">3 - Kadang-kadang / Sering / Selalu</option>
                   <option value="4">4 - Sering / Selalu (Rekomendasi Jurnal)</option>
@@ -170,7 +170,7 @@ export default function AdminSettingsPage() {
                   required
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  className="w-full bg-[#f8fafc] border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-2xl text-sm p-3.5 outline-none shadow-sm focus:shadow-md focus:shadow-[#3525cd]/5 transition-all"
+                  className="w-full clay-input text-sm p-3.5"
                   placeholder="TalentaKu"
                 />
                 <p className="text-xs text-[#777587] leading-relaxed pt-1">
@@ -183,7 +183,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-8 py-4 bg-[#3525cd] text-white font-bold rounded-2xl text-sm shadow-lg shadow-[#3525cd]/25 hover:bg-[#4f46e5] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="clay-btn-primary px-8 py-4 text-sm flex items-center gap-2"
                 >
                   {saving ? (
                     <>

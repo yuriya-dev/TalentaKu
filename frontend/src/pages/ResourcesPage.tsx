@@ -129,7 +129,7 @@ export default function ResourcesPage() {
           {activeTab === 'bakat' && (
             <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
               {categories.map((cat) => (
-                <div key={cat.code} className="bg-white border border-[#c7c4d8]/40 p-6 md:p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                <div key={cat.code} className="clay-card p-6 md:p-8 relative overflow-hidden group">
                   <div className="flex items-start gap-4 mb-6">
                     <div className="w-12 h-12 bg-[#3525cd]/10 rounded-xl flex items-center justify-center text-[#3525cd] shrink-0">
                       <span className="material-symbols-outlined text-2xl">{cat.icon}</span>
@@ -160,7 +160,7 @@ export default function ResourcesPage() {
 
           {/* TAB 2: METODE INFERENSI */}
           {activeTab === 'metode' && (
-            <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 md:p-12 space-y-10 animate-fade-in">
+            <div className="clay-card p-8 md:p-12 space-y-10 animate-fade-in">
               {/* Introduction */}
               <section className="space-y-4">
                 <h3 className="text-2xl font-bold text-[#3525cd]">Bagaimana Sistem Pakar Bekerja?</h3>
@@ -237,7 +237,7 @@ export default function ResourcesPage() {
           {activeTab === 'panduan' && (
             <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
               {/* Observational Guidelines */}
-              <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 space-y-6">
+              <div className="clay-card p-8 space-y-6">
                 <h3 className="text-2xl font-bold">Panduan Observasi Mandiri</h3>
                 <div className="grid gap-6 text-sm">
                   <div className="flex gap-4">

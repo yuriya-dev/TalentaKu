@@ -157,7 +157,7 @@ export default function UserRegisterPage() {
 
       <main className="flex-grow flex items-center justify-center pt-24 pb-28 px-4">
         {/* Card Container */}
-        <div className="w-full max-w-md p-8 sm:p-10 bg-white border border-[#c7c4d8]/40 shadow-lg rounded-[2.5rem] flex flex-col items-center">
+        <div className="w-full max-w-md p-8 sm:p-10 clay-card flex flex-col items-center">
           <div className="flex flex-col items-center mb-6 text-center">
             <span className="material-symbols-outlined text-4xl text-[#3525cd] bg-[#3525cd]/10 p-3 rounded-2xl mb-3">
               person_add
@@ -198,7 +198,7 @@ export default function UserRegisterPage() {
                   id="name"
                   type="text"
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-xl text-sm text-[#191c1e] outline-none shadow-sm focus:shadow-md transition-all"
+                  className="w-full pl-11 pr-4 py-3 clay-input text-sm text-[#191c1e]"
                   placeholder="Nama Anda"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -216,7 +216,7 @@ export default function UserRegisterPage() {
                   id="email"
                   type="email"
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-xl text-sm text-[#191c1e] outline-none shadow-sm focus:shadow-md transition-all"
+                  className="w-full pl-11 pr-4 py-3 clay-input text-sm text-[#191c1e]"
                   placeholder="nama@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -234,7 +234,7 @@ export default function UserRegisterPage() {
                   id="password"
                   type="password"
                   required
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#c7c4d8]/60 focus:border-[#3525cd] rounded-xl text-sm text-[#191c1e] outline-none shadow-sm focus:shadow-md transition-all"
+                  className="w-full pl-11 pr-4 py-3 clay-input text-sm text-[#191c1e]"
                   placeholder="Buat kata sandi minimal 6 karakter"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -246,7 +246,7 @@ export default function UserRegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 mt-2 bg-[#3525cd] hover:bg-[#4f46e5] text-white font-bold rounded-xl text-sm shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3.5 mt-2 clay-btn-primary text-sm flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

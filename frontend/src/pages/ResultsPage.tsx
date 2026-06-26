@@ -286,7 +286,7 @@ export default function ResultsPage() {
                 <button
                   onClick={handleClaim}
                   disabled={claiming}
-                  className="bg-[#3525cd] hover:bg-[#4f46e5] text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm transition-all flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+                  className="clay-btn-primary px-6 py-3 text-sm flex items-center gap-2"
                 >
                   {claiming ? (
                     <>
@@ -305,14 +305,14 @@ export default function ResultsPage() {
                   <Link
                     to="/login"
                     onClick={() => sessionStorage.setItem('claim_consultation_id', assessmentId || '')}
-                    className="bg-[#3525cd] hover:bg-[#4f46e5] text-white font-bold px-6 py-3 rounded-xl text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] text-center flex items-center justify-center"
+                    className="clay-btn-primary px-6 py-3 text-sm text-center flex items-center justify-center"
                   >
                     Masuk & Simpan
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => sessionStorage.setItem('claim_consultation_id', assessmentId || '')}
-                    className="bg-white border border-[#c7c4d8] hover:bg-[#eceef0] text-[#191c1e] font-bold px-6 py-3 rounded-xl text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] text-center flex items-center justify-center"
+                    className="clay-btn-secondary px-6 py-3 text-sm text-center flex items-center justify-center"
                   >
                     Daftar Akun
                   </Link>
@@ -325,7 +325,7 @@ export default function ResultsPage() {
         {/* Results Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Primary Result */}
-          <section className="md:col-span-8 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8 relative overflow-hidden group">
+          <section className="md:col-span-8 clay-card p-8 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-8">
               <div className="text-right">
                 <span className="block text-[#3525cd] text-[48px] font-bold leading-none">
@@ -425,7 +425,7 @@ export default function ResultsPage() {
           </aside>
 
           {/* Strengths */}
-          <section className="md:col-span-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8">
+          <section className="md:col-span-6 clay-card p-8">
             <div className="flex items-center gap-3 mb-8">
               <span className="material-symbols-outlined text-[#10B981]" style={{ fontVariationSettings: "'FILL' 1" }}>task_alt</span>
               <h3 className="text-2xl font-semibold">Identifikasi Indikator Perilaku</h3>
@@ -453,7 +453,7 @@ export default function ResultsPage() {
           </section>
 
           {/* Development Path */}
-          <section className="md:col-span-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-[#c7c4d8] p-8 flex flex-col">
+          <section className="md:col-span-6 clay-card p-8 flex flex-col">
             <div className="flex items-center gap-3 mb-8">
               <span className="material-symbols-outlined text-[#00687a]" style={{ fontVariationSettings: "'FILL' 1" }}>rocket_launch</span>
               <h3 className="text-2xl font-semibold">Panduan Stimulasi Tumbuh Kembang</h3>
@@ -472,7 +472,7 @@ export default function ResultsPage() {
             <div className="mt-8 no-print">
               <button 
                 onClick={() => window.print()}
-                className="w-full bg-[#3525cd] text-white text-sm font-semibold py-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#4f46e5] transition-all active:scale-95 shadow-md"
+                className="w-full clay-btn-primary text-sm font-semibold py-4 flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined">print</span>
                 Cetak Laporan Penilaian (PDF)
