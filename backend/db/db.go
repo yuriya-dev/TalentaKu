@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"backend/models"
 	"gorm.io/driver/postgres"
@@ -17,7 +18,11 @@ func InitDB() *gorm.DB {
 	var err error
 	dbPath := os.Getenv("DATABASE_URL")
 	if dbPath == "" {
-		dbPath = "talentaku.db" // Local SQLite
+		if os.Getenv("VERCEL") == "1" {
+			dbPath = "/tmp/talentaku.db"
+		} else {
+			dbPath = "talentaku.db" // Local SQLite
+		}
 	}
 
 	log.Printf("Connecting to database: %s", dbPath)
@@ -32,6 +37,14 @@ func InitDB() *gorm.DB {
 	DB, err = gorm.Open(dialector, &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	// Configure connection pooling (recommended for production databases like Supabase)
+	sqlDB, err := DB.DB()
+	if err == nil {
+		sqlDB.SetMaxIdleConns(5)
+		sqlDB.SetMaxOpenConns(20)
+		sqlDB.SetConnMaxLifetime(time.Hour)
 	}
 
 	// Auto Migrate
