@@ -48,7 +48,29 @@ export default function ResultsPage() {
   const userToken = localStorage.getItem('user_token')
   const userDataStr = localStorage.getItem('user_data')
   const userData = userDataStr ? JSON.parse(userDataStr) : null
-  const isAdmin = !!localStorage.getItem('admin_token')
+  
+  // Validate and check if the user is authenticated as an admin
+  const getIsAdmin = () => {
+    const token = localStorage.getItem('admin_token')
+    if (!token) return false
+    try {
+      // Decode JWT token and check expiration
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem('admin_token')
+        localStorage.removeItem('admin_user')
+        return false
+      }
+      return true
+    } catch (e) {
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user')
+      return false
+    }
+  }
+  
+  // An admin view is only active if logged in as admin and NOT logged in as a regular user
+  const isAdmin = !userToken && getIsAdmin()
 
   useEffect(() => {
     document.title = 'Hasil Penilaian | TalentaKu'

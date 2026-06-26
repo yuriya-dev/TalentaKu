@@ -40,6 +40,8 @@ export default function AdminLoginPage() {
       // Store JWT token and admin details
       localStorage.setItem('admin_token', data.token)
       localStorage.setItem('admin_user', JSON.stringify(data.admin))
+      localStorage.removeItem('user_token')
+      localStorage.removeItem('user_data')
 
       // Redirect to dashboard
       navigate('/admin')

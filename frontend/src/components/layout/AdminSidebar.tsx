@@ -16,6 +16,8 @@ export default function AdminSidebar() {
   const handleLogout = () => {
     localStorage.removeItem('admin_token')
     localStorage.removeItem('admin_user')
+    localStorage.removeItem('user_token')
+    localStorage.removeItem('user_data')
     navigate('/admin/login')
   }
 

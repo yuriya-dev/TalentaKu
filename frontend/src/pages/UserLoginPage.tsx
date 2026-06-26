@@ -34,6 +34,8 @@ export default function UserLoginPage() {
       // Store User Token & Data
       localStorage.setItem('user_token', data.token)
       localStorage.setItem('user_data', JSON.stringify(data.user))
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user')
 
       // Check if there is an anonymous assessment to claim
       const claimId = sessionStorage.getItem('claim_consultation_id')
@@ -116,6 +118,8 @@ export default function UserLoginPage() {
       // Store User Token & Data
       localStorage.setItem('user_token', data.token)
       localStorage.setItem('user_data', JSON.stringify(data.user))
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user')
 
       // Check if there is an anonymous assessment to claim
       const claimId = sessionStorage.getItem('claim_consultation_id')
