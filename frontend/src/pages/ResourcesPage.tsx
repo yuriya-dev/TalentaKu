@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import Footer from '../components/layout/Footer'
 import MobileNav from '../components/layout/MobileNav'
@@ -79,109 +78,54 @@ export default function ResourcesPage() {
   const [activeTab, setActiveTab] = useState<'bakat' | 'metode' | 'panduan' | 'kontribusi'>('bakat')
   const [faqOpen, setFaqOpen] = useState<number | null>(null)
 
-  // User login status
-  const [userToken, setUserToken] = useState<string | null>(null)
-
-  // Form states for Variable
-  const [varCode, setVarCode] = useState('')
-  const [varLabel, setVarLabel] = useState('')
-  const [varCategory, setVarCategory] = useState('General Intellectual')
-  const [varAgeGroup, setVarAgeGroup] = useState('preschool')
-  const [varLoading, setVarLoading] = useState(false)
-
-  // Form states for Indicator
-  const [indCode, setIndCode] = useState('')
-  const [indLabel, setIndLabel] = useState('')
-  const [indAgeGroup, setIndAgeGroup] = useState('preschool')
-  const [indLoading, setIndLoading] = useState(false)
-
+  // Suggestion form states
+  const [userName, setUserName] = useState('')
+  const [suggCategory, setSuggCategory] = useState('Umum')
+  const [suggSubject, setSuggSubject] = useState('')
+  const [suggMessage, setSuggMessage] = useState('')
+  const [suggLoading, setSuggLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
   const [errorToast, setErrorToast] = useState<string | null>(null)
 
-  const handleAddVariable = async (e: React.FormEvent) => {
+  const handleSubmitSuggestion = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!userToken) return
-    setVarLoading(true)
+    setSuggLoading(true)
     setErrorToast(null)
-    setSuccessToast(null)
 
     try {
-      const res = await fetch(`${API_BASE}/api/user/variables`, {
+      const token = localStorage.getItem('user_token')
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      if (token) headers['Authorization'] = `Bearer ${token}`
+
+      const res = await fetch(`${API_BASE}/api/suggestions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`
-        },
+        headers,
         body: JSON.stringify({
-          code: varCode.trim(),
-          label: varLabel.trim(),
-          category: varCategory,
-          age_group: varAgeGroup
-        })
+          user_name: userName.trim(),
+          category: suggCategory,
+          subject: suggSubject.trim(),
+          message: suggMessage.trim(),
+        }),
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Gagal menambahkan variabel.')
-      }
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Gagal mengirim saran.')
 
-      setSuccessToast('Variabel masukan baru berhasil ditambahkan!')
-      setVarCode('')
-      setVarLabel('')
-      setTimeout(() => setSuccessToast(null), 4000)
+      setSubmitted(true)
+      setSuccessToast(data.message || 'Saran berhasil dikirim!')
+      setTimeout(() => setSuccessToast(null), 5000)
     } catch (err: any) {
       setErrorToast(err.message || 'Terjadi kesalahan.')
       setTimeout(() => setErrorToast(null), 4000)
     } finally {
-      setVarLoading(false)
-    }
-  }
-
-  const handleAddIndicator = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!userToken) return
-    setIndLoading(true)
-    setErrorToast(null)
-    setSuccessToast(null)
-
-    try {
-      const res = await fetch(`${API_BASE}/api/user/indicators`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`
-        },
-        body: JSON.stringify({
-          code: indCode.trim(),
-          label: indLabel.trim(),
-          age_group: indAgeGroup
-        })
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Gagal menambahkan indikator.')
-      }
-
-      setSuccessToast('Indikator bakat baru berhasil ditambahkan!')
-      setIndCode('')
-      setIndLabel('')
-      setTimeout(() => setSuccessToast(null), 4000)
-    } catch (err: any) {
-      setErrorToast(err.message || 'Terjadi kesalahan.')
-      setTimeout(() => setErrorToast(null), 4000)
-    } finally {
-      setIndLoading(false)
+      setSuggLoading(false)
     }
   }
 
   useEffect(() => {
     document.title = 'Sumber Daya & Metodologi | TalentaKu'
     window.scrollTo(0, 0)
-    
-    // Check user token
-    const token = localStorage.getItem('user_token')
-    setUserToken(token)
   }, [])
 
   return (
@@ -209,7 +153,7 @@ export default function ResourcesPage() {
             { id: 'bakat', label: '6 Kategori Bakat', icon: 'stars' },
             { id: 'metode', label: 'Metodologi Forward Chaining', icon: 'account_tree' },
             { id: 'panduan', label: 'Panduan Observasi & FAQ', icon: 'help_center' },
-            { id: 'kontribusi', label: 'Kontribusi Data', icon: 'volunteer_activism' }
+            { id: 'kontribusi', label: 'Saran & Masukan', icon: 'volunteer_activism' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -228,6 +172,7 @@ export default function ResourcesPage() {
 
         {/* Tab Contents */}
         <div className="min-h-[400px]">
+
           {/* TAB 1: KATEGORI BAKAT */}
           {activeTab === 'bakat' && (
             <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
@@ -245,7 +190,6 @@ export default function ResourcesPage() {
                       <p className="text-sm text-[#464555] mt-2 leading-relaxed">{cat.desc}</p>
                     </div>
                   </div>
-
                   <div className="space-y-4 pt-4 border-t border-dashed border-[#c7c4d8]/30">
                     <div>
                       <h4 className="text-xs font-bold text-[#3525cd] uppercase tracking-wider mb-1">Bagaimana kami mengukurnya:</h4>
@@ -264,7 +208,6 @@ export default function ResourcesPage() {
           {/* TAB 2: METODE INFERENSI */}
           {activeTab === 'metode' && (
             <div className="clay-card p-8 md:p-12 space-y-10 animate-fade-in">
-              {/* Introduction */}
               <section className="space-y-4">
                 <h3 className="text-2xl font-bold text-[#3525cd]">Bagaimana Sistem Pakar Bekerja?</h3>
                 <p className="text-base text-[#464555] leading-relaxed">
@@ -272,7 +215,6 @@ export default function ResourcesPage() {
                 </p>
               </section>
 
-              {/* Chaining Hierarchy */}
               <section className="p-6 bg-[#f2f4f6] rounded-2xl border border-[#c7c4d8]/40 relative overflow-hidden">
                 <h4 className="text-sm font-bold uppercase tracking-wider text-[#191c1e] mb-4">Hierarki Inferensi 2 Tingkat</h4>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4 text-center max-w-3xl mx-auto">
@@ -288,25 +230,24 @@ export default function ResourcesPage() {
                     <p className="text-[11px] text-[#464555] mt-1">Evaluasi aturan Level 1 (I1 - I27)</p>
                   </div>
                   <span className="material-symbols-outlined text-slate-400 rotate-90 md:rotate-0 text-2xl">arrow_forward</span>
-                  <div className="bg-white bg-[#3525cd] text-white p-4 rounded-xl shadow-md flex-1 w-full">
-                    <span className="material-symbols-outlined text-[#3525cd] text-3xl mb-1">workspace_premium</span>
-                    <h5 className="font-bold text-sm text-[#3525cd]">6 Kriteria Bakat</h5>
-                    <p className="text-[11px] text-[#464555] mt-1">Evaluasi aturan Level 2 (K1 - K6)</p>
+                  <div className="bg-[#3525cd] text-white p-4 rounded-xl shadow-md flex-1 w-full">
+                    <span className="material-symbols-outlined text-white text-3xl mb-1">workspace_premium</span>
+                    <h5 className="font-bold text-sm">6 Kriteria Bakat</h5>
+                    <p className="text-[11px] text-white/80 mt-1">Evaluasi aturan Level 2 (K1 - K6)</p>
                   </div>
                 </div>
               </section>
 
-              {/* Conversion explanation */}
               <section className="space-y-4">
                 <h3 className="text-xl font-bold">Konversi Skala Likert ke Logika Biner</h3>
                 <p className="text-sm text-[#464555] leading-relaxed">
-                  Dalam penelitian asli di jurnal, masukan fakta bersifat biner (Ya/Tidak melalui checkbox). Untuk membuat pengalaman observasi lebih ramah dan akurat bagi orang tua, sistem kami mengadaptasinya dengan **skala Likert 5 poin**:
+                  Dalam penelitian asli di jurnal, masukan fakta bersifat biner (Ya/Tidak melalui checkbox). Untuk membuat pengalaman observasi lebih ramah dan akurat bagi orang tua, sistem kami mengadaptasinya dengan <strong>skala Likert 5 poin</strong>.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-6 pt-2">
                   <div className="p-5 rounded-xl border border-[#c7c4d8]/40 bg-[#f8fafc]">
                     <h5 className="font-bold text-sm text-[#3525cd] mb-1">1. Ambang Batas Biner (Threshold)</h5>
                     <p className="text-xs text-[#464555] leading-relaxed">
-                      Respons orang tua berskala 1 sampai 5. Suatu variabel perilaku (C-code) dinyatakan terpenuhi (**TRUE**) hanya jika anak melakukannya dalam tingkatan **Sering (4)** atau **Selalu (5)**. Nilai threshold ini dapat disesuaikan di dasbor admin.
+                      Respons orang tua berskala 1 sampai 5. Suatu variabel perilaku (C-code) dinyatakan terpenuhi (<strong>TRUE</strong>) hanya jika anak melakukannya dalam tingkatan <strong>Sering (4)</strong> atau <strong>Selalu (5)</strong>. Nilai threshold ini dapat disesuaikan di dasbor admin.
                     </p>
                   </div>
                   <div className="p-5 rounded-xl border border-[#c7c4d8]/40 bg-[#f8fafc]">
@@ -318,7 +259,6 @@ export default function ResourcesPage() {
                 </div>
               </section>
 
-              {/* Research citation */}
               <section className="pt-6 border-t border-[#c7c4d8]/30 flex flex-col md:flex-row gap-4 items-center justify-between text-xs text-[#464555]">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[#3525cd] text-xl">menu_book</span>
@@ -339,35 +279,25 @@ export default function ResourcesPage() {
           {/* TAB 3: PANDUAN & FAQ */}
           {activeTab === 'panduan' && (
             <div className="max-w-3xl mx-auto space-y-8 animate-fade-in">
-              {/* Observational Guidelines */}
               <div className="clay-card p-8 space-y-6">
                 <h3 className="text-2xl font-bold">Panduan Observasi Mandiri</h3>
                 <div className="grid gap-6 text-sm">
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0">1</div>
-                    <div>
-                      <h4 className="font-bold mb-1">Fokus pada Kebiasaan Berulang</h4>
-                      <p className="text-[#464555] leading-relaxed">Jangan menilai berdasarkan kejadian satu kali saja. Nilailah perilaku yang konsisten dilakukan anak dalam aktivitas bermain maupun bersosialisasi.</p>
+                  {[
+                    { n: 1, title: 'Fokus pada Kebiasaan Berulang', desc: 'Jangan menilai berdasarkan kejadian satu kali saja. Nilailah perilaku yang konsisten dilakukan anak dalam aktivitas bermain maupun bersosialisasi.' },
+                    { n: 2, title: 'Berikan Contoh Nyata', desc: 'Gunakan bantuan teks "Misal" di bawah setiap pertanyaan untuk mencocokkan tindakan spesifik anak Anda dengan indikator perilaku yang dimaksud.' },
+                    { n: 3, title: 'Hindari Bias Penilaian', desc: 'Orang tua cenderung memandang anak selalu hebat. Cobalah menilai secara realistis dan objektif agar sistem dapat memetakan kekuatan asli anak secara presisi.' },
+                  ].map((s) => (
+                    <div key={s.n} className="flex gap-4">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0">{s.n}</div>
+                      <div>
+                        <h4 className="font-bold mb-1">{s.title}</h4>
+                        <p className="text-[#464555] leading-relaxed">{s.desc}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0">2</div>
-                    <div>
-                      <h4 className="font-bold mb-1">Berikan Contoh Nyata</h4>
-                      <p className="text-[#464555] leading-relaxed">Gunakan bantuan teks "Misal" di bawah setiap pertanyaan untuk mencocokkan tindakan spesifik anak Anda dengan indikator perilaku yang dimaksud.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold shrink-0">3</div>
-                    <div>
-                      <h4 className="font-bold mb-1">Hindari Bias Penilaian</h4>
-                      <p className="text-[#464555] leading-relaxed">Orang tua cenderung memandang anak selalu hebat. Cobalah menilai secara realistis dan objektif agar sistem dapat memetakan kekuatan asli anak secara presisi.</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Accordion FAQs */}
               <div className="space-y-4">
                 <h3 className="text-2xl font-bold text-center mb-6">Tanya Jawab (FAQ)</h3>
                 {faqs.map((faq, idx) => (
@@ -392,178 +322,160 @@ export default function ResourcesPage() {
             </div>
           )}
 
-          {/* TAB 4: KONTRIBUSI DATA */}
+          {/* TAB 4: SARAN & MASUKAN */}
           {activeTab === 'kontribusi' && (
-            <div className="animate-fade-in space-y-8 relative">
-              {/* Success Toast */}
+            <div className="animate-fade-in max-w-2xl mx-auto space-y-8">
+              {/* Toast */}
               {successToast && (
-                <div className="fixed top-20 right-10 z-[110] bg-emerald-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm animate-bounce">
+                <div className="fixed top-20 right-10 z-[110] bg-emerald-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm">
                   <span className="material-symbols-outlined">check_circle</span>
                   <span>{successToast}</span>
                 </div>
               )}
-              {/* Error Toast */}
               {errorToast && (
-                <div className="fixed top-20 right-10 z-[110] bg-rose-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm animate-bounce">
+                <div className="fixed top-20 right-10 z-[110] bg-rose-600 text-white px-6 py-3.5 rounded-2xl shadow-xl flex items-center gap-2 text-sm">
                   <span className="material-symbols-outlined">error</span>
                   <span>{errorToast}</span>
                 </div>
               )}
 
-              {!userToken ? (
-                <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-8 md:p-12 text-center max-w-2xl mx-auto space-y-6 shadow-sm">
-                  <div className="w-16 h-16 bg-[#3525cd]/15 rounded-full flex items-center justify-center text-[#3525cd] mx-auto">
-                    <span className="material-symbols-outlined text-3xl">lock</span>
-                  </div>
-                  <h3 className="text-2xl font-bold">Akses Kontribusi Terbatas</h3>
+              {/* Header info */}
+              <div className="bg-[#3525cd]/8 border border-[#3525cd]/20 rounded-[2rem] p-6 flex gap-4">
+                <div className="w-10 h-10 bg-[#3525cd] rounded-xl flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>volunteer_activism</span>
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-[#3525cd] mb-1">Kirim Saran & Masukan</h3>
                   <p className="text-sm text-[#464555] leading-relaxed">
-                    Untuk ikut serta menyumbangkan data berupa **Variabel Masukan** atau **Indikator Bakat baru** ke dalam sistem pakar TalentaKu, Anda harus masuk log atau membuat akun terlebih dahulu.
+                    Punya ide variabel pertanyaan baru, indikator bakat, atau masukan lain untuk memperkaya sistem TalentaKu? Sampaikan di sini — tim kami akan meninjau dan mempertimbangkan setiap masukan yang masuk.
                   </p>
-                  <div className="flex gap-4 justify-center">
-                    <Link
-                      to="/login"
-                      className="bg-[#3525cd] text-white px-6 py-2.5 text-sm font-semibold rounded-xl hover:brightness-110 shadow-md active:scale-95 transition-all"
-                    >
-                      Masuk Log
-                    </Link>
-                    <Link
-                      to="/register"
-                      className="px-6 py-2.5 border border-[#c7c4d8]/40 hover:bg-[#eceef0] rounded-xl text-sm font-semibold transition-all"
-                    >
-                      Daftar Akun
-                    </Link>
+                </div>
+              </div>
+
+              {submitted ? (
+                <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-10 text-center shadow-sm space-y-4">
+                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+                    <span className="material-symbols-outlined text-emerald-600 text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                   </div>
+                  <h3 className="text-xl font-bold text-[#191c1e]">Terima Kasih! 🎉</h3>
+                  <p className="text-sm text-[#464555]">Saran Anda telah berhasil dikirim dan akan ditinjau oleh tim admin TalentaKu.</p>
+                  <button
+                    onClick={() => { setSubmitted(false); setSuggSubject(''); setSuggMessage(''); setUserName('') }}
+                    className="mt-2 text-sm text-[#3525cd] font-semibold hover:underline"
+                  >
+                    Kirim saran lainnya →
+                  </button>
                 </div>
               ) : (
-                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                  {/* Form Variable */}
-                  <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 md:p-8 space-y-6 shadow-sm">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#3525cd] flex items-center gap-2">
-                        <span className="material-symbols-outlined">playlist_add</span>
-                        Tambah Variabel Masukan
-                      </h3>
-                      <p className="text-xs text-[#464555] mt-1">Variabel masukan baru merupakan perilaku anak yang dapat diobservasi.</p>
-                    </div>
-
-                    <form onSubmit={handleAddVariable} className="space-y-4">
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Kode Variabel</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Contoh: C84, T13, E25"
-                          value={varCode}
-                          onChange={(e) => setVarCode(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Kategori Bakat</label>
-                        <select
-                          value={varCategory}
-                          onChange={(e) => setVarCategory(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
-                        >
-                          <option value="General Intellectual">Intelektual Umum (K1)</option>
-                          <option value="Specific Academic">Akademik Khusus (K2)</option>
-                          <option value="Creative Thinking">Berpikir Kreatif (K3)</option>
-                          <option value="Leadership">Kepemimpinan (K4)</option>
-                          <option value="Visual & Performing Arts">Seni Rupa & Visual (K5)</option>
-                          <option value="Psychomotor">Psikomotorik (K6)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
-                        <select
-                          value={varAgeGroup}
-                          onChange={(e) => setVarAgeGroup(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
-                        >
-                          <option value="toddler">Batita (Toddler)</option>
-                          <option value="preschool">Prasekolah / TK (Preschool)</option>
-                          <option value="early_elementary">SD Awal (Early Elementary)</option>
-                          <option value="late_elementary">SD Akhir (Late Elementary)</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Teks Pertanyaan Observasi</label>
-                        <textarea
-                          required
-                          rows={3}
-                          placeholder="Contoh: Apakah anak dapat bernyanyi..."
-                          value={varLabel}
-                          onChange={(e) => setVarLabel(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm resize-none font-semibold"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={varLoading}
-                        className="w-full py-2.5 bg-[#3525cd] text-white rounded-xl text-xs font-bold hover:brightness-110 shadow-md active:scale-95 transition-all disabled:opacity-50"
-                      >
-                        {varLoading ? 'Mengirim...' : 'Kirim Variabel'}
-                      </button>
-                    </form>
+                <form onSubmit={handleSubmitSuggestion} className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 md:p-8 shadow-sm space-y-5">
+                  {/* Nama */}
+                  <div>
+                    <label className="text-xs font-bold text-[#464555] block mb-1.5">Nama Anda <span className="text-[#777587] font-normal">(opsional)</span></label>
+                    <input
+                      type="text"
+                      placeholder="Misal: Budi Santoso"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-sm outline-none bg-[#fbfcfd] font-medium transition-colors"
+                    />
                   </div>
 
-                  {/* Form Indicator */}
-                  <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 md:p-8 space-y-6 shadow-sm">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#00687a] flex items-center gap-2">
-                        <span className="material-symbols-outlined">add_task</span>
-                        Tambah Indikator Bakat
-                      </h3>
-                      <p className="text-xs text-[#464555] mt-1">Indikator baru untuk memicu kriteria bakat pada aturan Forward Chaining.</p>
-                    </div>
-
-                    <form onSubmit={handleAddIndicator} className="space-y-4">
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Kode Indikator</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Contoh: I28, TI7, EI13, LI13"
-                          value={indCode}
-                          onChange={(e) => setIndCode(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Nama Indikator Bakat</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Contoh: Kemampuan Verbal Tingkat Lanjut"
-                          value={indLabel}
-                          onChange={(e) => setIndLabel(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
-                        <select
-                          value={indAgeGroup}
-                          onChange={(e) => setIndAgeGroup(e.target.value)}
-                          className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
+                  {/* Kategori */}
+                  <div>
+                    <label className="text-xs font-bold text-[#464555] block mb-1.5">Kategori Masukan <span className="text-rose-500">*</span></label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Variabel', 'Indikator', 'Kriteria Bakat', 'Umum', 'Lainnya'].map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => setSuggCategory(cat)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                            suggCategory === cat
+                              ? 'bg-[#3525cd] text-white border-[#3525cd]'
+                              : 'border-[#c7c4d8]/60 text-[#464555] hover:border-[#3525cd]/50'
+                          }`}
                         >
-                          <option value="toddler">Batita (Toddler)</option>
-                          <option value="preschool">Prasekolah / TK (Preschool)</option>
-                          <option value="early_elementary">SD Awal (Early Elementary)</option>
-                          <option value="late_elementary">SD Akhir (Late Elementary)</option>
-                        </select>
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={indLoading}
-                        className="w-full py-2.5 bg-[#00687a] text-white rounded-xl text-xs font-bold hover:brightness-110 shadow-md active:scale-95 transition-all disabled:opacity-50"
-                      >
-                        {indLoading ? 'Mengirim...' : 'Kirim Indikator'}
-                      </button>
-                    </form>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Subjek */}
+                  <div>
+                    <label className="text-xs font-bold text-[#464555] block mb-1.5">Subjek / Judul Saran <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={
+                        suggCategory === 'Variabel' ? 'Contoh: Tambah variabel observasi alam bebas'
+                        : suggCategory === 'Indikator' ? 'Contoh: Indikator ketertarikan terhadap flora/fauna'
+                        : 'Contoh: Saran perbaikan sistem'
+                      }
+                      value={suggSubject}
+                      onChange={(e) => setSuggSubject(e.target.value)}
+                      maxLength={200}
+                      className="w-full px-4 py-2.5 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-sm outline-none bg-[#fbfcfd] font-medium transition-colors"
+                    />
+                  </div>
+
+                  {/* Pesan */}
+                  <div>
+                    <label className="text-xs font-bold text-[#464555] block mb-1.5">Isi Saran / Masukan <span className="text-rose-500">*</span></label>
+                    <textarea
+                      required
+                      rows={5}
+                      placeholder={
+                        suggCategory === 'Variabel'
+                          ? 'Jelaskan teks pertanyaan observasi yang Anda usulkan, beserta alasan mengapa perilaku ini relevan untuk mendeteksi bakat anak...'
+                          : 'Jelaskan saran atau masukan Anda secara detail...'
+                      }
+                      value={suggMessage}
+                      onChange={(e) => setSuggMessage(e.target.value)}
+                      maxLength={2000}
+                      className="w-full px-4 py-2.5 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-sm outline-none bg-[#fbfcfd] font-medium transition-colors resize-none leading-relaxed"
+                    />
+                    <p className="text-[11px] text-[#777587] mt-1 text-right">{suggMessage.length}/2000 karakter</p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={suggLoading}
+                    className="w-full py-3 bg-[#3525cd] text-white rounded-xl text-sm font-bold hover:brightness-110 shadow-md active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {suggLoading ? (
+                      <><span className="material-symbols-outlined text-[18px]" style={{ animation: 'spin 1s linear infinite' }}>progress_activity</span> Mengirim...</>
+                    ) : (
+                      <><span className="material-symbols-outlined text-[18px]">send</span> Kirim Saran</>
+                    )}
+                  </button>
+
+                  <p className="text-[11px] text-center text-[#777587]">
+                    Saran diterima sebagai masukan dan tidak langsung masuk ke sistem. Tim admin akan meninjau setiap saran secara manual.
+                  </p>
+                </form>
               )}
+
+              {/* Tips */}
+              <div className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] p-6 shadow-sm space-y-4">
+                <h4 className="text-sm font-bold text-[#191c1e] flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#d4760f]" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                  Tips Saran yang Berkualitas
+                </h4>
+                <ul className="space-y-2">
+                  {[
+                    { text: 'Saran Variabel: Jelaskan perilaku spesifik yang dapat diamati orang tua/guru dalam kehidupan sehari-hari anak.' },
+                    { text: 'Saran Indikator: Sebutkan aspek kemampuan apa yang ingin diukur dan kaitannya dengan kategori bakat tertentu.' },
+                    { text: 'Saran Kriteria: Jelaskan definisi bakat baru beserta ciri-ciri dan cara stimulasinya.' },
+                    { text: 'Sertakan referensi ilmiah atau pengalaman nyata jika memungkinkan untuk memperkuat saran Anda.' },
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-xs text-[#464555]">
+                      <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5 text-[#3525cd]">arrow_right</span>
+                      <span>{tip.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </div>

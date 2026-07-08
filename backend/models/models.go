@@ -109,3 +109,15 @@ type AnswerInput struct {
 	VariableCode string `json:"variable_code"`
 	Score        int    `json:"score"`
 }
+
+// Suggestion — saran/masukan dari pengguna publik
+type Suggestion struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	UserName    string    `gorm:"size:100" json:"user_name"`
+	UserEmail   string    `gorm:"size:100" json:"user_email"`
+	Category    string    `gorm:"size:50" json:"category"`   // Variabel, Indikator, Kriteria, Umum
+	Subject     string    `gorm:"size:200" json:"subject"`
+	Message     string    `gorm:"type:text" json:"message"`
+	IsRead      bool      `gorm:"default:false" json:"is_read"`
+	CreatedAt   time.Time `json:"created_at"`
+}

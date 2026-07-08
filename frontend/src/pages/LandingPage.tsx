@@ -38,7 +38,7 @@ export default function LandingPage() {
                 Temukan <span className="text-[#3525cd]">Genius Alami</span> Anak Anda Hari Ini.
               </h1>
               <p className="text-xl text-[#464555] mb-10 max-w-xl mx-auto lg:mx-0">
-                Menggunakan metode Forward Chaining yang terbukti ahli untuk mengidentifikasi bakat pada anak usia 4–6 tahun melalui observasi profesional.
+                Menggunakan metode Forward Chaining yang terbukti ahli untuk mengidentifikasi bakat pada anak usia 3-12 tahun melalui observasi profesional.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link

@@ -56,9 +56,9 @@ func main() {
 	// 3. Middlewares
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*", // Adjust for production if needed
+		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
 	}))
 
 	// Middleware to block requests until database migrations and seeding are complete
@@ -90,8 +90,7 @@ func main() {
 	api.Post("/consultations/claim", handlers.ClaimConsultation)
 	api.Get("/variables", handlers.GetVariables)
 	api.Post("/intake", handlers.StartIntake)
-	api.Post("/user/variables", handlers.AuthRequired, handlers.CreateVariable)
-	api.Post("/user/indicators", handlers.AuthRequired, handlers.CreateIndicator)
+	api.Post("/suggestions", handlers.SubmitSuggestion)
 	api.Get("/consultations", handlers.GetHistory)
 	api.Get("/consultation/:id", handlers.GetConsultation)
 	api.Get("/consultation/:id/questions", handlers.GetConsultationQuestions)
@@ -115,6 +114,9 @@ func main() {
 	adminGroup.Post("/criteria", handlers.CreateCriterion)
 	adminGroup.Put("/criteria/:code", handlers.UpdateCriterion)
 	adminGroup.Delete("/criteria/:code", handlers.DeleteCriterion)
+	adminGroup.Get("/suggestions", handlers.GetSuggestions)
+	adminGroup.Patch("/suggestions/:id/read", handlers.MarkSuggestionRead)
+	adminGroup.Delete("/suggestions/:id", handlers.DeleteSuggestion)
 
 	// 5. Start Server
 	port := os.Getenv("PORT")

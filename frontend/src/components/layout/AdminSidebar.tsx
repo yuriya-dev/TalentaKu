@@ -8,6 +8,7 @@ const navItems = [
   { icon: 'leaderboard', label: 'Indikator', to: '/admin/indicators' },
   { icon: 'verified', label: 'Kriteria', to: '/admin/criteria' },
   { icon: 'settings', label: 'Pengaturan', to: '/admin/settings' },
+  { icon: 'volunteer_activism', label: 'Saran & Masukan', to: '/admin/suggestions' },
 ]
 
 export default function AdminSidebar() {

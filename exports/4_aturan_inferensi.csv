@@ -1,0 +1,82 @@
+﻿Level Aturan,Kode Target,Nama Target,Kondisi (JIKA),Kelompok Usia
+Level 1 (Variabel → Indikator),I1,Tingkat perbendaharaan kata yang tinggi,C1 AND C2 AND C3,preschool
+Level 1 (Variabel → Indikator),I2,Mempunyai ingatan kuat,C4 AND C5 AND C6 AND C7 AND C8 AND C9,preschool
+Level 1 (Variabel → Indikator),I3,Penguasaan kata-kata abstrak,C10 AND C11 AND C12 AND C13 AND C14,preschool
+Level 1 (Variabel → Indikator),I4,Memiliki pemikiran abstrak,C15 AND C16 AND C17 AND C18,preschool
+Level 1 (Variabel → Indikator),I5,Memiliki prestasi bidang matematika,C19 AND C20 AND C21 AND C22 AND C23 AND C24 AND C25,preschool
+Level 1 (Variabel → Indikator),I6,Memiliki prestasi sains,C26 AND C27,preschool
+Level 1 (Variabel → Indikator),I7,Keterbukaan terhadap pengalaman,C28 AND C29 AND C30 AND C31 AND C32,preschool
+Level 1 (Variabel → Indikator),I8,Menetapkan standar personal,C33 AND C34,preschool
+Level 1 (Variabel → Indikator),I9,Kemampuan memainkan ide-ide,C35 AND C36,preschool
+Level 1 (Variabel → Indikator),I10,Keinginan untuk menghadapi resiko,C37 AND C38 AND C39 AND C40,preschool
+Level 1 (Variabel → Indikator),I11,Kesukaan terhadap kompleksitas,C41 AND C42 AND C43,preschool
+Level 1 (Variabel → Indikator),I12,Toleran terhadap ambiguitas,C44 AND C45 AND C46,preschool
+Level 1 (Variabel → Indikator),I13,Image diri yang positif,C47 AND C48,preschool
+Level 1 (Variabel → Indikator),I14,Kemampuan menyatu dengan tugas,C49 AND C50,preschool
+Level 1 (Variabel → Indikator),I15,Kepercayaan diri,C51 AND C52,preschool
+Level 1 (Variabel → Indikator),I16,Tanggung jawab,C53 AND C54 AND C55 AND C56 AND C57,preschool
+Level 1 (Variabel → Indikator),I17,Kerja sama,C58 AND C59,preschool
+Level 1 (Variabel → Indikator),I18,Kecenderungan untuk mendominasi,C60 AND C61 AND C62,preschool
+Level 1 (Variabel → Indikator),I19,Beradaptasi dengan mudah terhadap situasi baru,C63 AND C64,preschool
+Level 1 (Variabel → Indikator),I20,Keterbakatan dalam bidang seni visual,C65 AND C66,preschool
+Level 1 (Variabel → Indikator),I21,Keterbakatan dalam bidang seni musik,C67 AND C68,preschool
+Level 1 (Variabel → Indikator),I22,Keterbakatan dalam bidang drama,C69,preschool
+Level 1 (Variabel → Indikator),I23,Kemampuan motorik kinestetik,C70 AND C71 AND C72,preschool
+Level 1 (Variabel → Indikator),I24,Keterampilan praktik,C73 AND C74,preschool
+Level 1 (Variabel → Indikator),I25,Keterampilan spasial,C75 AND C76 AND C77,preschool
+Level 1 (Variabel → Indikator),I26,Keterampilan mekanika,C78 AND C79 AND C80 AND C81,preschool
+Level 1 (Variabel → Indikator),I27,Keterampilan fisikal,C82 AND C83,preschool
+Level 1 (Variabel → Indikator),TI1,Kemampuan Komunikasi & Bicara Dasar,T1 AND T2,toddler
+Level 1 (Variabel → Indikator),TI2,Konsep Angka & Warna Dasar,T3 AND T4,toddler
+Level 1 (Variabel → Indikator),TI3,Imajinasi Bermain Toddler,T5 AND T6,toddler
+Level 1 (Variabel → Indikator),TI4,Kepatuhan & Sosialisasi Dasar,T7 AND T8,toddler
+Level 1 (Variabel → Indikator),TI5,Respon Musik & Estetika Toddler,T9 AND T10,toddler
+Level 1 (Variabel → Indikator),TI6,Keterampilan Motorik Toddler,T11 AND T12,toddler
+Level 1 (Variabel → Indikator),EI1,Kemampuan Verbal & Pemahaman Cerita,E1 AND E2,early_elementary
+Level 1 (Variabel → Indikator),EI2,Penalaran Logis & Analitis Awal,E3 AND E4,early_elementary
+Level 1 (Variabel → Indikator),EI3,Keterampilan Matematika Dasar,E5 AND E6,early_elementary
+Level 1 (Variabel → Indikator),EI4,Minat Observasi Alam & Sains,E7 AND E8,early_elementary
+Level 1 (Variabel → Indikator),EI5,Orisinalitas & Pembuatan Karya,E9 AND E10,early_elementary
+Level 1 (Variabel → Indikator),EI6,Pemecahan Masalah & Kreativitas Praktis,E11 AND E12,early_elementary
+Level 1 (Variabel → Indikator),EI7,Kepemimpinan & Kerjasama Kelompok,E13 AND E14,early_elementary
+Level 1 (Variabel → Indikator),EI8,Kemandirian & Tanggung Jawab Akademik,E15 AND E16,early_elementary
+Level 1 (Variabel → Indikator),EI9,Menggambar dengan Detail & Proporsi,E17 AND E18,early_elementary
+Level 1 (Variabel → Indikator),EI10,Bakat Musik & Keberanian Tampil,E19 AND E20,early_elementary
+Level 1 (Variabel → Indikator),EI11,Keseimbangan & Kelincahan Fisik,E21 AND E22,early_elementary
+Level 1 (Variabel → Indikator),EI12,Keterampilan Motorik Halus Presisi,E23 AND E24,early_elementary
+Level 1 (Variabel → Indikator),LI1,Penalaran Abstrak & Debat Logis,L1 AND L2,late_elementary
+Level 1 (Variabel → Indikator),LI2,Literasi Karangan & Menulis Runtut,L3 AND L4,late_elementary
+Level 1 (Variabel → Indikator),LI3,Keterampilan Matematika Lanjut,L5 AND L6,late_elementary
+Level 1 (Variabel → Indikator),LI4,Eksperimen Sains & Minat Teknologi,L7 AND L8,late_elementary
+Level 1 (Variabel → Indikator),LI5,Inovasi Desain & Proyek Mandiri,L9 AND L10,late_elementary
+Level 1 (Variabel → Indikator),LI6,Apresiasi Estetika & Budaya Kritis,L11 AND L12,late_elementary
+Level 1 (Variabel → Indikator),LI7,Kepemimpinan Kelompok & Organisasi,L13 AND L14,late_elementary
+Level 1 (Variabel → Indikator),LI8,Sportivitas & Resolusi Konflik Sebaya,L15 AND L16,late_elementary
+Level 1 (Variabel → Indikator),LI9,Seni Rupa & Media Digital Lanjut,L17 AND L18,late_elementary
+Level 1 (Variabel → Indikator),LI10,Kemahiran Instrumen & Tari Mandiri,L19 AND L20,late_elementary
+Level 1 (Variabel → Indikator),LI11,Kecakapan Atletik & Olahraga Taktis,L21 AND L22,late_elementary
+Level 1 (Variabel → Indikator),LI12,Keterampilan Mekanis & Presisi Fisik,L23 AND L24,late_elementary
+Level 2 (Indikator → Kriteria),K1,Intelektual Umum,I1 AND I2 AND I3,preschool
+Level 2 (Indikator → Kriteria),K2,Akademik Khusus,I4 AND I5,preschool
+Level 2 (Indikator → Kriteria),K3,Berpikir Kreatif dan Produktif,I6 AND I7 AND I8 AND I9 AND I10 AND I11 AND I12 AND I13,preschool
+Level 2 (Indikator → Kriteria),K4,Kepemimpinan,I14 AND I15 AND I16 AND I17 AND I18,preschool
+Level 2 (Indikator → Kriteria),K5,Seni Visual dan Pertunjukan,I19 AND I20 AND I21 AND I22,preschool
+Level 2 (Indikator → Kriteria),K6,Psikomotorik,I23 AND I24 AND I25 AND I26 AND I27,preschool
+Level 2 (Indikator → Kriteria),TK1,Intelektual Umum,TI1,toddler
+Level 2 (Indikator → Kriteria),TK2,Akademik Khusus,TI2,toddler
+Level 2 (Indikator → Kriteria),TK3,Berpikir Kreatif dan Produktif,TI3,toddler
+Level 2 (Indikator → Kriteria),TK4,Kepemimpinan,TI4,toddler
+Level 2 (Indikator → Kriteria),TK5,Seni Visual dan Pertunjukan,TI5,toddler
+Level 2 (Indikator → Kriteria),TK6,Psikomotorik,TI6,toddler
+Level 2 (Indikator → Kriteria),EK1,Intelektual Umum,EI1 AND EI2,early_elementary
+Level 2 (Indikator → Kriteria),EK2,Akademik Khusus,EI3 AND EI4,early_elementary
+Level 2 (Indikator → Kriteria),EK3,Berpikir Kreatif dan Produktif,EI5 AND EI6,early_elementary
+Level 2 (Indikator → Kriteria),EK4,Kepemimpinan,EI7 AND EI8,early_elementary
+Level 2 (Indikator → Kriteria),EK5,Seni Visual dan Pertunjukan,EI9 AND EI10,early_elementary
+Level 2 (Indikator → Kriteria),EK6,Psikomotorik,EI11 AND EI12,early_elementary
+Level 2 (Indikator → Kriteria),LK1,Intelektual Umum,LI1 AND LI2,late_elementary
+Level 2 (Indikator → Kriteria),LK2,Akademik Khusus,LI3 AND LI4,late_elementary
+Level 2 (Indikator → Kriteria),LK3,Berpikir Kreatif dan Produktif,LI5 AND LI6,late_elementary
+Level 2 (Indikator → Kriteria),LK4,Kepemimpinan,LI7 AND LI8,late_elementary
+Level 2 (Indikator → Kriteria),LK5,Seni Visual dan Pertunjukan,LI9 AND LI10,late_elementary
+Level 2 (Indikator → Kriteria),LK6,Psikomotorik,LI11 AND LI12,late_elementary

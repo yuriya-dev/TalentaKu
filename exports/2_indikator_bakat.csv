@@ -1,0 +1,59 @@
+﻿Kode,Nama Indikator,Kelompok Usia
+EI1,Kemampuan Verbal & Pemahaman Cerita,early_elementary
+EI10,Bakat Musik & Keberanian Tampil,early_elementary
+EI11,Keseimbangan & Kelincahan Fisik,early_elementary
+EI12,Keterampilan Motorik Halus Presisi,early_elementary
+EI2,Penalaran Logis & Analitis Awal,early_elementary
+EI3,Keterampilan Matematika Dasar,early_elementary
+EI4,Minat Observasi Alam & Sains,early_elementary
+EI5,Orisinalitas & Pembuatan Karya,early_elementary
+EI6,Pemecahan Masalah & Kreativitas Praktis,early_elementary
+EI7,Kepemimpinan & Kerjasama Kelompok,early_elementary
+EI8,Kemandirian & Tanggung Jawab Akademik,early_elementary
+EI9,Menggambar dengan Detail & Proporsi,early_elementary
+LI1,Penalaran Abstrak & Debat Logis,late_elementary
+LI10,Kemahiran Instrumen & Tari Mandiri,late_elementary
+LI11,Kecakapan Atletik & Olahraga Taktis,late_elementary
+LI12,Keterampilan Mekanis & Presisi Fisik,late_elementary
+LI2,Literasi Karangan & Menulis Runtut,late_elementary
+LI3,Keterampilan Matematika Lanjut,late_elementary
+LI4,Eksperimen Sains & Minat Teknologi,late_elementary
+LI5,Inovasi Desain & Proyek Mandiri,late_elementary
+LI6,Apresiasi Estetika & Budaya Kritis,late_elementary
+LI7,Kepemimpinan Kelompok & Organisasi,late_elementary
+LI8,Sportivitas & Resolusi Konflik Sebaya,late_elementary
+LI9,Seni Rupa & Media Digital Lanjut,late_elementary
+128,Ketertarikan Tinggi pada Flora/Fauna & Alam Bebas,preschool
+I1,Tingkat perbendaharaan kata yang tinggi,preschool
+I10,Keinginan untuk menghadapi resiko,preschool
+I11,Kesukaan terhadap kompleksitas,preschool
+I12,Toleran terhadap ambiguitas,preschool
+I13,Image diri yang positif,preschool
+I14,Kemampuan menyatu dengan tugas,preschool
+I15,Kepercayaan diri,preschool
+I16,Tanggung jawab,preschool
+I17,Kerja sama,preschool
+I18,Kecenderungan untuk mendominasi,preschool
+I19,Beradaptasi dengan mudah terhadap situasi baru,preschool
+I2,Mempunyai ingatan kuat,preschool
+I20,Keterbakatan dalam bidang seni visual,preschool
+I21,Keterbakatan dalam bidang seni musik,preschool
+I22,Keterbakatan dalam bidang drama,preschool
+I23,Kemampuan motorik kinestetik,preschool
+I24,Keterampilan praktik,preschool
+I25,Keterampilan spasial,preschool
+I26,Keterampilan mekanika,preschool
+I27,Keterampilan fisikal,preschool
+I3,Penguasaan kata-kata abstrak,preschool
+I4,Memiliki pemikiran abstrak,preschool
+I5,Memiliki prestasi bidang matematika,preschool
+I6,Memiliki prestasi sains,preschool
+I7,Keterbukaan terhadap pengalaman,preschool
+I8,Menetapkan standar personal,preschool
+I9,Kemampuan memainkan ide-ide,preschool
+TI1,Kemampuan Komunikasi & Bicara Dasar,toddler
+TI2,Konsep Angka & Warna Dasar,toddler
+TI3,Imajinasi Bermain Toddler,toddler
+TI4,Kepatuhan & Sosialisasi Dasar,toddler
+TI5,Respon Musik & Estetika Toddler,toddler
+TI6,Keterampilan Motorik Toddler,toddler

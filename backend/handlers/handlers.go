@@ -1414,3 +1414,139 @@ func UserGoogleLogin(c *fiber.Ctx) error {
 		},
 	})
 }
+
+// SubmitSuggestion — public user submits a suggestion/feedback (requires user token)
+func SubmitSuggestion(c *fiber.Ctx) error {
+	// Parse token to get user info (optional enrichment)
+	authHeader := c.Get("Authorization")
+	var userName, userEmail string
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString := authHeader[7:]
+		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+			return JwtSecret, nil
+		})
+		if err == nil && token.Valid {
+			claims := token.Claims.(jwt.MapClaims)
+			if email, ok := claims["email"].(string); ok {
+				userEmail = email
+			}
+		}
+	}
+
+	type SuggestionInput struct {
+		UserName string `json:"user_name"`
+		Category string `json:"category"`
+		Subject  string `json:"subject"`
+		Message  string `json:"message"`
+	}
+
+	var input SuggestionInput
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Request tidak valid"})
+	}
+
+	if strings.TrimSpace(input.Subject) == "" || strings.TrimSpace(input.Message) == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Subjek dan pesan tidak boleh kosong"})
+	}
+
+	if len(input.Message) > 2000 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Pesan terlalu panjang (maks 2000 karakter)"})
+	}
+
+	if userName == "" {
+		userName = strings.TrimSpace(input.UserName)
+	}
+
+	suggestion := models.Suggestion{
+		UserName:  userName,
+		UserEmail: userEmail,
+		Category:  strings.TrimSpace(input.Category),
+		Subject:   strings.TrimSpace(input.Subject),
+		Message:   strings.TrimSpace(input.Message),
+	}
+
+	if err := db.DB.Create(&suggestion).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menyimpan saran"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Saran berhasil dikirim. Terima kasih atas kontribusi Anda!",
+		"id":      suggestion.ID,
+	})
+}
+
+// GetSuggestions — admin only: view all submitted suggestions with optional filter
+func GetSuggestions(c *fiber.Ctx) error {
+	role := c.Locals("admin_role")
+	if role == nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Akses admin diperlukan"})
+	}
+
+	filterCategory := c.Query("category")
+	filterRead := c.Query("is_read") // "true", "false", or ""
+
+	query := db.DB.Order("created_at DESC")
+	if filterCategory != "" {
+		query = query.Where("category = ?", filterCategory)
+	}
+	if filterRead == "true" {
+		query = query.Where("is_read = ?", true)
+	} else if filterRead == "false" {
+		query = query.Where("is_read = ?", false)
+	}
+
+	var suggestions []models.Suggestion
+	if err := query.Find(&suggestions).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengambil data saran"})
+	}
+
+	// Count unread
+	var unreadCount int64
+	db.DB.Model(&models.Suggestion{}).Where("is_read = ?", false).Count(&unreadCount)
+
+	return c.JSON(fiber.Map{
+		"suggestions":   suggestions,
+		"total":         len(suggestions),
+		"unread_count":  unreadCount,
+	})
+}
+
+// MarkSuggestionRead — admin marks a suggestion as read
+func MarkSuggestionRead(c *fiber.Ctx) error {
+	role := c.Locals("admin_role")
+	if role == nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Akses admin diperlukan"})
+	}
+
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID tidak valid"})
+	}
+
+	if err := db.DB.Model(&models.Suggestion{}).Where("id = ?", id).Update("is_read", true).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal memperbarui status"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Saran ditandai sudah dibaca"})
+}
+
+// DeleteSuggestion — admin deletes a suggestion
+func DeleteSuggestion(c *fiber.Ctx) error {
+	role := c.Locals("admin_role")
+	if role == nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Akses admin diperlukan"})
+	}
+
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID tidak valid"})
+	}
+
+	if err := db.DB.Delete(&models.Suggestion{}, id).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menghapus saran"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Saran berhasil dihapus"})
+}
