@@ -11,6 +11,35 @@ interface Variable {
   age_group: string
 }
 
+const getPageNumbers = (currentPage: number, totalPages: number) => {
+  const pages: (number | string)[] = []
+  if (totalPages <= 5) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i)
+    }
+  } else {
+    pages.push(1)
+    let start = Math.max(2, currentPage - 1)
+    let end = Math.min(totalPages - 1, currentPage + 1)
+    if (currentPage <= 3) {
+      end = 4
+    } else if (currentPage >= totalPages - 2) {
+      start = totalPages - 3
+    }
+    if (start > 2) {
+      pages.push('...')
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i)
+    }
+    if (end < totalPages - 1) {
+      pages.push('...')
+    }
+    pages.push(totalPages)
+  }
+  return pages
+}
+
 export default function AdminVariablesPage() {
   const navigate = useNavigate()
   const [variables, setVariables] = useState<Variable[]>([])
@@ -398,40 +427,69 @@ export default function AdminVariablesPage() {
                 <span className="text-xs text-[#464555]">
                   Menampilkan {paginatedVariables.length} dari {filteredVariables.length} variabel
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  {/* First Page */}
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="p-1 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all cursor-pointer flex items-center justify-center"
+                    title="Halaman Pertama"
+                  >
+                    <span className="material-symbols-outlined text-sm font-bold">first_page</span>
+                  </button>
+
+                  {/* Previous Page */}
                   <button
                     onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
                     disabled={currentPage === 1}
-                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    className="p-1 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all cursor-pointer flex items-center justify-center"
+                    title="Halaman Sebelumnya"
                   >
-                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    <span className="material-symbols-outlined text-sm font-bold">chevron_left</span>
                   </button>
-                  <span className="px-3 py-1 bg-[#3525cd] text-white rounded-lg text-xs font-bold">{currentPage}</span>
-                  {currentPage < totalPages && (
-                    <button
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
-                    >
-                      {currentPage + 1}
-                    </button>
-                  )}
-                  {currentPage + 1 < totalPages && (
-                    <span className="text-xs text-[#777587] px-1">...</span>
-                  )}
-                  {currentPage < totalPages - 1 && (
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
-                    >
-                      {totalPages}
-                    </button>
-                  )}
+
+                  {/* Page Numbers */}
+                  {getPageNumbers(currentPage, totalPages).map((page, idx) => {
+                    if (page === '...') {
+                      return (
+                        <span key={`dots-${idx}`} className="text-xs text-[#777587] px-1.5 font-bold cursor-default select-none">
+                          ...
+                        </span>
+                      )
+                    }
+                    return (
+                      <button
+                        key={`page-${page}`}
+                        onClick={() => setCurrentPage(page as number)}
+                        className={`px-2.5 py-1 min-w-[32px] rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm ${
+                          currentPage === page
+                            ? 'bg-[#3525cd] text-white'
+                            : 'bg-white border border-[#c7c4d8]/50 text-[#464555] hover:bg-[#eceef0]'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
+
+                  {/* Next Page */}
                   <button
                     onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    className="p-1 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all cursor-pointer flex items-center justify-center"
+                    title="Halaman Selanjutnya"
                   >
-                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                    <span className="material-symbols-outlined text-sm font-bold">chevron_right</span>
+                  </button>
+
+                  {/* Last Page */}
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="p-1 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-all cursor-pointer flex items-center justify-center"
+                    title="Halaman Terakhir"
+                  >
+                    <span className="material-symbols-outlined text-sm font-bold">last_page</span>
                   </button>
                 </div>
               </div>
