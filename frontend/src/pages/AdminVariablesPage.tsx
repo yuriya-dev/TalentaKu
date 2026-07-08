@@ -201,7 +201,7 @@ export default function AdminVariablesPage() {
 
               {/* Search input */}
               <div className="relative shrink-0 w-full md:w-64">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587] text-lg">search</span>
+                <span className="material-symbols-outlined absolute left-3 top-2 -translate-y-1 text-[#777587] text-lg">search</span>
                 <input
                   className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
                   placeholder="Cari variabel..."
