@@ -10,7 +10,14 @@ import (
 func TestInitDBAndSeed(t *testing.T) {
 	// 1. Set temporary db path for test
 	os.Setenv("DATABASE_URL", "test_talentaku.db")
+	os.Remove("test_talentaku.db")
 	defer func() {
+		if DB != nil {
+			sqlDB, err := DB.DB()
+			if err == nil {
+				sqlDB.Close()
+			}
+		}
 		os.Remove("test_talentaku.db")
 		os.Unsetenv("DATABASE_URL")
 	}()

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"backend/db"
 	"backend/handlers"
@@ -59,6 +60,24 @@ func main() {
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
+
+	// Middleware to block requests until database migrations and seeding are complete
+	app.Use(func(c *fiber.Ctx) error {
+		select {
+		case <-db.DBReady:
+			return c.Next()
+		default:
+			// If not ready yet, block with a timeout
+			select {
+			case <-db.DBReady:
+				return c.Next()
+			case <-time.After(30 * time.Second):
+				return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+					"error": "Database initialization is taking longer than expected. Please try again later.",
+				})
+			}
+		}
+	})
 
 	// 4. Register Routes
 	api := app.Group("/api")

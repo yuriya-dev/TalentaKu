@@ -13,8 +13,10 @@ import (
 )
 
 var DB *gorm.DB
+var DBReady = make(chan struct{})
 
 func InitDB() *gorm.DB {
+	DBReady = make(chan struct{})
 	var err error
 	dbPath := os.Getenv("DATABASE_URL")
 	if dbPath == "" {
@@ -52,29 +54,41 @@ func InitDB() *gorm.DB {
 		sqlDB.SetConnMaxLifetime(time.Hour)
 	}
 
-	// Auto Migrate
-	log.Println("Running database migrations...")
-	err = DB.AutoMigrate(
-		&models.Setting{},
-		&models.Variable{},
-		&models.Indicator{},
-		&models.IndicatorVariable{},
-		&models.Criterion{},
-		&models.CriterionIndicator{},
-		&models.Child{},
-		&models.Consultation{},
-		&models.ConsultationAnswer{},
-		&models.ConsultationResult{},
-		&models.AdminUser{},
-		&models.User{},
-	)
-	if err != nil {
-		log.Fatalf("Database migration failed: %v", err)
+	runMigrationAndSeeding := func() {
+		defer close(DBReady)
+
+		// Auto Migrate
+		log.Println("Running database migrations...")
+		err = DB.AutoMigrate(
+			&models.Setting{},
+			&models.Variable{},
+			&models.Indicator{},
+			&models.IndicatorVariable{},
+			&models.Criterion{},
+			&models.CriterionIndicator{},
+			&models.Child{},
+			&models.Consultation{},
+			&models.ConsultationAnswer{},
+			&models.ConsultationResult{},
+			&models.AdminUser{},
+			&models.User{},
+		)
+		if err != nil {
+			log.Fatalf("Database migration failed: %v", err)
+		}
+
+		// Run Seeding
+		log.Println("Checking seed data...")
+		SeedData(DB)
 	}
 
-	// Run Seeding
-	log.Println("Checking seed data...")
-	SeedData(DB)
+	if os.Getenv("VERCEL") == "1" {
+		log.Println("Vercel environment detected. Running database migrations and seeding in background...")
+		go runMigrationAndSeeding()
+	} else {
+		log.Println("Running database migrations and seeding synchronously...")
+		runMigrationAndSeeding()
+	}
 
 	return DB
 }

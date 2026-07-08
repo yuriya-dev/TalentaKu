@@ -17,7 +17,14 @@ import (
 func TestHandlers(t *testing.T) {
 	// 1. Set up test database
 	os.Setenv("DATABASE_URL", "test_handlers.db")
+	os.Remove("test_handlers.db")
 	defer func() {
+		if db.DB != nil {
+			sqlDB, err := db.DB.DB()
+			if err == nil {
+				sqlDB.Close()
+			}
+		}
 		os.Remove("test_handlers.db")
 		os.Unsetenv("DATABASE_URL")
 	}()
@@ -159,7 +166,14 @@ func TestHandlers(t *testing.T) {
 func TestIntakeAgeValidation(t *testing.T) {
 	// 1. Set up test database
 	os.Setenv("DATABASE_URL", "test_validation.db")
+	os.Remove("test_validation.db")
 	defer func() {
+		if db.DB != nil {
+			sqlDB, err := db.DB.DB()
+			if err == nil {
+				sqlDB.Close()
+			}
+		}
 		os.Remove("test_validation.db")
 		os.Unsetenv("DATABASE_URL")
 	}()
@@ -224,7 +238,14 @@ func TestIntakeAgeValidation(t *testing.T) {
 
 func TestAdminLogin(t *testing.T) {
 	os.Setenv("DATABASE_URL", "test_login.db")
+	os.Remove("test_login.db")
 	defer func() {
+		if db.DB != nil {
+			sqlDB, err := db.DB.DB()
+			if err == nil {
+				sqlDB.Close()
+			}
+		}
 		os.Remove("test_login.db")
 		os.Unsetenv("DATABASE_URL")
 	}()
@@ -276,7 +297,14 @@ func TestAdminLogin(t *testing.T) {
 
 func TestUserGoogleLogin(t *testing.T) {
 	os.Setenv("DATABASE_URL", "test_google_login.db")
+	os.Remove("test_google_login.db")
 	defer func() {
+		if db.DB != nil {
+			sqlDB, err := db.DB.DB()
+			if err == nil {
+				sqlDB.Close()
+			}
+		}
 		os.Remove("test_google_login.db")
 		os.Unsetenv("DATABASE_URL")
 	}()
