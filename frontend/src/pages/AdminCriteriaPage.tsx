@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import ClayConfirmModal from '../components/ClayConfirmModal'
 import { API_BASE } from '../config'
 
 interface Criterion {
@@ -21,8 +22,9 @@ export default function AdminCriteriaPage() {
   // Detail Drawer/Modal State
   const [selectedCriterion, setSelectedCriterion] = useState<Criterion | null>(null)
 
-  // Create Criterion Modal States
+  // Create/Edit Criterion Modal States
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [newCode, setNewCode] = useState('')
   const [newLabel, setNewLabel] = useState('')
   const [newDescription, setNewDescription] = useState('')
@@ -31,13 +33,53 @@ export default function AdminCriteriaPage() {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
 
-  const handleCreateCriterion = async (e: React.FormEvent) => {
+  // Reusable Clay Confirm Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [criterionToDelete, setCriterionToDelete] = useState<string | null>(null)
+
+  // Filters & Pagination States
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('ALL')
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const itemsPerPage = 10
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedAgeGroup])
+
+  const handleEditClick = (crit: Criterion) => {
+    setIsEditMode(true)
+    setNewCode(crit.code)
+    setNewLabel(crit.label)
+    setNewDescription(crit.description)
+    setNewSuggestions(crit.suggestions)
+    setNewAgeGroup(crit.age_group)
+    setIsModalOpen(true)
+  }
+
+  const handleOpenCreateModal = () => {
+    setIsEditMode(false)
+    setNewCode('')
+    setNewLabel('')
+    setNewDescription('')
+    setNewSuggestions('')
+    setNewAgeGroup('preschool')
+    setIsModalOpen(true)
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
+    
+    const url = isEditMode
+      ? `${API_BASE}/api/admin/criteria/${newCode}`
+      : `${API_BASE}/api/admin/criteria`
+    const method = isEditMode ? 'PUT' : 'POST'
+
     try {
-      const res = await fetch(`${API_BASE}/api/admin/criteria`, {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -52,19 +94,72 @@ export default function AdminCriteriaPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Gagal menambahkan kriteria evaluasi.')
+        let errorMsg = `Gagal ${isEditMode ? 'mengubah' : 'menambahkan'} kriteria evaluasi.`
+        const contentType = res.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } else {
+          errorMsg = await res.text()
+        }
+        throw new Error(errorMsg)
       }
 
-      const created = await res.json()
-      setCriteria([created, ...criteria])
+      const saved = await res.json()
+      if (isEditMode) {
+        setCriteria(criteria.map(crit => crit.code === saved.code ? saved : crit))
+        setSuccessToast('Kriteria evaluasi berhasil diperbarui!')
+      } else {
+        setCriteria([saved, ...criteria])
+        setSuccessToast('Kriteria evaluasi baru berhasil ditambahkan!')
+      }
+      
       setIsModalOpen(false)
       setNewCode('')
       setNewLabel('')
       setNewDescription('')
       setNewSuggestions('')
-      
-      setSuccessToast('Kriteria evaluasi baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
+  const handleDeleteClick = (code: string) => {
+    setCriterionToDelete(code)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!criterionToDelete) return
+    setSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/criteria/${criterionToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!res.ok) {
+        let errorMsg = 'Gagal menghapus kriteria.'
+        const contentType = res.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } else {
+          errorMsg = await res.text()
+        }
+        throw new Error(errorMsg)
+      }
+
+      setCriteria(criteria.filter((crit) => crit.code !== criterionToDelete))
+      setSuccessToast('Kriteria berhasil dihapus!')
+      setIsDeleteModalOpen(false)
+      setCriterionToDelete(null)
       setTimeout(() => setSuccessToast(null), 4000)
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan.')
@@ -105,12 +200,24 @@ export default function AdminCriteriaPage() {
   }, [navigate])
 
   const filteredCriteria = criteria.filter((crit) => {
-    return (
+    const matchesSearch =
       crit.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       crit.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
       crit.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+
+    const matchesAgeGroup =
+      selectedAgeGroup === 'ALL' ||
+      crit.age_group === selectedAgeGroup
+
+    return matchesSearch && matchesAgeGroup
   })
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredCriteria.length / itemsPerPage)
+  const paginatedCriteria = filteredCriteria.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   return (
     <div className="flex h-screen overflow-hidden font-sans text-[#191c1e] bg-[#f8fafc]">
@@ -128,7 +235,7 @@ export default function AdminCriteriaPage() {
             </div>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenCreateModal}
             className="flex items-center gap-2 bg-[#3525cd] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-base">add</span>
@@ -176,21 +283,35 @@ export default function AdminCriteriaPage() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-10 space-y-6">
-            <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
               <div className="text-xs text-[#464555] font-semibold self-center">
                 Kriteria evaluasi merepresentasikan klasifikasi kecenderungan atau potensi bakat anak (K1-K6).
               </div>
 
-              {/* Search input */}
-              <div className="relative shrink-0 w-full md:w-64">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587] text-lg">search</span>
-                <input
-                  className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
-                  placeholder="Cari kriteria..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              {/* Filters & Search */}
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
+                <select
+                  value={selectedAgeGroup}
+                  onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs font-bold outline-none bg-white shadow-sm text-[#464555]"
+                >
+                  <option value="ALL">Semua Kelompok Usia</option>
+                  <option value="toddler">Batita (Toddler)</option>
+                  <option value="preschool">Prasekolah / TK (Preschool)</option>
+                  <option value="early_elementary">SD Awal (Early Elementary)</option>
+                  <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                </select>
+
+                <div className="relative w-full sm:w-64">
+                  <span className="material-symbols-outlined absolute left-3 top-2.5 -translate-y-1 text-[#777587] text-lg">search</span>
+                  <input
+                    className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
+                    placeholder="Cari kriteria..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -204,18 +325,18 @@ export default function AdminCriteriaPage() {
                       <th className="px-8 py-4 w-64">Nama Kriteria</th>
                       <th className="px-8 py-4">Deskripsi Penjelasan</th>
                       <th className="px-8 py-4 w-32">Grup Usia</th>
-                      <th className="px-8 py-4 w-24">Aksi</th>
+                      <th className="px-8 py-4 w-28 text-right">&nbsp;</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#c7c4d8]/20">
-                    {filteredCriteria.length === 0 ? (
+                    {paginatedCriteria.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-8 py-12 text-center text-sm text-[#464555]">
                           Tidak menemukan kriteria yang cocok.
                         </td>
                       </tr>
                     ) : (
-                      filteredCriteria.map((crit) => (
+                      paginatedCriteria.map((crit) => (
                         <tr 
                           key={crit.code} 
                           className="hover:bg-[#3525cd]/5 transition-colors cursor-pointer group"
@@ -229,12 +350,27 @@ export default function AdminCriteriaPage() {
                               {crit.age_group}
                             </span>
                           </td>
-                          <td className="px-8 py-4" onClick={(e) => e.stopPropagation()}>
+                          <td className="px-8 py-4 text-right flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => setSelectedCriterion(crit)}
-                              className="px-3 py-1 bg-[#3525cd]/10 text-[#3525cd] hover:bg-[#3525cd] hover:text-white rounded-lg text-xs font-bold transition-all"
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-[#3525cd] hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Lihat Detail"
                             >
-                              Detail
+                              <span className="material-symbols-outlined text-[16px]">visibility</span>
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(crit)}
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-[#3525cd] hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Edit Kriteria"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(crit.code)}
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-600 hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Hapus Kriteria"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
                           </td>
                         </tr>
@@ -243,11 +379,54 @@ export default function AdminCriteriaPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              <div className="px-8 py-6 bg-white flex justify-between items-center border-t border-[#c7c4d8]/20 shrink-0">
+                <span className="text-xs text-[#464555]">
+                  Menampilkan {paginatedCriteria.length} dari {filteredCriteria.length} kriteria
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+                  <span className="px-3 py-1 bg-[#3525cd] text-white rounded-lg text-xs font-bold">{currentPage}</span>
+                  {currentPage < totalPages && (
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
+                    >
+                      {currentPage + 1}
+                    </button>
+                  )}
+                  {currentPage + 1 < totalPages && (
+                    <span className="text-xs text-[#777587] px-1">...</span>
+                  )}
+                  {currentPage < totalPages - 1 && (
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
+                    >
+                      {totalPages}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Create Criterion Modal */}
+        {/* Create/Edit Criterion Modal */}
         {isModalOpen && (
           <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
@@ -258,21 +437,22 @@ export default function AdminCriteriaPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
-                <h3 className="text-xl font-bold text-[#3525cd]">Tambah Kriteria Evaluasi</h3>
+                <h3 className="text-xl font-bold text-[#3525cd]">{isEditMode ? 'Edit Kriteria Evaluasi' : 'Tambah Kriteria Evaluasi'}</h3>
                 <button onClick={() => setIsModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
-              <form onSubmit={handleCreateCriterion} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              <form onSubmit={handleFormSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 <div>
                   <label className="text-xs font-bold text-[#464555] block mb-1">Kode Kriteria</label>
                   <input
                     type="text"
                     required
+                    disabled={isEditMode}
                     placeholder="Contoh: K7, TK7, EK7, LK7"
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
-                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold"
+                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold disabled:bg-slate-100 disabled:text-slate-400"
                   />
                 </div>
                 <div>
@@ -334,7 +514,7 @@ export default function AdminCriteriaPage() {
                     disabled={submitLoading}
                     className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
                   >
-                    {submitLoading ? 'Menyimpan...' : 'Simpan Kriteria'}
+                    {submitLoading ? 'Menyimpan...' : isEditMode ? 'Perbarui Kriteria' : 'Simpan Kriteria'}
                   </button>
                 </div>
               </form>
@@ -399,6 +579,18 @@ export default function AdminCriteriaPage() {
             </div>
           </div>
         )}
+
+        <ClayConfirmModal
+          isOpen={isDeleteModalOpen}
+          title="Hapus Kriteria"
+          message={`Apakah Anda yakin ingin menghapus kriteria "${criterionToDelete}"? Semua relasi aturan L2 terkait juga akan dihapus.`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setIsDeleteModalOpen(false)
+            setCriterionToDelete(null)
+          }}
+          isLoading={submitLoading}
+        />
       </main>
     </div>
   )

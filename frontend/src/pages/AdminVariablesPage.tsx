@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import ClayConfirmModal from '../components/ClayConfirmModal'
 import { API_BASE } from '../config'
 
 interface Variable {
@@ -18,8 +19,9 @@ export default function AdminVariablesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
 
-  // Create Variable Modal States
+  // Create/Edit Variable Modal States
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [newCode, setNewCode] = useState('')
   const [newLabel, setNewLabel] = useState('')
   const [newCategory, setNewCategory] = useState('General Intellectual')
@@ -27,13 +29,51 @@ export default function AdminVariablesPage() {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
 
-  const handleCreateVariable = async (e: React.FormEvent) => {
+  // Reusable Clay Confirm Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [variableToDelete, setVariableToDelete] = useState<string | null>(null)
+
+  // Filters & Pagination States
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('ALL')
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const itemsPerPage = 10
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedCategory, selectedAgeGroup])
+
+  const handleEditClick = (v: Variable) => {
+    setIsEditMode(true)
+    setNewCode(v.code)
+    setNewLabel(v.label)
+    setNewCategory(v.category)
+    setNewAgeGroup(v.age_group)
+    setIsModalOpen(true)
+  }
+
+  const handleOpenCreateModal = () => {
+    setIsEditMode(false)
+    setNewCode('')
+    setNewLabel('')
+    setNewCategory('General Intellectual')
+    setNewAgeGroup('preschool')
+    setIsModalOpen(true)
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
+    
+    const url = isEditMode
+      ? `${API_BASE}/api/admin/variables/${newCode}`
+      : `${API_BASE}/api/admin/variables`
+    const method = isEditMode ? 'PUT' : 'POST'
+
     try {
-      const res = await fetch(`${API_BASE}/api/admin/variables`, {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -47,17 +87,70 @@ export default function AdminVariablesPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Gagal menambahkan variabel.')
+        let errorMsg = `Gagal ${isEditMode ? 'mengubah' : 'menambahkan'} variabel.`
+        const contentType = res.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } else {
+          errorMsg = await res.text()
+        }
+        throw new Error(errorMsg)
       }
 
-      const created = await res.json()
-      setVariables([created, ...variables])
+      const saved = await res.json()
+      if (isEditMode) {
+        setVariables(variables.map(v => v.code === saved.code ? saved : v))
+        setSuccessToast('Variabel berhasil diperbarui!')
+      } else {
+        setVariables([saved, ...variables])
+        setSuccessToast('Variabel baru berhasil ditambahkan!')
+      }
+      
       setIsModalOpen(false)
       setNewCode('')
       setNewLabel('')
-      
-      setSuccessToast('Variabel baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
+  const handleDeleteClick = (code: string) => {
+    setVariableToDelete(code)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!variableToDelete) return
+    setSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/variables/${variableToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!res.ok) {
+        let errorMsg = 'Gagal menghapus variabel.'
+        const contentType = res.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } else {
+          errorMsg = await res.text()
+        }
+        throw new Error(errorMsg)
+      }
+
+      setVariables(variables.filter((v) => v.code !== variableToDelete))
+      setSuccessToast('Variabel berhasil dihapus!')
+      setIsDeleteModalOpen(false)
+      setVariableToDelete(null)
       setTimeout(() => setSuccessToast(null), 4000)
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan.')
@@ -93,14 +186,23 @@ export default function AdminVariablesPage() {
     fetchVariables()
   }, [navigate])
 
+  const prettyCategoryLabels: Record<string, string> = {
+    'General Intellectual': 'Intelektual Umum (K1)',
+    'Specific Academic': 'Akademik Khusus (K2)',
+    'Creative Thinking': 'Berpikir Kreatif (K3)',
+    'Leadership': 'Kepemimpinan (K4)',
+    'Visual & Performing Arts': 'Seni Rupa & Visual (K5)',
+    'Psychomotor': 'Psikomotorik (K6)',
+  }
+
+  const uniqueCategories = Array.from(new Set(variables.map(v => v.category))).filter(Boolean)
+
   const categories = [
     { code: 'ALL', label: 'Semua Kategori' },
-    { code: 'General Intellectual', label: 'Intelektual Umum (K1)' },
-    { code: 'Specific Academic', label: 'Akademik Khusus (K2)' },
-    { code: 'Creative Thinking', label: 'Berpikir Kreatif (K3)' },
-    { code: 'Leadership', label: 'Kepemimpinan (K4)' },
-    { code: 'Visual & Performing Arts', label: 'Seni Rupa & Visual (K5)' },
-    { code: 'Psychomotor', label: 'Psikomotorik (K6)' },
+    ...uniqueCategories.map(cat => ({
+      code: cat,
+      label: prettyCategoryLabels[cat] || cat
+    }))
   ]
 
   const filteredVariables = variables.filter((v) => {
@@ -110,12 +212,21 @@ export default function AdminVariablesPage() {
 
     const matchesCategory =
       selectedCategory === 'ALL' ||
-      v.category.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-      (selectedCategory === 'Visual & Performing Arts' &&
-        (v.category.toLowerCase().includes('visual') || v.category.toLowerCase().includes('performing')))
+      v.category === selectedCategory
 
-    return matchesSearch && matchesCategory
+    const matchesAgeGroup =
+      selectedAgeGroup === 'ALL' ||
+      v.age_group === selectedAgeGroup
+
+    return matchesSearch && matchesCategory && matchesAgeGroup
   })
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredVariables.length / itemsPerPage)
+  const paginatedVariables = filteredVariables.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   return (
     <div className="flex h-screen overflow-hidden font-sans text-[#191c1e] bg-[#f8fafc]">
@@ -133,7 +244,7 @@ export default function AdminVariablesPage() {
             </div>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenCreateModal}
             className="flex items-center gap-2 bg-[#3525cd] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-base">add</span>
@@ -181,7 +292,7 @@ export default function AdminVariablesPage() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-10 space-y-6">
-            <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="flex flex-col xl:flex-row justify-between gap-4">
               {/* Category Filter Select */}
               <div className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
@@ -199,16 +310,32 @@ export default function AdminVariablesPage() {
                 ))}
               </div>
 
-              {/* Search input */}
-              <div className="relative shrink-0 w-full md:w-64">
-                <span className="material-symbols-outlined absolute left-3 top-2 -translate-y-1 text-[#777587] text-lg">search</span>
-                <input
-                  className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
-                  placeholder="Cari variabel..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              {/* Search & Age Group Filters */}
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full xl:w-auto">
+                {/* Age Group Filter Dropdown */}
+                <select
+                  value={selectedAgeGroup}
+                  onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs font-bold outline-none bg-white shadow-sm text-[#464555]"
+                >
+                  <option value="ALL">Semua Kelompok Usia</option>
+                  <option value="toddler">Batita (Toddler)</option>
+                  <option value="preschool">Prasekolah / TK (Preschool)</option>
+                  <option value="early_elementary">SD Awal (Early Elementary)</option>
+                  <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                </select>
+
+                {/* Search input */}
+                <div className="relative w-full sm:w-64">
+                  <span className="material-symbols-outlined absolute left-3 top-2.5 -translate-y-1 text-[#777587] text-lg">search</span>
+                  <input
+                    className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
+                    placeholder="Cari variabel..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -222,18 +349,19 @@ export default function AdminVariablesPage() {
                       <th className="px-8 py-4 w-48">Kategori</th>
                       <th className="px-8 py-4">Teks Pertanyaan Observasi</th>
                       <th className="px-8 py-4 w-32">Grup Usia</th>
+                      <th className="px-8 py-4 w-20 text-right">&nbsp;</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#c7c4d8]/20">
-                    {filteredVariables.length === 0 ? (
+                    {paginatedVariables.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-8 py-12 text-center text-sm text-[#464555]">
+                        <td colSpan={5} className="px-8 py-12 text-center text-sm text-[#464555]">
                           Tidak menemukan variabel yang cocok.
                         </td>
                       </tr>
                     ) : (
-                      filteredVariables.map((v) => (
-                        <tr key={v.code} className="hover:bg-[#3525cd]/5 transition-colors">
+                      paginatedVariables.map((v) => (
+                        <tr key={v.code} className="hover:bg-[#3525cd]/5 transition-colors group">
                           <td className="px-8 py-4 font-mono text-sm font-bold text-[#3525cd]">{v.code}</td>
                           <td className="px-8 py-4 text-xs font-semibold text-[#00687a]">{v.category}</td>
                           <td className="px-8 py-4 text-sm text-[#191c1e] font-medium leading-relaxed">{v.label}</td>
@@ -242,11 +370,70 @@ export default function AdminVariablesPage() {
                               {v.age_group}
                             </span>
                           </td>
+                          <td className="px-8 py-4 text-right flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEditClick(v)}
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-[#3525cd] hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Edit Variabel"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(v.code)}
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-600 hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Hapus Variabel"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </td>
                         </tr>
                       ))
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="px-8 py-6 bg-white flex justify-between items-center border-t border-[#c7c4d8]/20 shrink-0">
+                <span className="text-xs text-[#464555]">
+                  Menampilkan {paginatedVariables.length} dari {filteredVariables.length} variabel
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+                  <span className="px-3 py-1 bg-[#3525cd] text-white rounded-lg text-xs font-bold">{currentPage}</span>
+                  {currentPage < totalPages && (
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
+                    >
+                      {currentPage + 1}
+                    </button>
+                  )}
+                  {currentPage + 1 < totalPages && (
+                    <span className="text-xs text-[#777587] px-1">...</span>
+                  )}
+                  {currentPage < totalPages - 1 && (
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
+                    >
+                      {totalPages}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -263,37 +450,43 @@ export default function AdminVariablesPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
-                <h3 className="text-xl font-bold text-[#3525cd]">Tambah Variabel Masukan</h3>
+                <h3 className="text-xl font-bold text-[#3525cd]">{isEditMode ? 'Edit Variabel Masukan' : 'Tambah Variabel Masukan'}</h3>
                 <button onClick={() => setIsModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
-              <form onSubmit={handleCreateVariable} className="space-y-4">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-[#464555] block mb-1">Kode Variabel</label>
                   <input
                     type="text"
                     required
+                    disabled={isEditMode}
                     placeholder="Contoh: C84, T13, E25"
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
-                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm"
+                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm disabled:bg-slate-100 disabled:text-slate-400"
                   />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#464555] block mb-1">Kategori</label>
-                  <select
+                  <input
+                    type="text"
+                    required
+                    list="category-suggestions"
+                    placeholder="Pilih atau ketik kategori baru (cth: Naturalist)"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm font-semibold text-[#464555]"
-                  >
+                  />
+                  <datalist id="category-suggestions">
                     <option value="General Intellectual">Intelektual Umum (K1)</option>
                     <option value="Specific Academic">Akademik Khusus (K2)</option>
                     <option value="Creative Thinking">Berpikir Kreatif (K3)</option>
                     <option value="Leadership">Kepemimpinan (K4)</option>
                     <option value="Visual & Performing Arts">Seni Rupa & Visual (K5)</option>
                     <option value="Psychomotor">Psikomotorik (K6)</option>
-                  </select>
+                  </datalist>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-[#464555] block mb-1">Grup Usia</label>
@@ -332,13 +525,25 @@ export default function AdminVariablesPage() {
                     disabled={submitLoading}
                     className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
                   >
-                    {submitLoading ? 'Menyimpan...' : 'Simpan Variabel'}
+                    {submitLoading ? 'Menyimpan...' : isEditMode ? 'Perbarui Variabel' : 'Simpan Variabel'}
                   </button>
                 </div>
               </form>
             </div>
           </div>
         )}
+
+        <ClayConfirmModal
+          isOpen={isDeleteModalOpen}
+          title="Hapus Variabel"
+          message={`Apakah Anda yakin ingin menghapus variabel "${variableToDelete}"? Semua relasi aturan L1 terkait juga akan dihapus.`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setIsDeleteModalOpen(false)
+            setVariableToDelete(null)
+          }}
+          isLoading={submitLoading}
+        />
       </main>
     </div>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import ClayConfirmModal from '../components/ClayConfirmModal'
 import { API_BASE } from '../config'
 
 interface Indicator {
@@ -16,21 +17,58 @@ export default function AdminIndicatorsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Create Indicator Modal States
+  // Create/Edit Indicator Modal States
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [newCode, setNewCode] = useState('')
   const [newLabel, setNewLabel] = useState('')
   const [newAgeGroup, setNewAgeGroup] = useState('preschool')
   const [submitLoading, setSubmitLoading] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
 
-  const handleCreateIndicator = async (e: React.FormEvent) => {
+  // Reusable Clay Confirm Modal States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [indicatorToDelete, setIndicatorToDelete] = useState<string | null>(null)
+
+  // Filters & Pagination States
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('ALL')
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const itemsPerPage = 10
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedAgeGroup])
+
+  const handleEditClick = (ind: Indicator) => {
+    setIsEditMode(true)
+    setNewCode(ind.code)
+    setNewLabel(ind.label)
+    setNewAgeGroup(ind.age_group)
+    setIsModalOpen(true)
+  }
+
+  const handleOpenCreateModal = () => {
+    setIsEditMode(false)
+    setNewCode('')
+    setNewLabel('')
+    setNewAgeGroup('preschool')
+    setIsModalOpen(true)
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitLoading(true)
     const token = localStorage.getItem('admin_token')
+    
+    const url = isEditMode
+      ? `${API_BASE}/api/admin/indicators/${newCode}`
+      : `${API_BASE}/api/admin/indicators`
+    const method = isEditMode ? 'PUT' : 'POST'
+
     try {
-      const res = await fetch(`${API_BASE}/api/admin/indicators`, {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -43,17 +81,70 @@ export default function AdminIndicatorsPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Gagal menambahkan indikator.')
+        let errorMsg = `Gagal ${isEditMode ? 'mengubah' : 'menambahkan'} indikator.`
+        const contentType = res.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } else {
+          errorMsg = await res.text()
+        }
+        throw new Error(errorMsg)
       }
 
-      const created = await res.json()
-      setIndicators([created, ...indicators])
+      const saved = await res.json()
+      if (isEditMode) {
+        setIndicators(indicators.map(ind => ind.code === saved.code ? saved : ind))
+        setSuccessToast('Indikator berhasil diperbarui!')
+      } else {
+        setIndicators([saved, ...indicators])
+        setSuccessToast('Indikator baru berhasil ditambahkan!')
+      }
+      
       setIsModalOpen(false)
       setNewCode('')
       setNewLabel('')
-      
-      setSuccessToast('Indikator baru berhasil ditambahkan!')
+      setTimeout(() => setSuccessToast(null), 4000)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan.')
+    } finally {
+      setSubmitLoading(false)
+    }
+  }
+
+  const handleDeleteClick = (code: string) => {
+    setIndicatorToDelete(code)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!indicatorToDelete) return
+    setSubmitLoading(true)
+    const token = localStorage.getItem('admin_token')
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/indicators/${indicatorToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!res.ok) {
+        let errorMsg = 'Gagal menghapus indikator.'
+        const contentType = res.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          const data = await res.json()
+          errorMsg = data.error || errorMsg
+        } else {
+          errorMsg = await res.text()
+        }
+        throw new Error(errorMsg)
+      }
+
+      setIndicators(indicators.filter((ind) => ind.code !== indicatorToDelete))
+      setSuccessToast('Indikator berhasil dihapus!')
+      setIsDeleteModalOpen(false)
+      setIndicatorToDelete(null)
       setTimeout(() => setSuccessToast(null), 4000)
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan.')
@@ -95,11 +186,23 @@ export default function AdminIndicatorsPage() {
   }, [navigate])
 
   const filteredIndicators = indicators.filter((ind) => {
-    return (
+    const matchesSearch =
       ind.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ind.label.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+
+    const matchesAgeGroup =
+      selectedAgeGroup === 'ALL' ||
+      ind.age_group === selectedAgeGroup
+
+    return matchesSearch && matchesAgeGroup
   })
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredIndicators.length / itemsPerPage)
+  const paginatedIndicators = filteredIndicators.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
   return (
     <div className="flex h-screen overflow-hidden font-sans text-[#191c1e] bg-[#f8fafc]">
@@ -117,7 +220,7 @@ export default function AdminIndicatorsPage() {
             </div>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleOpenCreateModal}
             className="flex items-center gap-2 bg-[#3525cd] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-base">add</span>
@@ -165,21 +268,35 @@ export default function AdminIndicatorsPage() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden p-4 md:p-10 space-y-6">
-            <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
               <div className="text-xs text-[#464555] font-semibold self-center">
                 Indikator bakat dihasilkan dari kombinasi variabel level 1 yang terpenuhi.
               </div>
 
-              {/* Search input */}
-              <div className="relative shrink-0 w-full md:w-64">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587] text-lg">search</span>
-                <input
-                  className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
-                  placeholder="Cari indikator..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              {/* Filters & Search */}
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
+                <select
+                  value={selectedAgeGroup}
+                  onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  className="px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs font-bold outline-none bg-white shadow-sm text-[#464555]"
+                >
+                  <option value="ALL">Semua Kelompok Usia</option>
+                  <option value="toddler">Batita (Toddler)</option>
+                  <option value="preschool">Prasekolah / TK (Preschool)</option>
+                  <option value="early_elementary">SD Awal (Early Elementary)</option>
+                  <option value="late_elementary">SD Akhir (Late Elementary)</option>
+                </select>
+
+                <div className="relative w-full sm:w-64">
+                  <span className="material-symbols-outlined absolute left-3 top-2.5 -translate-y-1 text-[#777587] text-lg">search</span>
+                  <input
+                    className="pl-9 pr-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white w-full shadow-sm"
+                    placeholder="Cari indikator..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -192,18 +309,19 @@ export default function AdminIndicatorsPage() {
                       <th className="px-8 py-4 w-32">Kode Indikator</th>
                       <th className="px-8 py-4">Nama Indikator Bakat</th>
                       <th className="px-8 py-4 w-32">Grup Usia</th>
+                      <th className="px-8 py-4 w-20 text-right">&nbsp;</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#c7c4d8]/20">
-                    {filteredIndicators.length === 0 ? (
+                    {paginatedIndicators.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-8 py-12 text-center text-sm text-[#464555]">
+                        <td colSpan={4} className="px-8 py-12 text-center text-sm text-[#464555]">
                           Tidak menemukan indikator yang cocok.
                         </td>
                       </tr>
                     ) : (
-                      filteredIndicators.map((ind) => (
-                        <tr key={ind.code} className="hover:bg-[#3525cd]/5 transition-colors">
+                      paginatedIndicators.map((ind) => (
+                        <tr key={ind.code} className="hover:bg-[#3525cd]/5 transition-colors group">
                           <td className="px-8 py-4 font-mono text-sm font-bold text-[#3525cd]">{ind.code}</td>
                           <td className="px-8 py-4 text-sm text-[#191c1e] font-semibold leading-relaxed">{ind.label}</td>
                           <td className="px-8 py-4">
@@ -211,17 +329,76 @@ export default function AdminIndicatorsPage() {
                               {ind.age_group}
                             </span>
                           </td>
+                          <td className="px-8 py-4 text-right flex justify-end gap-2">
+                            <button
+                              onClick={() => handleEditClick(ind)}
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-[#3525cd] hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Edit Indikator"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(ind.code)}
+                              className="inline-flex w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-600 hover:text-white text-[#464555] items-center justify-center transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+                              title="Hapus Indikator"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </td>
                         </tr>
                       ))
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              <div className="px-8 py-6 bg-white flex justify-between items-center border-t border-[#c7c4d8]/20 shrink-0">
+                <span className="text-xs text-[#464555]">
+                  Menampilkan {paginatedIndicators.length} dari {filteredIndicators.length} indikator
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                  </button>
+                  <span className="px-3 py-1 bg-[#3525cd] text-white rounded-lg text-xs font-bold">{currentPage}</span>
+                  {currentPage < totalPages && (
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
+                    >
+                      {currentPage + 1}
+                    </button>
+                  )}
+                  {currentPage + 1 < totalPages && (
+                    <span className="text-xs text-[#777587] px-1">...</span>
+                  )}
+                  {currentPage < totalPages - 1 && (
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="px-3 py-1 hover:bg-[#eceef0] rounded-lg text-xs cursor-pointer"
+                    >
+                      {totalPages}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 border border-[#c7c4d8]/50 rounded-lg hover:bg-[#eceef0] disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Create Indicator Modal */}
+        {/* Create/Edit Indicator Modal */}
         {isModalOpen && (
           <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
@@ -232,21 +409,22 @@ export default function AdminIndicatorsPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center border-b border-[#c7c4d8]/20 pb-4 mb-6">
-                <h3 className="text-xl font-bold text-[#3525cd]">Tambah Indikator Bakat</h3>
+                <h3 className="text-xl font-bold text-[#3525cd]">{isEditMode ? 'Edit Indikator Bakat' : 'Tambah Indikator Bakat'}</h3>
                 <button onClick={() => setIsModalOpen(false)} className="text-[#464555] hover:text-[#3525cd]">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
-              <form onSubmit={handleCreateIndicator} className="space-y-4">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-[#464555] block mb-1">Kode Indikator</label>
                   <input
                     type="text"
                     required
+                    disabled={isEditMode}
                     placeholder="Contoh: I28, TI7, EI13, LI13"
                     value={newCode}
                     onChange={(e) => setNewCode(e.target.value)}
-                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm"
+                    className="w-full px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] rounded-xl text-xs outline-none bg-white shadow-sm disabled:bg-slate-100 disabled:text-slate-400"
                   />
                 </div>
                 <div>
@@ -286,13 +464,25 @@ export default function AdminIndicatorsPage() {
                     disabled={submitLoading}
                     className="px-4 py-2 bg-[#3525cd] text-white rounded-xl text-xs font-semibold hover:brightness-110 shadow-sm active:scale-95 transition-all disabled:opacity-50"
                   >
-                    {submitLoading ? 'Menyimpan...' : 'Simpan Indikator'}
+                    {submitLoading ? 'Menyimpan...' : isEditMode ? 'Perbarui Indikator' : 'Simpan Indikator'}
                   </button>
                 </div>
               </form>
             </div>
           </div>
         )}
+
+        <ClayConfirmModal
+          isOpen={isDeleteModalOpen}
+          title="Hapus Indikator"
+          message={`Apakah Anda yakin ingin menghapus indikator "${indicatorToDelete}"? Semua relasi aturan L1 dan L2 terkait juga akan dihapus.`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setIsDeleteModalOpen(false)
+            setIndicatorToDelete(null)
+          }}
+          isLoading={submitLoading}
+        />
       </main>
     </div>
   )

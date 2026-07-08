@@ -818,6 +818,159 @@ func CreateCriterion(c *fiber.Ctx) error {
 	return c.JSON(input)
 }
 
+// Update Variable
+func UpdateVariable(c *fiber.Ctx) error {
+	code := c.Params("code")
+	var input models.Variable
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if input.Label == "" || input.Category == "" || input.AgeGroup == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+
+	var variable models.Variable
+	if err := db.DB.Where("code = ?", code).First(&variable).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Variable not found"})
+	}
+
+	// Update fields
+	variable.Label = input.Label
+	variable.Category = input.Category
+	variable.AgeGroup = input.AgeGroup
+
+	if err := db.DB.Save(&variable).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update variable"})
+	}
+
+	return c.JSON(variable)
+}
+
+// Update Indicator
+func UpdateIndicator(c *fiber.Ctx) error {
+	code := c.Params("code")
+	var input models.Indicator
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if input.Label == "" || input.AgeGroup == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+
+	var indicator models.Indicator
+	if err := db.DB.Where("code = ?", code).First(&indicator).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Indicator not found"})
+	}
+
+	// Update fields
+	indicator.Label = input.Label
+	indicator.AgeGroup = input.AgeGroup
+
+	if err := db.DB.Save(&indicator).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update indicator"})
+	}
+
+	return c.JSON(indicator)
+}
+
+// Update Criterion
+func UpdateCriterion(c *fiber.Ctx) error {
+	code := c.Params("code")
+	var input models.Criterion
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	if input.Label == "" || input.AgeGroup == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+
+	var criterion models.Criterion
+	if err := db.DB.Where("code = ?", code).First(&criterion).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Criterion not found"})
+	}
+
+	// Update fields
+	criterion.Label = input.Label
+	criterion.Description = input.Description
+	criterion.Suggestions = input.Suggestions
+	criterion.AgeGroup = input.AgeGroup
+
+	if err := db.DB.Save(&criterion).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update criterion"})
+	}
+
+	return c.JSON(criterion)
+}
+
+// Delete Variable
+func DeleteVariable(c *fiber.Ctx) error {
+	code := c.Params("code")
+
+	tx := db.DB.Begin()
+	// Delete mappings first
+	if err := tx.Where("variable_code = ?", code).Delete(&models.IndicatorVariable{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete variable mappings"})
+	}
+
+	// Delete variable
+	if err := tx.Where("code = ?", code).Delete(&models.Variable{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete variable"})
+	}
+
+	tx.Commit()
+	return c.JSON(fiber.Map{"message": "Variable deleted successfully", "code": code})
+}
+
+// Delete Indicator
+func DeleteIndicator(c *fiber.Ctx) error {
+	code := c.Params("code")
+
+	tx := db.DB.Begin()
+	// Delete mappings (L1: IndicatorVariable, L2: CriterionIndicator)
+	if err := tx.Where("indicator_code = ?", code).Delete(&models.IndicatorVariable{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete variable relations"})
+	}
+	if err := tx.Where("indicator_code = ?", code).Delete(&models.CriterionIndicator{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete criterion relations"})
+	}
+
+	// Delete indicator
+	if err := tx.Where("code = ?", code).Delete(&models.Indicator{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete indicator"})
+	}
+
+	tx.Commit()
+	return c.JSON(fiber.Map{"message": "Indicator deleted successfully", "code": code})
+}
+
+// Delete Criterion
+func DeleteCriterion(c *fiber.Ctx) error {
+	code := c.Params("code")
+
+	tx := db.DB.Begin()
+	// Delete mappings
+	if err := tx.Where("criterion_code = ?", code).Delete(&models.CriterionIndicator{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete indicator relations"})
+	}
+
+	// Delete criterion
+	if err := tx.Where("code = ?", code).Delete(&models.Criterion{}).Error; err != nil {
+		tx.Rollback()
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete criterion"})
+	}
+
+	tx.Commit()
+	return c.JSON(fiber.Map{"message": "Criterion deleted successfully", "code": code})
+}
+
+
+
 // Save or Update a Rule Relation
 func SaveRule(c *fiber.Ctx) error {
 	type RuleInput struct {

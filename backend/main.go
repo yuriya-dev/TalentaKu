@@ -107,8 +107,14 @@ func main() {
 	adminGroup.Get("/settings", handlers.GetSettings)
 	adminGroup.Post("/settings", handlers.UpdateSettings)
 	adminGroup.Post("/variables", handlers.CreateVariable)
+	adminGroup.Put("/variables/:code", handlers.UpdateVariable)
+	adminGroup.Delete("/variables/:code", handlers.DeleteVariable)
 	adminGroup.Post("/indicators", handlers.CreateIndicator)
+	adminGroup.Put("/indicators/:code", handlers.UpdateIndicator)
+	adminGroup.Delete("/indicators/:code", handlers.DeleteIndicator)
 	adminGroup.Post("/criteria", handlers.CreateCriterion)
+	adminGroup.Put("/criteria/:code", handlers.UpdateCriterion)
+	adminGroup.Delete("/criteria/:code", handlers.DeleteCriterion)
 
 	// 5. Start Server
 	port := os.Getenv("PORT")
