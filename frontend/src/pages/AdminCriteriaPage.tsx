@@ -281,25 +281,67 @@ export default function AdminCriteriaPage() {
         )}
 
         {loading ? (
-          <div className="flex-grow flex flex-col p-4 md:p-10 space-y-6">
-            <div className="flex justify-between items-center gap-4">
-              <div className="h-4 w-64 bg-slate-100 rounded"></div>
-              <div className="h-8 w-48 bg-slate-100 rounded-xl"></div>
-            </div>
-            <phantom-ui loading="true" className="flex-grow block">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-white border border-[#c7c4d8]/40 rounded-2xl p-6 space-y-3 shadow-sm flex items-center gap-4">
-                    <div className="w-10 h-10 bg-slate-100 rounded-xl shrink-0"></div>
-                    <div className="space-y-2 flex-grow">
-                      <div className="h-4 w-16 bg-slate-100 rounded"></div>
-                      <div className="h-4 w-full bg-slate-100 rounded"></div>
-                    </div>
-                  </div>
-                ))}
+          <phantom-ui loading="true" className="flex-grow flex flex-col p-4 md:p-10 space-y-6">
+            {/* Filter Skeleton */}
+            <div className="flex flex-col sm:flex-row justify-between gap-4">
+              <div className="h-4 w-64 bg-slate-100 rounded self-center"></div>
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
+                <div className="h-8 w-44 bg-slate-100 rounded-xl"></div>
+                <div className="h-8 w-64 bg-slate-100 rounded-xl"></div>
               </div>
-            </phantom-ui>
-          </div>
+            </div>
+
+            {/* Table Skeleton */}
+            <div className="flex-1 bg-white border border-[#c7c4d8]/40 rounded-[2rem] overflow-hidden shadow-sm flex flex-col min-h-0">
+              <div className="overflow-y-auto flex-1">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-[#f8fafc] text-xs font-bold text-[#464555] uppercase tracking-wider sticky top-0 z-10 border-b border-[#c7c4d8]/20">
+                    <tr>
+                      <th className="px-8 py-4 w-32">Kode</th>
+                      <th className="px-8 py-4 w-64">Nama Kriteria</th>
+                      <th className="px-8 py-4">Deskripsi Penjelasan</th>
+                      <th className="px-8 py-4 w-32">Grup Usia</th>
+                      <th className="px-8 py-4 w-28 text-right">&nbsp;</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#c7c4d8]/20">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <tr key={i}>
+                        <td className="px-8 py-5">
+                          <div className="h-4 w-12 bg-slate-100 rounded font-mono"></div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="h-4 w-40 bg-slate-100 rounded"></div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="h-4 w-full max-w-sm bg-slate-100 rounded"></div>
+                        </td>
+                        <td className="px-8 py-5">
+                          <div className="h-5 w-20 bg-slate-100 rounded"></div>
+                        </td>
+                        <td className="px-8 py-5 text-right flex justify-end gap-2">
+                          <div className="w-8 h-8 rounded-full bg-slate-100"></div>
+                          <div className="w-8 h-8 rounded-full bg-slate-100"></div>
+                          <div className="w-8 h-8 rounded-full bg-slate-100"></div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Skeleton */}
+              <div className="px-8 py-6 bg-white flex justify-between items-center border-t border-[#c7c4d8]/20 shrink-0">
+                <div className="h-4 w-48 bg-slate-100 rounded"></div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
+                  <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
+                  <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
+                  <div className="w-8 h-8 bg-slate-100 rounded-lg"></div>
+                </div>
+              </div>
+            </div>
+          </phantom-ui>
         ) : error ? (
           <div className="flex-grow p-10 flex items-center justify-center">
             <div className="bg-red-50 border-l-4 border-red-500 rounded-xl p-6 text-red-800 text-sm flex gap-3 max-w-xl shadow-sm">
