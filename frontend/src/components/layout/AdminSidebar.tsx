@@ -55,10 +55,15 @@ export default function AdminSidebar() {
       </nav>
 
       <div className="mt-auto flex flex-col gap-1 border-t border-[#c7c4d8] pt-4">
-        <button className="text-[#464555] hover:bg-[#e0e3e5]/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-semibold w-full text-left">
-          <span className="material-symbols-outlined">help</span>
+        <Link
+          to="/admin/help"
+          className={`text-[#464555] hover:bg-[#e0e3e5]/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-semibold w-full text-left ${
+            location.pathname === '/admin/help' ? 'bg-[#4f46e5]/10 text-[#4f46e5] font-bold' : ''
+          }`}
+        >
+          <span className="material-symbols-outlined" style={location.pathname === '/admin/help' ? { fontVariationSettings: "'FILL' 1" } : {}}>help</span>
           <span>Bantuan</span>
-        </button>
+        </Link>
         <button
           onClick={handleLogout}
           className="text-[#ba1a1a] flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#ba1a1a]/10 transition-all duration-200 text-sm font-semibold w-full text-left"

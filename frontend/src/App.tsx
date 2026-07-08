@@ -16,6 +16,7 @@ import AdminSettingsPage from './pages/AdminSettingsPage'
 import AdminAssessmentsPage from './pages/AdminAssessmentsPage'
 import UserLoginPage from './pages/UserLoginPage'
 import UserRegisterPage from './pages/UserRegisterPage'
+import AdminHelpPage from './pages/AdminHelpPage'
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/admin/indicators" element={<AdminIndicatorsPage />} />
           <Route path="/admin/criteria" element={<AdminCriteriaPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          <Route path="/admin/help" element={<AdminHelpPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
