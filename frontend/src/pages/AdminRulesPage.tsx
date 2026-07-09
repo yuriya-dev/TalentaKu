@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminSidebar from '../components/layout/AdminSidebar'
+import DecisionTreeCanvas from '../components/DecisionTreeCanvas'
 import { API_BASE } from '../config'
 
 interface Variable {
@@ -88,6 +89,11 @@ export default function AdminRulesPage() {
   const [filterType, setFilterType] = useState<'ALL' | 'L1' | 'L2'>('ALL')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
+
+  // View mode: 'table' | 'tree'
+  const [viewMode, setViewMode] = useState<'table' | 'tree'>('table')
+
+  // Tree interaction state
 
   // Edit panel
   const [panelOpen, setPanelOpen] = useState(false)
@@ -584,6 +590,7 @@ export default function AdminRulesPage() {
     v.category.toLowerCase().includes(simSearch.toLowerCase())
   )
 
+
   return (
     <div className="flex h-screen overflow-hidden font-sans text-[#191c1e] bg-[#f8fafc]">
       <AdminSidebar />
@@ -598,7 +605,28 @@ export default function AdminRulesPage() {
               <span className="text-sm font-semibold text-[#464555] py-1 cursor-default">Status: {rules.length} Aturan Aktif</span>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* View Mode Toggle */}
+            <div className="bg-[#f2f4f6] rounded-xl p-1 flex gap-1">
+              <button
+                onClick={() => setViewMode('table')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === 'table' ? 'bg-white text-[#3525cd] shadow-sm' : 'text-[#464555] hover:text-[#3525cd]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">table_rows</span>
+                Tabel
+              </button>
+              <button
+                onClick={() => setViewMode('tree')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  viewMode === 'tree' ? 'bg-white text-[#3525cd] shadow-sm' : 'text-[#464555] hover:text-[#3525cd]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">account_tree</span>
+                Pohon Keputusan
+              </button>
+            </div>
             <button
               onClick={() => {
                 setIsRuleModalOpen(true)
@@ -619,7 +647,7 @@ export default function AdminRulesPage() {
               className="flex items-center gap-2 bg-[#00687a] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:brightness-110 shadow-md active:scale-95 transition-all"
             >
               <span className="material-symbols-outlined text-base">play_circle</span>
-              Jalankan Simulasi
+              Simulasi
             </button>
           </div>
         </header>
@@ -768,8 +796,29 @@ export default function AdminRulesPage() {
               </div>
             </section>
 
-            {/* Rules Table */}
+            {/* View Mode: Decision Tree Visualizer - React Flow */}
+            {viewMode === 'tree' && (
+              <section className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] overflow-hidden shadow-sm" style={{ height: '70vh', minHeight: 540 }}>
+                <DecisionTreeCanvas
+                  criteria={criteria}
+                  indicators={indicators}
+                  variables={variables}
+                  rules={rules}
+                  onOpenEditPanel={openPanel}
+                  onAddRule={(type, targetCode, existingSources) => {
+                    setIsRuleModalOpen(true)
+                    setNewRuleType(type)
+                    setNewRuleTargetCode(targetCode)
+                    setNewRuleSourceCodes(existingSources)
+                  }}
+                />
+              </section>
+            )}
+
+            {/* Rules Table - shown only in table view */}
+            {viewMode === 'table' && (
             <section className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] overflow-hidden shadow-sm">
+
               <div className="px-8 py-6 border-b border-[#c7c4d8]/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                   <h3 className="text-2xl font-bold">Aturan Mesin Inferensi</h3>
@@ -957,8 +1006,10 @@ export default function AdminRulesPage() {
                 </div>
               </div>
             </section>
+            )}
           </div>
         )}
+
       </main>
 
       {/* Edit Rule Side Panel */}
