@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
 import DecisionTreeCanvas from '../components/DecisionTreeCanvas'
 import { API_BASE } from '../config'
@@ -75,6 +76,7 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
 }
 
 export default function AdminRulesPage() {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -697,103 +699,54 @@ export default function AdminRulesPage() {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6">
-            {/* Rule Hierarchy Visualizer Summary */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* L1: Variables Input */}
-              <div className="bg-white border border-[#c7c4d8]/40 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-bold text-[#464555] flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base">data_object</span>
-                      L1: VARIABEL MASUKAN
-                    </h3>
-                    <span className="bg-[#3525cd]/10 text-[#3525cd] px-2 py-0.5 rounded text-[10px] font-bold">TOTAL {variables.length}</span>
-                  </div>
-                  <p className="text-xs text-[#464555] mb-4">Pernyataan observasi perilaku anak berbasis skala Likert 1-5.</p>
-                  <div className="space-y-2">
-                    {variables.slice(0, 3).map((v) => (
-                      <div key={v.code} className="p-3 bg-[#f8fafc] border border-[#c7c4d8]/30 rounded-xl flex justify-between items-center text-xs">
-                        <span className="font-semibold text-[#3525cd] shrink-0 w-8">{v.code}</span>
-                        <span className="text-[#191c1e] truncate flex-1 pr-2">{v.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 flex gap-2 justify-between items-center">
-                  <p className="text-[10px] text-[#777587] font-semibold">Tersedia {variables.length - 3} variabel lainnya</p>
-                  <button
-                    onClick={() => setIsVarModalOpen(true)}
-                    className="text-[10px] bg-[#3525cd] hover:bg-[#2515bd] text-white px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1 animate-pulse"
-                  >
-                    <span className="material-symbols-outlined text-[12px]">add</span>
-                    Tambah Baru
-                  </button>
-                </div>
+            {/* Knowledge Base Info Bar */}
+            <section className="bg-white border border-[#c7c4d8]/40 rounded-2xl px-6 py-4 shadow-sm flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div className="flex items-center gap-2 text-xs text-[#464555]">
+                <span className="material-symbols-outlined text-base text-[#3525cd]">info</span>
+                <span className="font-semibold text-[#191c1e]">Basis Pengetahuan Aktif</span>
               </div>
-
-              {/* L2: Indicators Bakat */}
-              <div className="bg-[#3525cd]/5 border border-[#3525cd]/15 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-bold text-[#3525cd] flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base">hub</span>
-                      L2: INDIKATOR BAKAT
-                    </h3>
-                    <span className="bg-[#3525cd] text-white px-2 py-0.5 rounded text-[10px] font-bold">{indicators.length} AKTIF</span>
-                  </div>
-                  <p className="text-xs text-[#464555] mb-4">Hasil kualitatif antara yang terpicu saat skor variabel memenuhi ambang batas.</p>
-                  <div className="space-y-2">
-                    {indicators.slice(0, 3).map((ind) => (
-                      <div key={ind.code} className="p-3 bg-white border border-[#3525cd]/10 rounded-xl flex justify-between items-center text-xs">
-                        <span className="font-semibold text-[#00687a] shrink-0 w-8">{ind.code}</span>
-                        <span className="text-[#191c1e] truncate flex-1 pr-2">{ind.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 flex gap-2 justify-between items-center">
-                  <p className="text-[10px] text-[#3525cd] font-semibold">Tersedia {indicators.length - 3} indikator lainnya</p>
-                  <button
-                    onClick={() => setIsIndModalOpen(true)}
-                    className="text-[10px] bg-[#3525cd] hover:bg-[#2515bd] text-white px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1 animate-pulse"
-                  >
-                    <span className="material-symbols-outlined text-[12px]">add</span>
-                    Tambah Baru
-                  </button>
-                </div>
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="material-symbols-outlined text-sm text-[#3525cd]">data_object</span>
+                <span className="text-[#464555]">Variabel:</span>
+                <button
+                  onClick={() => navigate('/admin/variables')}
+                  title="Buka halaman Variabel"
+                  className="font-bold text-[#3525cd] hover:underline hover:brightness-75 transition-all cursor-pointer rounded px-0.5 hover:bg-[#3525cd]/10"
+                >
+                  {variables.length}
+                </button>
               </div>
-
-              {/* L3: Criteria Evaluasi */}
-              <div className="bg-[#00687a]/5 border border-[#00687a]/15 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-bold text-[#00687a] flex items-center gap-2">
-                      <span className="material-symbols-outlined text-base">verified</span>
-                      L3: KRITERIA EVALUASI
-                    </h3>
-                    <span className="bg-[#00687a] text-white px-2 py-0.5 rounded text-[10px] font-bold">{criteria.length} KELUARAN</span>
-                  </div>
-                  <p className="text-xs text-[#464555] mb-4">Klasifikasi potensi bakat anak akhir (K1-K6) berdasarkan aturan inferensi.</p>
-                  <div className="space-y-2">
-                    {criteria.slice(0, 3).map((crit) => (
-                      <div key={crit.code} className="p-3 bg-white border border-[#00687a]/15 rounded-xl flex justify-between items-center text-xs">
-                        <span className="font-semibold text-[#ba1a1a] shrink-0 w-8">{crit.code}</span>
-                        <span className="text-[#191c1e] truncate flex-1 pr-2">{crit.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 flex gap-2 justify-between items-center">
-                  <p className="text-[10px] text-[#00687a] font-semibold">Tersedia {criteria.length - 3} kriteria lainnya</p>
-                  <button
-                    onClick={() => setIsCritModalOpen(true)}
-                    className="text-[10px] bg-[#00687a] hover:bg-[#005260] text-white px-3 py-1.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1 animate-pulse"
-                  >
-                    <span className="material-symbols-outlined text-[12px]">add</span>
-                    Tambah Baru
-                  </button>
-                </div>
+              <div className="h-4 w-px bg-[#c7c4d8]/60 hidden sm:block" />
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="material-symbols-outlined text-sm text-[#3525cd]">hub</span>
+                <span className="text-[#464555]">Indikator:</span>
+                <button
+                  onClick={() => navigate('/admin/indicators')}
+                  title="Buka halaman Indikator"
+                  className="font-bold text-[#3525cd] hover:underline hover:brightness-75 transition-all cursor-pointer rounded px-0.5 hover:bg-[#3525cd]/10"
+                >
+                  {indicators.length}
+                </button>
               </div>
+              <div className="h-4 w-px bg-[#c7c4d8]/60 hidden sm:block" />
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="material-symbols-outlined text-sm text-[#00687a]">verified</span>
+                <span className="text-[#464555]">Kriteria:</span>
+                <button
+                  onClick={() => navigate('/admin/criteria')}
+                  title="Buka halaman Kriteria"
+                  className="font-bold text-[#00687a] hover:underline hover:brightness-75 transition-all cursor-pointer rounded px-0.5 hover:bg-[#00687a]/10"
+                >
+                  {criteria.length}
+                </button>
+              </div>
+              <div className="h-4 w-px bg-[#c7c4d8]/60 hidden sm:block" />
+              <div className="flex items-center gap-1.5 text-xs">
+                <span className="material-symbols-outlined text-sm text-[#464555]">account_tree</span>
+                <span className="text-[#464555]">Total Aturan:</span>
+                <span className="font-bold text-[#191c1e]">{rules.length}</span>
+              </div>
+              <p className="text-[10px] text-[#777587] ml-auto hidden md:block">Kelola data master di halaman Variabel, Indikator, dan Kriteria.</p>
             </section>
 
             {/* View Mode: Decision Tree Visualizer - React Flow */}
