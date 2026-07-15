@@ -75,5 +75,4 @@ tmp/
 .env
 design/
 
-docs/project_brief.md
-docs/PRD.md
+doc/

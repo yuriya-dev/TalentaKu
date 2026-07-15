@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import {
   ReactFlow,
   Background,
@@ -16,9 +16,11 @@ import {
   MarkerType,
   useReactFlow,
   ReactFlowProvider,
+  getNodesBounds,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import Dagre from '@dagrejs/dagre'
+import { toPng, toSvg } from 'html-to-image'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -215,10 +217,39 @@ function VariableNode({ data }: { data: any }) {
 
 const nodeTypes = { criterion: CriterionNode, indicator: IndicatorNode, variable: VariableNode }
 
-// ─── Inner canvas ─────────────────────────────────────────────────────────────
+// ─── Main exported component ──────────────────────────────────────────────────
 
-function CanvasInner({ criteria, indicators, variables, rules, selectedCritCode, onOpenEditPanel, onAddRule }: Props & { selectedCritCode: string | null }) {
-  const { fitView } = useReactFlow()
+export default function DecisionTreeCanvas(props: Props) {
+  return (
+    <ReactFlowProvider>
+      <DecisionTreeCanvasContent {...props} />
+    </ReactFlowProvider>
+  )
+}
+
+function DecisionTreeCanvasContent(props: Props) {
+  const { criteria, indicators, variables, rules, onOpenEditPanel, onAddRule } = props
+  const [selectedCritCode, setSelectedCritCode] = useState<string | null>(null)
+  const [sidebarSearch, setSidebarSearch] = useState('')
+  const [canvasSearch, setCanvasSearch] = useState('')
+
+  const { fitView, getNodes } = useReactFlow()
+  const reactFlowWrapperRef = useRef<HTMLDivElement>(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false)
+  const exportMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as any)) {
+        setIsExportMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Nodes & Edges state (from CanvasInner)
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
 
@@ -234,14 +265,33 @@ function CanvasInner({ criteria, indicators, variables, rules, selectedCritCode,
     return m
   }, [rules])
 
+  const filteredSidebarCriteria = criteria.filter(c =>
+    c.code.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
+    c.label.toLowerCase().includes(sidebarSearch.toLowerCase())
+  )
+
+  const searchHighlightCode = useMemo(() => {
+    if (!canvasSearch.trim()) return null
+    const q = canvasSearch.trim().toLowerCase()
+    const byCode = criteria.find(c => c.code.toLowerCase() === q)
+    if (byCode) return byCode.code
+    const byLabel = criteria.find(c => c.label.toLowerCase().includes(q))
+    if (byLabel) return byLabel.code
+    const byInd = indicators.find(i => i.code.toLowerCase() === q)
+    if (byInd) { const crit = criteria.find(c => (critToInds[c.code] || []).includes(byInd.code)); if (crit) return crit.code }
+    return null
+  }, [canvasSearch, criteria, indicators, critToInds])
+
+  const effectiveCritCode = canvasSearch.trim() ? searchHighlightCode : selectedCritCode
+
   const buildGraph = useCallback(() => {
-    const scope = selectedCritCode ? criteria.filter(c => c.code === selectedCritCode) : criteria
+    const scope = effectiveCritCode ? criteria.filter(c => c.code === effectiveCritCode) : criteria
     const rawNodes: Node[] = []
     const rawEdges: Edge[] = []
 
     scope.forEach(crit => {
       const critInds = critToInds[crit.code] || []
-      const isHL = !selectedCritCode || selectedCritCode === crit.code
+      const isHL = !effectiveCritCode || effectiveCritCode === crit.code
 
       rawNodes.push({
         id: `crit-${crit.code}`, type: 'criterion', position: { x: 0, y: 0 },
@@ -297,70 +347,93 @@ function CanvasInner({ criteria, indicators, variables, rules, selectedCritCode,
     setNodes(ln)
     setEdges(le)
     setTimeout(() => fitView({ padding: 0.18, duration: 450 }), 80)
-  }, [criteria, indicators, variables, rules, selectedCritCode, critToInds, indToVars, onOpenEditPanel, onAddRule, fitView, setNodes, setEdges])
+  }, [criteria, indicators, variables, rules, effectiveCritCode, critToInds, indToVars, onOpenEditPanel, onAddRule, fitView, setNodes, setEdges])
 
   useEffect(() => { buildGraph() }, [buildGraph])
 
   const onConnect = useCallback((c: Connection) => setEdges(eds => addEdge(c, eds)), [setEdges])
-
-  return (
-    <ReactFlow
-      nodes={nodes} edges={edges}
-      onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect}
-      nodeTypes={nodeTypes}
-      fitView fitViewOptions={{ padding: 0.18 }}
-      minZoom={0.1} maxZoom={2.5}
-      proOptions={{ hideAttribution: true }}
-      className="bg-[#f8fafc]"
-    >
-      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#c7c4d8" />
-      <Controls className="!bg-white !border-[#c7c4d8]/40 !shadow-lg !rounded-xl" showInteractive={false} />
-      <MiniMap
-        nodeColor={n => n.type === 'criterion' ? '#00687a' : n.type === 'indicator' ? '#3525cd' : '#6d28d9'}
-        className="!bg-white !border-[#c7c4d8]/40 !shadow-lg !rounded-xl"
-        maskColor="rgba(248,250,252,0.85)"
-      />
-    </ReactFlow>
-  )
-}
-
-// ─── Main exported component ──────────────────────────────────────────────────
-
-export default function DecisionTreeCanvas(props: Props) {
-  const { criteria, indicators, variables, rules, onOpenEditPanel, onAddRule } = props
-  const [selectedCritCode, setSelectedCritCode] = useState<string | null>(null)
-  const [sidebarSearch, setSidebarSearch] = useState('')
-  const [canvasSearch, setCanvasSearch] = useState('')
-
-  const critToInds: Record<string, string[]> = {}
-  rules.filter(r => r.type === 'L2').forEach(r => { critToInds[r.targetCode] = r.sourceCodes })
-  const indToVars: Record<string, string[]> = {}
-  rules.filter(r => r.type === 'L1').forEach(r => { indToVars[r.targetCode] = r.sourceCodes })
-
-  const filteredSidebarCriteria = criteria.filter(c =>
-    c.code.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
-    c.label.toLowerCase().includes(sidebarSearch.toLowerCase())
-  )
-
-  const searchHighlightCode = useMemo(() => {
-    if (!canvasSearch.trim()) return null
-    const q = canvasSearch.trim().toLowerCase()
-    const byCode = criteria.find(c => c.code.toLowerCase() === q)
-    if (byCode) return byCode.code
-    const byLabel = criteria.find(c => c.label.toLowerCase().includes(q))
-    if (byLabel) return byLabel.code
-    const byInd = indicators.find(i => i.code.toLowerCase() === q)
-    if (byInd) { const crit = criteria.find(c => (critToInds[c.code] || []).includes(byInd.code)); if (crit) return crit.code }
-    return null
-  }, [canvasSearch, criteria, indicators, critToInds])
-
-  const effectiveCritCode = canvasSearch.trim() ? searchHighlightCode : selectedCritCode
 
   function getStats(code: string) {
     const inds = critToInds[code] || []
     const vars = inds.flatMap(ic => indToVars[ic] || [])
     return { inds: inds.length, vars: vars.length }
   }
+
+  const handleExport = useCallback(async (type: 'png' | 'svg') => {
+    if (!reactFlowWrapperRef.current) return
+
+    const visibleNodes = getNodes()
+    if (visibleNodes.length === 0) return
+
+    setIsExporting(true)
+
+    try {
+      const nodesBounds = getNodesBounds(visibleNodes)
+      const padding = 60
+      const imageWidth = nodesBounds.width + padding * 2
+      const imageHeight = nodesBounds.height + padding * 2
+
+      const transform = {
+        x: -nodesBounds.x + padding,
+        y: -nodesBounds.y + padding,
+        zoom: 1,
+      }
+
+      const viewportElement = reactFlowWrapperRef.current.querySelector('.react-flow__viewport') as HTMLElement
+      if (!viewportElement) {
+        setIsExporting(false)
+        return
+      }
+
+      const options = {
+        backgroundColor: '#f8fafc',
+        width: imageWidth,
+        height: imageHeight,
+        style: {
+          width: `${imageWidth}px`,
+          height: `${imageHeight}px`,
+          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.zoom})`,
+          transformOrigin: 'top left',
+        },
+        filter: (node: any) => {
+          const cl = node.classList
+          const tagName = node?.tagName?.toLowerCase()
+          if (tagName === 'button') {
+            return false
+          }
+          if (cl && (
+            cl.contains('react-flow__minimap') ||
+            cl.contains('react-flow__controls') ||
+            cl.contains('react-flow__panel') ||
+            cl.contains('react-flow-export-exclude') ||
+            cl.contains('material-symbols-outlined')
+          )) {
+            return false
+          }
+          return true
+        }
+      }
+
+      let dataUrl = ''
+      if (type === 'png') {
+        dataUrl = await toPng(viewportElement, options)
+      } else {
+        dataUrl = await toSvg(viewportElement, options)
+      }
+
+      const link = document.createElement('a')
+      const timestamp = new Date().toISOString().split('T')[0]
+      const criterionText = effectiveCritCode ? `-${effectiveCritCode}` : '-semua'
+      link.download = `pohon-keputusan${criterionText}-${timestamp}.${type}`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('Failed to export decision tree image:', error)
+      alert('Gagal mengekspor gambar. Silakan coba lagi.')
+    } finally {
+      setIsExporting(false)
+    }
+  }, [getNodes, effectiveCritCode])
 
   return (
     <div className="flex h-full min-h-0">
@@ -514,10 +587,49 @@ export default function DecisionTreeCanvas(props: Props) {
             <span className="material-symbols-outlined text-[11px]">touch_app</span>
             Hover node untuk edit/tambah
           </span>
+
+          {/* Export Button & Dropdown */}
+          <div className="relative pl-3 border-l border-[#c7c4d8]/30 shrink-0" ref={exportMenuRef}>
+            <button
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#c7c4d8]/40 hover:border-[#3525cd]/60 rounded-full bg-[#f8fafc] hover:bg-white text-xs font-semibold text-[#464555] hover:text-[#3525cd] transition-all cursor-pointer shadow-sm select-none"
+              disabled={isExporting}
+            >
+              <span className={`material-symbols-outlined text-sm ${isExporting ? 'animate-spin' : ''}`}>
+                {isExporting ? 'sync' : 'download'}
+              </span>
+              <span>{isExporting ? 'Mengekspor...' : 'Ekspor Gambar'}</span>
+              <span className="material-symbols-outlined text-xs">arrow_drop_down</span>
+            </button>
+            {isExportMenuOpen && (
+              <div className="absolute right-0 mt-1.5 w-40 bg-white rounded-xl shadow-xl border border-[#c7c4d8]/30 py-1.5 z-[999]">
+                <button
+                  onClick={() => {
+                    setIsExportMenuOpen(false)
+                    handleExport('png')
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-[#464555] hover:bg-[#3525cd]/5 hover:text-[#3525cd] transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-sm text-[#777587]">image</span>
+                  Ekspor ke PNG
+                </button>
+                <button
+                  onClick={() => {
+                    setIsExportMenuOpen(false)
+                    handleExport('svg')
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs text-[#464555] hover:bg-[#3525cd]/5 hover:text-[#3525cd] transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-sm text-[#777587]">draw</span>
+                  Ekspor ke SVG
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Flow canvas */}
-        <div className="flex-1 min-h-0 relative">
+        <div ref={reactFlowWrapperRef} className="flex-1 min-h-0 relative">
           {criteria.length === 0 ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-[#777587] gap-3">
               <span className="material-symbols-outlined text-6xl text-[#c7c4d8]">account_tree</span>
@@ -525,13 +637,28 @@ export default function DecisionTreeCanvas(props: Props) {
               <p className="text-xs">Tambah kriteria terlebih dahulu.</p>
             </div>
           ) : (
-            <ReactFlowProvider>
-              <CanvasInner
-                criteria={criteria} indicators={indicators} variables={variables} rules={rules}
-                selectedCritCode={effectiveCritCode}
-                onOpenEditPanel={onOpenEditPanel} onAddRule={onAddRule}
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              nodeTypes={nodeTypes}
+              fitView
+              fitViewOptions={{ padding: 0.18 }}
+              minZoom={0.1}
+              maxZoom={2.5}
+              proOptions={{ hideAttribution: true }}
+              className="bg-[#f8fafc]"
+            >
+              <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#c7c4d8" />
+              <Controls className="!bg-white !border-[#c7c4d8]/40 !shadow-lg !rounded-xl" showInteractive={false} />
+              <MiniMap
+                nodeColor={n => n.type === 'criterion' ? '#00687a' : n.type === 'indicator' ? '#3525cd' : '#6d28d9'}
+                className="!bg-white !border-[#c7c4d8]/40 !shadow-lg !rounded-xl"
+                maskColor="rgba(248,250,252,0.85)"
               />
-            </ReactFlowProvider>
+            </ReactFlow>
           )}
         </div>
       </div>

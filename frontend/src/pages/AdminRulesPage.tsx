@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../components/layout/AdminSidebar'
 import DecisionTreeCanvas from '../components/DecisionTreeCanvas'
@@ -89,6 +89,7 @@ export default function AdminRulesPage() {
   const [rules, setRules] = useState<RuleItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'ALL' | 'L1' | 'L2'>('ALL')
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('ALL')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
 
@@ -564,26 +565,61 @@ export default function AdminRulesPage() {
     }
   }
 
+  // Helper to determine the age group of a rule
+  const getRuleAgeGroup = useCallback((rule: RuleItem) => {
+    if (rule.type === 'L1') {
+      const ind = indicators.find((i) => i.code === rule.targetCode)
+      return ind ? ind.age_group : ''
+    } else {
+      const crit = criteria.find((c) => c.code === rule.targetCode)
+      return crit ? crit.age_group : ''
+    }
+  }, [indicators, criteria])
+
   // Filter and Paginate rules
-  const filteredRules = rules.filter((rule) => {
-    const matchesSearch =
-      rule.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.sourceCodes.some((code) => code.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredRules = useMemo(() => {
+    return rules.filter((rule) => {
+      const matchesSearch =
+        rule.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rule.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rule.sourceCodes.some((code) => code.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    const matchesType =
-      filterType === 'ALL' ||
-      (filterType === 'L1' && rule.type === 'L1') ||
-      (filterType === 'L2' && rule.type === 'L2')
+      const matchesType =
+        filterType === 'ALL' ||
+        (filterType === 'L1' && rule.type === 'L1') ||
+        (filterType === 'L2' && rule.type === 'L2')
 
-    return matchesSearch && matchesType
-  })
+      const matchesAgeGroup =
+        selectedAgeGroup === 'ALL' ||
+        getRuleAgeGroup(rule) === selectedAgeGroup
+
+      return matchesSearch && matchesType && matchesAgeGroup
+    })
+  }, [rules, searchQuery, filterType, selectedAgeGroup, getRuleAgeGroup])
 
   const totalPages = Math.max(Math.ceil(filteredRules.length / pageSize), 1)
-  const paginatedRules = filteredRules.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  )
+  const paginatedRules = useMemo(() => {
+    return filteredRules.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    )
+  }, [filteredRules, currentPage, pageSize])
+
+  const filteredCriteriaForTree = useMemo(() => {
+    return criteria.filter((c) => selectedAgeGroup === 'ALL' || c.age_group === selectedAgeGroup)
+  }, [criteria, selectedAgeGroup])
+
+  const filteredIndicatorsForTree = useMemo(() => {
+    return indicators.filter((i) => selectedAgeGroup === 'ALL' || i.age_group === selectedAgeGroup)
+  }, [indicators, selectedAgeGroup])
+
+  const filteredVariablesForTree = useMemo(() => {
+    return variables.filter((v) => selectedAgeGroup === 'ALL' || v.age_group === selectedAgeGroup)
+  }, [variables, selectedAgeGroup])
+
+  const filteredRulesForTree = useMemo(() => {
+    return rules.filter((r) => selectedAgeGroup === 'ALL' || getRuleAgeGroup(r) === selectedAgeGroup)
+  }, [rules, selectedAgeGroup, getRuleAgeGroup])
 
   // Simulation filtering variables
   const filteredSimVariables = variables.filter((v) =>
@@ -604,10 +640,28 @@ export default function AdminRulesPage() {
             <h2 className="text-2xl font-bold text-[#3525cd]">Pembuat Aturan</h2>
             <div className="hidden md:flex gap-6 ml-8">
               <span className="text-sm font-bold text-[#3525cd] border-b-2 border-[#3525cd] py-1 cursor-default">Forward Chaining</span>
-              <span className="text-sm font-semibold text-[#464555] py-1 cursor-default">Status: {rules.length} Aturan Aktif</span>
+              <span className="text-sm font-semibold text-[#464555] py-1 cursor-default">
+                Status: {selectedAgeGroup !== 'ALL' || filterType !== 'ALL' || searchQuery ? `${filteredRules.length} / ${rules.length}` : rules.length} Aturan Aktif
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Age Group Filter */}
+            <select
+              value={selectedAgeGroup}
+              onChange={(e) => {
+                setSelectedAgeGroup(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="px-4 py-2 border border-[#c7c4d8]/40 focus:border-[#3525cd] focus:ring-2 focus:ring-[#3525cd]/25 rounded-xl text-xs font-bold outline-none bg-white shadow-sm text-[#464555] transition-all cursor-pointer"
+            >
+              <option value="ALL">Semua Kelompok Usia</option>
+              <option value="toddler">Batita (Toddler)</option>
+              <option value="preschool">Prasekolah / TK (Preschool)</option>
+              <option value="early_elementary">SD Awal (Early Elementary)</option>
+              <option value="late_elementary">SD Akhir (Late Elementary)</option>
+            </select>
+
             {/* View Mode Toggle */}
             <div className="bg-[#f2f4f6] rounded-xl p-1 flex gap-1">
               <button
@@ -753,10 +807,10 @@ export default function AdminRulesPage() {
             {viewMode === 'tree' && (
               <section className="bg-white border border-[#c7c4d8]/40 rounded-[2rem] overflow-hidden shadow-sm" style={{ height: '70vh', minHeight: 540 }}>
                 <DecisionTreeCanvas
-                  criteria={criteria}
-                  indicators={indicators}
-                  variables={variables}
-                  rules={rules}
+                  criteria={filteredCriteriaForTree}
+                  indicators={filteredIndicatorsForTree}
+                  variables={filteredVariablesForTree}
+                  rules={filteredRulesForTree}
                   onOpenEditPanel={openPanel}
                   onAddRule={(type, targetCode, existingSources) => {
                     setIsRuleModalOpen(true)
